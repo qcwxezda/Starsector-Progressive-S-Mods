@@ -1,10 +1,10 @@
 {
-    "id": "revampedSMods",
-    "name": "Revamped S-Mods",
-    "version": {"major":0, "minor":1, "patch":0},
+    "id": "progressiveSMods",
+    "name": "Progressive S-Mods",
+    "version": {"major":0, "minor":2, "patch":0},
     "dependencies": [],
     "description": "Placeholder",
     "gameVersion": "0.95a-RC15",
-    "jars": ["jars/Revamped S-Mods.jar"],
-    "modPlugin": "plugin.RevampedSModsPlugin"
+    "jars": ["jars/Progressive S-Mods.jar"],
+    "modPlugin": "plugin.ProgressiveSModsPlugin"
 }
