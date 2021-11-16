@@ -16,16 +16,12 @@ import com.fs.starfarer.api.combat.EngagementResultAPI;
 import com.fs.starfarer.api.combat.FighterWingAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 
-import org.apache.log4j.Logger;
-
 import util.SModUtils;
 import util.SModUtils.Constants;
 import util.SModUtils.ShipData;
 import util.SModUtils.ShipDataTable;
 
 public class EngagementResultListener extends BaseCampaignEventListener {
-
-    private final static Logger logger = Global.getLogger(EngagementResultListener.class);
 
     public EngagementResultListener(boolean permaRegister) {
         super(permaRegister);
@@ -39,7 +35,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
             enemyResult = result.getLoserResult();
         }
 
-        // Populate player ships
+        // Populate player ships, including fighters
         List<DeployedFleetMemberAPI> playerFleet = playerResult.getAllEverDeployedCopy();
 
         // carrierTable[id] points to carrier that owns id
@@ -74,7 +70,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
             }
         );
 
-        // Transfer damager from fighters to their carriers
+        // Transfer damage from fighters to their carriers
         transferWeightedDamage(carrierTable, weightedDamageTable);
 
         // Use the weighted damage table to update ship data
@@ -91,11 +87,9 @@ public class EngagementResultListener extends BaseCampaignEventListener {
             if (shipData == null) { 
                 shipData = new ShipData(xpGain, 0);
                 shipDataTable.put(shipId, shipData);
-                logger.info("Placing new ship data: " + shipId + ", xp: " + shipData.xp);
             }
             else {
                 shipData.xp += xpGain;
-                logger.info("Updating ship data: " + shipId + ", xp: " + shipData.xp);
             }
         }
 
@@ -105,17 +99,6 @@ public class EngagementResultListener extends BaseCampaignEventListener {
             ShipData data = shipDataTable.get(member.getId());
             if (data != null && data.xp > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {
                 member.getVariant().addPermaMod("progsmod_xptracker", false);
-                logger.info("Added hullmod to ship " + member.getId());
-                for (String s : member.getVariant().getHullMods()) {
-                    logger.info("Hullmod: " + s);
-                }
-                logger.info("Ship id is: " + member.getId());
-                logger.info("Variant info: ");
-                logger.info(member.getVariant().getDesignation());
-                logger.info(member.getVariant().getHullVariantId());
-                logger.info(member.getVariant().getOriginalVariant());
-                logger.info(member.getVariant().toString());
-
             }
         }
 
@@ -231,9 +214,8 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         }
     }
 
-    /** Uses the combat data to generate, for each ship in keyFilter (INTERSECT) combatDamageData.getDealt().keySet(), 
-     *  the sum of its weighted damage to each ship in targetFilter. Modifies weightedDamageTable.
-     */
+    /** Uses the combat data to generate, for each ship in keyFilter and combatDamageData.getDealt().keySet(), 
+     *  the sum of its weighted damage to each ship in targetFilter. Modifies weightedDamageTable. */
     private void populateWeightedDamageTable(CombatDamageData combatDamageData, Set<String> keyFilter, Set<String> targetFilter,
                                              Map<String, Float> weightedDamageTable, WeightedDamageFn damageFn) {
         for (Map.Entry<FleetMemberAPI, DealtByFleetMember> dealt : combatDamageData.getDealt().entrySet()) {
@@ -261,6 +243,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         }
     }
 
+    /** For each <k, v> pair in transferMap, adds k's weighted damage to v's weighted damage. Modifies weightedDamageTable. */
     private void transferWeightedDamage(Map<String, String> transferMap, Map<String, Float> weightedDamageTable) {
         for (Map.Entry<String, String> transfer : transferMap.entrySet()) {
             Float transferDamage = weightedDamageTable.get(transfer.getKey());
@@ -272,6 +255,8 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         }
     }
 
+    /** Classes implementing this interface provide a function that takes raw hull damage on a target and
+     *  weights it according to the target's statistics.*/
     private interface WeightedDamageFn {
         public float compute(float damage, FleetMemberAPI target);
     }
