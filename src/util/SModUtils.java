@@ -1,10 +1,14 @@
 package util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 
 public class SModUtils {
@@ -117,5 +121,46 @@ public class SModUtils {
             case CAPITAL_SHIP: return (int) (hullmod.getCapitalCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_CAPITAL_MULTIPLIER);
             default: return 0;
         }
+    }
+
+    // private enum FleetMemberType {DFM, FM, SHIP};
+
+    // public static <T> List<String> getFleetMemberIds(List<? extends T> fleetMembers) {
+    //     int n = fleetMembers.size();
+    //     List<String> ids = new ArrayList<>(n);
+    //     FleetMemberType type = null;
+    //     for (T fm : fleetMembers) {
+    //         if (type == null) {
+    //             if (fm instanceof FleetMemberAPI) {type = FleetMemberType.FM;}
+    //             else if (fm instanceof DeployedFleetMemberAPI) {type = FleetMemberType.DFM;}
+    //             else if (fm instanceof ShipAPI) {type = FleetMemberType.SHIP;}
+    //             else return ids;
+    //         }
+    //         switch (type) {
+    //             case FM: ids.add(((FleetMemberAPI) fm).getId()); break;
+    //             case DFM: ids.add(((DeployedFleetMemberAPI) fm).getMember().getId()); break;
+    //             case SHIP: ids.add(((ShipAPI) fm).getFleetMemberId()); break;
+    //             default: break;
+    //         }
+    //     }
+    //     return ids;
+    // }
+
+    /** Given a list of fleetMembers, return a list of their ids */
+    public static List<String> getFleetMemberIds(List<FleetMemberAPI> fleetMembers) {
+        List<String> ids = new ArrayList<>(fleetMembers.size());
+        for (FleetMemberAPI fm : fleetMembers) {
+            ids.add(fm.getId());
+        }
+        return ids; 
+    }
+
+    /** Given a list of deployedFleetMembers, return a list of their ids */
+    public static List<String> getDeployedFleetMemberIds(List<DeployedFleetMemberAPI> deployedFleetMembers) {
+        List<String> ids = new ArrayList<>(deployedFleetMembers.size());
+        for (DeployedFleetMemberAPI fm : deployedFleetMembers) {
+            ids.add(fm.getMember().getId());
+        }
+        return ids; 
     }
 }

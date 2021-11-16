@@ -2,14 +2,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            // Needs Step 2 from "Running and debugging".
-            // https://starsector.fandom.com/wiki/IntelliJ_IDEA_Setup#Running_and_debugging
+            "type": "java",
+            "name": "Launch ProgressiveSModsPlugin",
+            "request": "launch",
+            "mainClass": "plugin.ProgressiveSModsPlugin",
+            "projectName": "Progressive S-Mods_d63f1100"
+        },
+        {
             "type": "java",
             "name": "Attach to Starsector",
             "request": "attach",
             "hostName": "localhost",
             "port": 5005,
-            "preLaunchTask": "${defaultBuildTask}",
-        },
+            "projectName": "Progressive S-Mods_d63f1100"
+        }
     ]
 }
