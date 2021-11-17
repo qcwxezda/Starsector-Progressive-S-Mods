@@ -3,12 +3,15 @@ package util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.rules.MemKeys;
+import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
-import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
+import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 
 public class SModUtils {
@@ -16,7 +19,8 @@ public class SModUtils {
     public enum GrowthType {LINEAR, EXPONENTIAL};
 
     /** Lookup key into the sector-persistent data that stores ship data */
-    public static final String SHIPDATA_KEY = "RSM_ShipData";
+    public static final String SHIP_DATA_KEY = "progsmod_ShipData";
+    public static ShipDataTable SHIP_DATA_TABLE = new ShipDataTable();
 
     public static class Constants {
         /** How many story points it costs to unlock the first extra SMod slot. */
@@ -82,30 +86,24 @@ public class SModUtils {
     //     }
     // }
 
-    /** Get the table that maps ships to their SMod info from the persistent game state */
-    public static ShipDataTable getShipData() {
-        return ((ShipDataTable) Global.getSector().getPersistentData().get(SHIPDATA_KEY));
-    }
-
     /** Gets the story point cost of increasing the number of built-in hullmods of [ship] by 1. */
-    public static int getStoryPointCost(ShipAPI ship) {
+    public static int getStoryPointCost(FleetMemberAPI ship) {
         int baseCost;
         switch (ship.getVariant().getHullSize()) {
-            case FRIGATE: baseCost = Constants.BASE_EXTRA_SMOD_COST_FRIGATE;
-            case DESTROYER: baseCost = Constants.BASE_EXTRA_SMOD_COST_DESTROYER;
-            case CRUISER: baseCost = Constants.BASE_EXTRA_SMOD_COST_CRUISER;
-            case CAPITAL_SHIP: baseCost = Constants.BASE_EXTRA_SMOD_COST_CAPITAL;
+            case FRIGATE: baseCost = Constants.BASE_EXTRA_SMOD_COST_FRIGATE; break;
+            case DESTROYER: baseCost = Constants.BASE_EXTRA_SMOD_COST_DESTROYER; break;
+            case CRUISER: baseCost = Constants.BASE_EXTRA_SMOD_COST_CRUISER; break;
+            case CAPITAL_SHIP: baseCost = Constants.BASE_EXTRA_SMOD_COST_CAPITAL; break;
             default: baseCost = 0;
         }
         
-        ShipDataTable table = getShipData();
-        String shipId = ship.getFleetMemberId();
+        String shipId = ship.getId();
 
-        if (!table.containsKey(shipId)) {
+        if (!SHIP_DATA_TABLE.containsKey(shipId)) {
             return baseCost;
         }
 
-        int modsOverLimit = table.get(shipId).permaModsOverLimit;
+        int modsOverLimit = SHIP_DATA_TABLE.get(shipId).permaModsOverLimit;
 
         return Constants.EXTRA_SMOD_COST_GROWTHTYPE == GrowthType.EXPONENTIAL ? 
             (int) (baseCost * Math.pow(Constants.GROWTH_FACTOR, modsOverLimit)) : 
@@ -162,5 +160,33 @@ public class SModUtils {
             ids.add(fm.getMember().getId());
         }
         return ids; 
+    }
+
+    /** Given a fleet member, return its S-Mod limit */
+    public static int getMaxSMods(FleetMemberAPI fleetMember) {
+        ShipData shipData = SHIP_DATA_TABLE.get(fleetMember.getId());
+        int overLimit = shipData == null ? 0 : shipData.permaModsOverLimit;
+        return overLimit + (int) fleetMember.getStats()
+                                .getDynamic()
+                                .getMod(Stats.MAX_PERMANENT_HULLMODS_MOD)
+                                .computeEffective(Global.getSettings().getInt("maxPermanentHullmods"));
+    }
+
+    /** Writes data about [fleetMember]'s built-in hull mods into MemKeys.LOCAL */
+    public static void writeShipDataToMemory(FleetMemberAPI fleetMember, Map<String, MemoryAPI> memoryMap) {
+        int maxSMods = SModUtils.getMaxSMods(fleetMember);
+        int currentSMods = fleetMember.getVariant().getSMods().size();
+        memoryMap.get(MemKeys.LOCAL).set("$selectedShipMax", maxSMods, 0f);
+        memoryMap.get(MemKeys.LOCAL).set("$selectedShipMaxPlusOne", maxSMods + 1, 0f);
+        memoryMap.get(MemKeys.LOCAL).set("$selectedShipCurrent", currentSMods, 0f);
+        memoryMap.get(MemKeys.LOCAL).set("$selectedShipRemaining", maxSMods - currentSMods, 0f);
+        memoryMap.get(MemKeys.LOCAL).set("$selectedShipName", fleetMember.getShipName());
+        memoryMap.get(MemKeys.LOCAL).set("$xpRefund", (int) (100 * SModUtils.Constants.XP_REFUND_FACTOR), 0f);
+        memoryMap.get(MemKeys.LOCAL).set("$nextStoryPointCost", SModUtils.getStoryPointCost(fleetMember), 0f);
+        ShipData shipData = SHIP_DATA_TABLE.get(fleetMember.getId());
+        int overLimit = shipData == null ? 0 : shipData.permaModsOverLimit;
+        memoryMap.get(MemKeys.LOCAL).set("$augmentTimes", overLimit);
+        memoryMap.get(MemKeys.LOCAL).set("$modSingOrPlural", maxSMods - currentSMods == 1 ? "mod" : "mods");
+        memoryMap.get(MemKeys.LOCAL).set("$timeSingOrPlural", overLimit == 1 ? "time" : "times");
     }
 }

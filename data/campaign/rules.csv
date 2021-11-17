@@ -1,0 +1,34 @@
+id,trigger,conditions,script,text,options,notes,,
+progsmod_Start,PopulateOptions,$menuState == main,"SetShortcut progsmod_OptionManage ""H""
+$selectedShip = null 0",,16:progsmod_OptionManage:Manage built-in hull mods,,,
+progsmod_Manage,DialogOptionSelected,$option == progsmod_OptionManage,ProgSModPickFleetMember progsmod_SelectShip progsmodMain,,,,,
+progsmod_ShipSelected1,progsmod_SelectShip,"$menuState == progsmodMain
+$selectedShip != null
+$xpRefund >= 0","SetShortcut progsmod_OptionBackMain ""ESCAPE""
+ProgSModSetStoryOption progsmod_OptionAugment $nextStoryPointCost 0
+Highlight $selectedShipName $selectedShipCurrent $selectedShipMax $selectedShipRemaining $xpRefund $augmentTimes","The $selectedShipName has $selectedShipCurrent out of $selectedShipMax built-in hull mods.
+
+You can build in $selectedShipRemaining additional hull $modSingOrPlural. Removing an existing built-in hull mod will refund $xpRefund% of the XP spent.
+
+You have increased this ship's limit of built-in hull mods a total of $augmentTimes $timeSingOrPlural.
+","1:progsmod_OptionBulidIn:Build a hull mod into this ship ($selectedShipCurrent / $selectedShipMax)
+2:progsmod_OptionRemove:Remove a built-in hull mod from this ship
+3:progsmod_OptionAugment:Increase this ship's built-in hull mod limit from $selectedShipMax to $selectedShipMaxPlusOne
+4:progsmod_OptionBackMain:Go back",,,
+progsmod_ShipSelected2,progsmod_SelectShip,"$menuState == progsmodMain
+$selectedShip != null
+$xpRefund < 0","SetShortcut progsmod_OptionBackMain ""ESCAPE""
+ProgSModSetStoryOption progsmod_OptionAugment $nextStoryPointCost 0
+Highlight $selectedShipName $selectedShipCurrent $selectedShipMax $selectedShipRemaining $xpRefund $augmentTimes","The $selectedShipName has $selectedShipCurrent out of $selectedShipMax built-in hull mods.
+
+You can build in $selectedShipRemaining additional hull $modSingOrPlural. Built-in hull mods cannot be removed.
+
+You have increased this ship's limit of built-in hull mods a total of $augmentTimes $timeSingOrPlural.","1:progsmod_OptionBulidIn:Build a hull mod into this ship ($selectedShipCurrent / $selectedShipMax)
+2:progsmod_OptionAugment:Increase this ship's built-in hull mod limit from $selectedShipMax to $selectedShipMaxPlusOne
+2:progsmod_OptionBackMain:Go back",,,
+progsmod_BackToStart,DialogOptionSelected,$option == progsmod_OptionBackMain,"$menuState = main 0
+ShowDefaultVisual
+FireAll PopulateOptions",,,,,
+progsmod_ShipAugment,DialogOptionSelected,"$option == progsmod_OptionAugment
+$selectedShip != null","ProgSModIncreaseLimit $selectedShip
+FireAll progsmod_SelectShip",,,,,

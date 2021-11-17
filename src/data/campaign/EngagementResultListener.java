@@ -1,4 +1,4 @@
-package campaign;
+package data.campaign;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -74,7 +74,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         transferWeightedDamage(carrierTable, weightedDamageTable);
 
         // Use the weighted damage table to update ship data
-        ShipDataTable shipDataTable = ((ShipDataTable) Global.getSector().getPersistentData().get(SModUtils.SHIPDATA_KEY));
+        ShipDataTable shipDataTable = ((ShipDataTable) Global.getSector().getPersistentData().get(SModUtils.SHIP_DATA_KEY));
         for (Map.Entry<String, Float> weightedDamageEntry : weightedDamageTable.entrySet()) {
             String shipId = weightedDamageEntry.getKey();
             int xpGain = (int) (weightedDamageEntry.getValue() * SModUtils.Constants.XP_GAIN_MULTIPLIER);

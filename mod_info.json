@@ -1,6 +1,7 @@
 {
     "id": "progressiveSMods",
     "name": "Progressive S-Mods",
+    "author": "qcwzezda",
     "version": {"major":0, "minor":2, "patch":3},
     "dependencies": [],
     "description": "Placeholder",
