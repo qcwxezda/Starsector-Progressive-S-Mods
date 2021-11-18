@@ -24,23 +24,21 @@ public class SModUtils {
 
     public static class Constants {
         /** How many story points it costs to unlock the first extra SMod slot. */
-        public static int BASE_EXTRA_SMOD_COST_FRIGATE = 1;
-        public static int BASE_EXTRA_SMOD_COST_DESTROYER = 1;
-        public static int BASE_EXTRA_SMOD_COST_CRUISER = 2;
-        public static int BASE_EXTRA_SMOD_COST_CAPITAL = 3;
+        public static int BASE_EXTRA_SMOD_COST_FRIGATE = 2;
+        public static int BASE_EXTRA_SMOD_COST_DESTROYER = 2;
+        public static int BASE_EXTRA_SMOD_COST_CRUISER = 3;
+        public static int BASE_EXTRA_SMOD_COST_CAPITAL = 4;
         /** Whether the story point increase for unlocking extra SMod slots is linear or exponential. */
         public static GrowthType EXTRA_SMOD_COST_GROWTHTYPE = GrowthType.EXPONENTIAL;
         /** If exponential, SP cost is BASE * GROWTH_FACTOR^n, otherwise SP cost is BASE + n*GROWTH_FACTOR. */
         public static float GROWTH_FACTOR = 2f;
         /** The amount of XP it costs per OP to build in a hullmod. */
-        public static float XP_COST_PER_OP = 1f;
+        public static float XP_COST_PER_OP = 100f;
         /** Additional multipliers that increase XP costs for larger hulls. */
         public static float XP_COST_FRIGATE_MULTIPLIER = 1f;
-        public static float XP_COST_DESTROYER_MULTIPLIER = 1f;
-        public static float XP_COST_CRUISER_MULTIPLIER = 1f;
-        public static float XP_COST_CAPITAL_MULTIPLIER = 1f;
-        /** Controls the amount of post-battle XP that ships gain. */
-        public static float SHIP_XP_MULTIPLIER = 1f;
+        public static float XP_COST_DESTROYER_MULTIPLIER = 1.5f;
+        public static float XP_COST_CRUISER_MULTIPLIER = 2f;
+        public static float XP_COST_CAPITAL_MULTIPLIER = 3f;
         /** How much XP a ship gets refunded when you remove a built-in mod. 
           * Set to something less than 0 to disable removing built-in mods completely. */
         public static float XP_REFUND_FACTOR = 0.8f;
@@ -49,7 +47,7 @@ public class SModUtils {
         /** Whether or not enemy ships that aren't disabled should still award XP */
         public static boolean ONLY_GIVE_XP_FOR_KILLS = false;
         /** XP gain multiplier */
-        public static float XP_GAIN_MULTIPLIER = 100f;
+        public static float XP_GAIN_MULTIPLIER = 36f;
     }
 
     /** Contains XP and # of max perma mods over the normal limit. */
@@ -111,12 +109,12 @@ public class SModUtils {
     }
 
     /** Gets the XP cost of building in a certain hullmod */
-    public static int getBuildInCost(HullModSpecAPI hullmod, HullSize size) {
+    public static int getBuildInCost(HullModSpecAPI hullMod, HullSize size) {
         switch (size) {
-            case FRIGATE: return (int) (hullmod.getFrigateCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_FRIGATE_MULTIPLIER);
-            case DESTROYER: return (int) (hullmod.getDestroyerCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_DESTROYER_MULTIPLIER);
-            case CRUISER: return (int) (hullmod.getCruiserCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_CRUISER_MULTIPLIER);
-            case CAPITAL_SHIP: return (int) (hullmod.getCapitalCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_CAPITAL_MULTIPLIER);
+            case FRIGATE: return (int) (hullMod.getFrigateCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_FRIGATE_MULTIPLIER);
+            case DESTROYER: return (int) (hullMod.getDestroyerCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_DESTROYER_MULTIPLIER);
+            case CRUISER: return (int) (hullMod.getCruiserCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_CRUISER_MULTIPLIER);
+            case CAPITAL_SHIP: return (int) (hullMod.getCapitalCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_CAPITAL_MULTIPLIER);
             default: return 0;
         }
     }
@@ -174,7 +172,7 @@ public class SModUtils {
 
     /** Writes data about [fleetMember]'s built-in hull mods into MemKeys.LOCAL */
     public static void writeShipDataToMemory(FleetMemberAPI fleetMember, Map<String, MemoryAPI> memoryMap) {
-        int maxSMods = SModUtils.getMaxSMods(fleetMember);
+        int maxSMods = getMaxSMods(fleetMember);
         int currentSMods = fleetMember.getVariant().getSMods().size();
         memoryMap.get(MemKeys.LOCAL).set("$selectedShipMax", maxSMods, 0f);
         memoryMap.get(MemKeys.LOCAL).set("$selectedShipMaxPlusOne", maxSMods + 1, 0f);

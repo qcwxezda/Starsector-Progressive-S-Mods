@@ -18,7 +18,7 @@ public class ProgSModIncreaseLimit extends BaseCommandPlugin {
 
     @Override
     public boolean execute(String ruleId, InteractionDialogAPI dialog, List<Token> params, Map<String, MemoryAPI> memoryMap) {
-        if (dialog == null || params.size() == 0) {
+        if (dialog == null || params.isEmpty()) {
             return false;
         }
 

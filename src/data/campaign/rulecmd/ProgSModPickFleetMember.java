@@ -20,24 +20,15 @@ import util.SModUtils;
  *    upon successful selection of a ship */
 public class ProgSModPickFleetMember extends BaseCommandPlugin {
 
-    private String ruleId;
-    private InteractionDialogAPI dialog;
-    private List<Token> params;
-    private Map<String, MemoryAPI> memoryMap;
-
     @Override
-    public boolean execute(String _ruleId, InteractionDialogAPI _dialog, List<Token> _params, final Map<String, MemoryAPI> _memoryMap)  {
-        if (_dialog == null) return false;
-        if (_params.size() != 2) return false;
-
-        ruleId = _ruleId;
-        dialog = _dialog;
-        params = _params;
-        memoryMap = _memoryMap;
+    public boolean execute(final String ruleId, final InteractionDialogAPI dialog, final List<Token> params, final Map<String, MemoryAPI> memoryMap)  {
+        if (dialog == null) return false;
+        if (params.size() != 2) return false;
 
         // This function excludes fighters
         List<FleetMemberAPI> playerFleet = Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy();
-        dialog.showFleetMemberPickerDialog("Select a ship", "Ok", "Cancel", 5, 6, 75f, true, false, playerFleet, 
+        
+        dialog.showFleetMemberPickerDialog("Select a ship", "Ok", "Cancel", 3, 7, 58f, true, false, playerFleet, 
             new FleetMemberPickerListener() {
 
                 @Override

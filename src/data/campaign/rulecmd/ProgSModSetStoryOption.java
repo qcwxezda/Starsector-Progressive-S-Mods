@@ -13,8 +13,8 @@ import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Misc.Token;
 
 
-/** ProgSModSetStoryOption n m makes a story option costing n story points and giving m% bonus XP.
- *  Uses default sound. */
+/** ProgSModSetStoryOption [n] [m] makes a story option costing n story points and giving m% bonus XP.
+ *  Uses default sound. Modified from SetStoryOption in the base game. */
 public class ProgSModSetStoryOption extends SetStoryOption {
 
 	private class ProgSModStoryPointActionDelegate extends BaseOptionStoryPointActionDelegate {
