@@ -77,7 +77,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         ShipDataTable shipDataTable = ((ShipDataTable) Global.getSector().getPersistentData().get(SModUtils.SHIP_DATA_KEY));
         for (Map.Entry<String, Float> weightedDamageEntry : weightedDamageTable.entrySet()) {
             String shipId = weightedDamageEntry.getKey();
-            int xpGain = (int) (weightedDamageEntry.getValue() * SModUtils.Constants.XP_GAIN_MULTIPLIER);
+            float xpGain = weightedDamageEntry.getValue() * SModUtils.Constants.XP_GAIN_MULTIPLIER;
             
             if (xpGain == 0) {
                 continue;

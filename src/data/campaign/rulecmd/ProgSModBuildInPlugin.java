@@ -21,7 +21,8 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 	private LabelAPI nSelectedLabel, remainingXPLabel;
 	private List<SelectorData> selectorList;
 	private FleetMemberAPI fleetMember;
-	private int shipXP, numCanBuildIn;
+	private float shipXP;
+	private int numCanBuildIn;
 
 	public void setData(LabelAPI nSelected, LabelAPI remainingXP, List<SelectorData> list, FleetMemberAPI member) {
 		nSelectedLabel = nSelected;
@@ -29,7 +30,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 		selectorList = list;
 		fleetMember = member;
 		ShipData shipData = SModUtils.SHIP_DATA_TABLE.get(fleetMember.getId());
-		shipXP = shipData == null ? 0 : shipData.xp;
+		shipXP = shipData == null ? 0f : shipData.xp;
 		numCanBuildIn = SModUtils.getMaxSMods(fleetMember) - fleetMember.getVariant().getSMods().size();
 
 		removeCantBuildIn();
@@ -91,7 +92,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 			// exist.
 			if (event.isMouseMoveEvent()) {
 				Pair<Integer, Integer> numAndSum = tallyCheckedEntries(selectorList, new ArrayList<SelectorData>());
-				int remainingXP = shipXP - numAndSum.two;
+				float remainingXP = shipXP - numAndSum.two;
 
 				// Update the xp remaining and number selected labels
 				ProgSModSelectPanelCreator.setNSelectedModsText(nSelectedLabel, numAndSum.one, numCanBuildIn);

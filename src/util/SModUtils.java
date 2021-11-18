@@ -31,14 +31,14 @@ public class SModUtils {
         /** Whether the story point increase for unlocking extra SMod slots is linear or exponential. */
         public static GrowthType EXTRA_SMOD_COST_GROWTHTYPE = GrowthType.EXPONENTIAL;
         /** If exponential, SP cost is BASE * GROWTH_FACTOR^n, otherwise SP cost is BASE + n*GROWTH_FACTOR. */
-        public static float GROWTH_FACTOR = 2f;
+        public static float EXTRA_SMOD_GROWTH_FACTOR = 2f;
         /** The amount of XP it costs per OP to build in a hullmod. */
         public static float XP_COST_PER_OP = 100f;
         /** Additional multipliers that increase XP costs for larger hulls. */
         public static float XP_COST_FRIGATE_MULTIPLIER = 1f;
-        public static float XP_COST_DESTROYER_MULTIPLIER = 1.5f;
-        public static float XP_COST_CRUISER_MULTIPLIER = 2f;
-        public static float XP_COST_CAPITAL_MULTIPLIER = 3f;
+        public static float XP_COST_DESTROYER_MULTIPLIER = 1f;
+        public static float XP_COST_CRUISER_MULTIPLIER = 1.5f;
+        public static float XP_COST_CAPITAL_MULTIPLIER = 2f;
         /** How much XP a ship gets refunded when you remove a built-in mod. 
           * Set to something less than 0 to disable removing built-in mods completely. */
         public static float XP_REFUND_FACTOR = 0.8f;
@@ -48,14 +48,19 @@ public class SModUtils {
         public static boolean ONLY_GIVE_XP_FOR_KILLS = false;
         /** XP gain multiplier */
         public static float XP_GAIN_MULTIPLIER = 36f;
+
+        /** Load constants from a json file */
+        public static void load(String filePath) {
+
+        }
     }
 
     /** Contains XP and # of max perma mods over the normal limit. */
     public static class ShipData {
-        public int xp = 0;
+        public float xp = 0;
         public int permaModsOverLimit = 0;
 
-        public ShipData(int xp, int pmol) {
+        public ShipData(float xp, int pmol) {
             this.xp = xp;
             permaModsOverLimit = pmol;
         }
@@ -104,8 +109,8 @@ public class SModUtils {
         int modsOverLimit = SHIP_DATA_TABLE.get(shipId).permaModsOverLimit;
 
         return Constants.EXTRA_SMOD_COST_GROWTHTYPE == GrowthType.EXPONENTIAL ? 
-            (int) (baseCost * Math.pow(Constants.GROWTH_FACTOR, modsOverLimit)) : 
-            (int) (baseCost + modsOverLimit * Constants.GROWTH_FACTOR);
+            (int) (baseCost * Math.pow(Constants.EXTRA_SMOD_GROWTH_FACTOR, modsOverLimit)) : 
+            (int) (baseCost + modsOverLimit * Constants.EXTRA_SMOD_GROWTH_FACTOR);
     }
 
     /** Gets the XP cost of building in a certain hullmod */
@@ -186,5 +191,14 @@ public class SModUtils {
         memoryMap.get(MemKeys.LOCAL).set("$augmentTimes", overLimit);
         memoryMap.get(MemKeys.LOCAL).set("$modSingOrPlural", maxSMods - currentSMods == 1 ? "mod" : "mods");
         memoryMap.get(MemKeys.LOCAL).set("$timeSingOrPlural", overLimit == 1 ? "time" : "times");
+    }
+
+    /** Polynomial coefficients are listed in [coeff] lowest order first. */
+    public static int computePolynomial(int x, List<Integer> coeff) {
+        int s = coeff.size() - 1, result = coeff.get(s);
+        for (int i = s; i >= 0; i--) {
+            result += result*s + coeff.get(i);
+        }
+        return result;
     }
 }

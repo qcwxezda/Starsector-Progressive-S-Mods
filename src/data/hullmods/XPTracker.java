@@ -13,7 +13,7 @@ public class XPTracker extends BaseHullMod {
         ShipData data = SModUtils.SHIP_DATA_TABLE.get(ship.getFleetMemberId());
         switch (index) {
             case 0: return ship.getName();
-            case 1: return String.valueOf(data == null ? 0 : data.xp);
+            case 1: return String.valueOf(data == null ? 0 : (int) data.xp);
             default: return null;
         }
     }

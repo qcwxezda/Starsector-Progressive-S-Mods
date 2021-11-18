@@ -1,5 +1,5 @@
 name,id,tier,rarity,tech/manufacturer,tags,uiTags,base value,unlocked,hidden,hiddenEverywhere,cost_frigate,cost_dest,cost_cruiser,cost_capital,script,desc,short,sprite
-XP Tracker,progsmod_xptracker,,,,,,0,,TRUE,,0,0,0,0,data.hullmods.XPTracker,"Ships earn XP by dealing hull damage to enemy vessels in combat. XP can be spent to build-in hull mods at any colony with a station, negating their OP cost.
+XP Tracker,progsmod_xptracker,,,,,,0,,TRUE,,0,0,0,0,data.hullmods.XPTracker,"Ships earn XP by dealing hull damage to enemy vessels in combat. XP can be spent to build-in hull mods at any colony or station, negating their OP cost.
 
 Building in hull mods via story points is disabled.
 

@@ -112,8 +112,8 @@ public class ProgSModSelectPanelCreator {
     /** Update the remaining XP label to show the following:
      *  "XP remaining: [xp]"
      *  Modifies and returns [textLabel]. */
-    public static LabelAPI setRemainingXPText(LabelAPI textLabel, int xp) {
-        String newText = XP_PREFIX + xp;
+    public static LabelAPI setRemainingXPText(LabelAPI textLabel, float xp) {
+        String newText = XP_PREFIX + (int) xp;
         textLabel.setText(newText);
         textLabel.setHighlight(XP_PREFIX.length(), newText.length() - 1);
         return textLabel;

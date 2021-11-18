@@ -83,11 +83,11 @@ public class ProgSModRemove extends BaseCommandPlugin {
                         }
                     }
                     if (removedAtLeastOne) {
-                        Global.getSoundPlayer().playUISound("ui_wait_interrupt", 1f, 1f);
+                        Global.getSoundPlayer().playUISound("ui_objective_constructed", 1f, 1f);
                         shipData.xp += xpGained;
                         LabelAPI xpGainText = dialog.getTextPanel().addPara("The " 
                             + fleetMember.getShipName() + " gained " + xpGained);
-                        xpGainText.setHighlight(fleetMember.getShipName(), "" + xpGained);
+                        xpGainText.setHighlight(fleetMember.getShipName(), "" + xpGained + " XP");
                         SModUtils.writeShipDataToMemory(fleetMember, memoryMap);
                         FireAll.fire(ruleId, dialog, memoryMap, params.get(1).getString(memoryMap));
                     }
