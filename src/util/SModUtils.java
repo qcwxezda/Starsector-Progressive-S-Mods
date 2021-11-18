@@ -1,5 +1,6 @@
 package util;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,10 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONArray;
+
 public class SModUtils {
 
     public enum GrowthType {LINEAR, EXPONENTIAL};
@@ -24,34 +29,56 @@ public class SModUtils {
 
     public static class Constants {
         /** How many story points it costs to unlock the first extra SMod slot. */
-        public static int BASE_EXTRA_SMOD_COST_FRIGATE = 2;
-        public static int BASE_EXTRA_SMOD_COST_DESTROYER = 2;
-        public static int BASE_EXTRA_SMOD_COST_CRUISER = 3;
-        public static int BASE_EXTRA_SMOD_COST_CAPITAL = 4;
+        public static int BASE_EXTRA_SMOD_COST_FRIGATE;
+        public static int BASE_EXTRA_SMOD_COST_DESTROYER;
+        public static int BASE_EXTRA_SMOD_COST_CRUISER;
+        public static int BASE_EXTRA_SMOD_COST_CAPITAL;
         /** Whether the story point increase for unlocking extra SMod slots is linear or exponential. */
-        public static GrowthType EXTRA_SMOD_COST_GROWTHTYPE = GrowthType.EXPONENTIAL;
+        public static GrowthType EXTRA_SMOD_COST_GROWTHTYPE;
         /** If exponential, SP cost is BASE * GROWTH_FACTOR^n, otherwise SP cost is BASE + n*GROWTH_FACTOR. */
-        public static float EXTRA_SMOD_GROWTH_FACTOR = 2f;
-        /** The amount of XP it costs per OP to build in a hullmod. */
-        public static float XP_COST_PER_OP = 100f;
+        public static float EXTRA_SMOD_COST_GROWTHFACTOR;
+        /** The base amount of XP it costs per OP to build in a hull mod is defined as 
+         *  p(x) where x is the OP cost of the mod and p is a polynomial with coefficients
+         * in [XP_COST_COEFFS] listed in ascending order. */
+        public static List<Float> XP_COST_COEFFS;
         /** Additional multipliers that increase XP costs for larger hulls. */
-        public static float XP_COST_FRIGATE_MULTIPLIER = 1f;
-        public static float XP_COST_DESTROYER_MULTIPLIER = 1f;
-        public static float XP_COST_CRUISER_MULTIPLIER = 1.5f;
-        public static float XP_COST_CAPITAL_MULTIPLIER = 2f;
+        public static float XP_COST_FRIGATE_MULTIPLIER;
+        public static float XP_COST_DESTROYER_MULTIPLIER;
+        public static float XP_COST_CRUISER_MULTIPLIER;
+        public static float XP_COST_CAPITAL_MULTIPLIER;
         /** How much XP a ship gets refunded when you remove a built-in mod. 
           * Set to something less than 0 to disable removing built-in mods completely. */
-        public static float XP_REFUND_FACTOR = 0.8f;
+        public static float XP_REFUND_FACTOR;
         /** Whether or not ships that get disabled in battle should still get XP */
-        public static boolean GIVE_XP_TO_DISABLED_SHIPS = false;
+        public static boolean GIVE_XP_TO_DISABLED_SHIPS;
         /** Whether or not enemy ships that aren't disabled should still award XP */
-        public static boolean ONLY_GIVE_XP_FOR_KILLS = false;
+        public static boolean ONLY_GIVE_XP_FOR_KILLS;
         /** XP gain multiplier */
-        public static float XP_GAIN_MULTIPLIER = 36f;
+        public static float XP_GAIN_MULTIPLIER;
 
         /** Load constants from a json file */
-        public static void load(String filePath) {
-
+        private static void load(String filePath) throws IOException, JSONException {
+            JSONObject json = Global.getSettings().loadJSON(filePath);
+            BASE_EXTRA_SMOD_COST_FRIGATE = json.optInt("BaseExtraSModCostFrigate");
+            BASE_EXTRA_SMOD_COST_DESTROYER = json.optInt("BaseExtraSModCostDestroyer");
+            BASE_EXTRA_SMOD_COST_CRUISER = json.optInt("BaseExtraSModCostCruiser");
+            BASE_EXTRA_SMOD_COST_CAPITAL = json.optInt("BaseExtraSModCostCapital");
+            EXTRA_SMOD_COST_GROWTHTYPE = 
+                json.optInt("extraSModCostGrowthType") == 0 ? GrowthType.LINEAR : GrowthType.EXPONENTIAL;
+            EXTRA_SMOD_COST_GROWTHFACTOR = (float) json.optDouble("extraSModCostGrowthFactor");
+            JSONArray coeffArray = json.getJSONArray("xpCostCoefficients");
+            XP_COST_COEFFS = new ArrayList<>();
+            for (int i = 0; i < coeffArray.length(); i++) {
+                XP_COST_COEFFS.add((float) coeffArray.optDouble(i));
+            }
+            XP_COST_FRIGATE_MULTIPLIER = (float) json.optDouble("xpCostFrigateMultiplier");
+            XP_COST_DESTROYER_MULTIPLIER = (float) json.optDouble("xpCostDestroyerMultiplier");
+            XP_COST_CRUISER_MULTIPLIER = (float) json.optDouble("xpCostCruiserMultiplier");
+            XP_COST_CAPITAL_MULTIPLIER = (float) json.optDouble("xpCostCapitalMultiplier");
+            XP_REFUND_FACTOR = (float) json.optDouble("xpRefundFactor");
+            GIVE_XP_TO_DISABLED_SHIPS = json.optBoolean("giveXPToDisabledShips");
+            ONLY_GIVE_XP_FOR_KILLS = json.optBoolean("onlyGiveXPForKills");
+            XP_GAIN_MULTIPLIER = (float) json.optDouble("xpGainMultiplier");
         }
     }
 
@@ -89,6 +116,26 @@ public class SModUtils {
     //     }
     // }
 
+        
+    public static void loadConstants(String filePath) {
+        try {
+            Constants.load(filePath);
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /** Retrieve the persistent data for this mod, if it exists. Else create it. */
+    public static void loadShipData() {
+        if (!Global.getSector().getPersistentData().containsKey(SModUtils.SHIP_DATA_KEY)) {
+            SHIP_DATA_TABLE = new ShipDataTable();
+            Global.getSector().getPersistentData().put(SModUtils.SHIP_DATA_KEY, SModUtils.SHIP_DATA_TABLE); 
+        }
+        else {
+            SHIP_DATA_TABLE = (ShipDataTable) Global.getSector().getPersistentData().get(SModUtils.SHIP_DATA_KEY);
+        }
+    }
+
     /** Gets the story point cost of increasing the number of built-in hullmods of [ship] by 1. */
     public static int getStoryPointCost(FleetMemberAPI ship) {
         int baseCost;
@@ -109,17 +156,29 @@ public class SModUtils {
         int modsOverLimit = SHIP_DATA_TABLE.get(shipId).permaModsOverLimit;
 
         return Constants.EXTRA_SMOD_COST_GROWTHTYPE == GrowthType.EXPONENTIAL ? 
-            (int) (baseCost * Math.pow(Constants.EXTRA_SMOD_GROWTH_FACTOR, modsOverLimit)) : 
-            (int) (baseCost + modsOverLimit * Constants.EXTRA_SMOD_GROWTH_FACTOR);
+            (int) (baseCost * Math.pow(Constants.EXTRA_SMOD_COST_GROWTHFACTOR, modsOverLimit)) : 
+            (int) (baseCost + modsOverLimit * Constants.EXTRA_SMOD_COST_GROWTHFACTOR);
     }
 
     /** Gets the XP cost of building in a certain hullmod */
     public static int getBuildInCost(HullModSpecAPI hullMod, HullSize size) {
         switch (size) {
-            case FRIGATE: return (int) (hullMod.getFrigateCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_FRIGATE_MULTIPLIER);
-            case DESTROYER: return (int) (hullMod.getDestroyerCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_DESTROYER_MULTIPLIER);
-            case CRUISER: return (int) (hullMod.getCruiserCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_CRUISER_MULTIPLIER);
-            case CAPITAL_SHIP: return (int) (hullMod.getCapitalCost() * Constants.XP_COST_PER_OP * Constants.XP_COST_CAPITAL_MULTIPLIER);
+            case FRIGATE: 
+                return (int) (
+                    computePolynomial(hullMod.getFrigateCost(), Constants.XP_COST_COEFFS) * Constants.XP_COST_FRIGATE_MULTIPLIER
+                );
+            case DESTROYER:
+                return (int) (
+                    computePolynomial(hullMod.getDestroyerCost(), Constants.XP_COST_COEFFS) * Constants.XP_COST_DESTROYER_MULTIPLIER
+                );
+            case CRUISER:
+                return (int) (
+                    computePolynomial(hullMod.getCruiserCost(), Constants.XP_COST_COEFFS) * Constants.XP_COST_CRUISER_MULTIPLIER
+                );
+            case CAPITAL_SHIP:
+                return (int) (
+                    computePolynomial(hullMod.getCapitalCost(), Constants.XP_COST_COEFFS) * Constants.XP_COST_CAPITAL_MULTIPLIER
+                );
             default: return 0;
         }
     }
@@ -194,8 +253,9 @@ public class SModUtils {
     }
 
     /** Polynomial coefficients are listed in [coeff] lowest order first. */
-    public static int computePolynomial(int x, List<Integer> coeff) {
-        int s = coeff.size() - 1, result = coeff.get(s);
+    public static float computePolynomial(int x, List<Float> coeff) {
+        int s = coeff.size() - 1;
+        float result = coeff.get(s);
         for (int i = s; i >= 0; i--) {
             result += result*s + coeff.get(i);
         }

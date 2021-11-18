@@ -43,7 +43,6 @@ public class ProgSModPickFleetMember extends BaseCommandPlugin {
                     FleetMemberAPI picked = fleetMembers.get(0);
                     memoryMap.get(MemKeys.LOCAL).set("$selectedShip", picked, 0f);
 
-                    // Write some data to memory for use in the next menu screen
                     SModUtils.writeShipDataToMemory(picked, memoryMap);
                     
                     // Wait for player to finish picking a ship before messing with

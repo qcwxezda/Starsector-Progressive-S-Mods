@@ -1,4 +1,9 @@
 {
+    "teststuffhere": {
+        "test1": 1,
+        "test2": 2
+    },
+
     "ruleCommandPackages":[
         "data.campaign.rulecmd"
     ]

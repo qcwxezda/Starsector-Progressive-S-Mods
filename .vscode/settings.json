@@ -7,7 +7,8 @@
         "lib/**/*.jar",
         "c:\\Users\\Alex\\Documents\\My Games\\Starsector\\starsector-core\\starfarer.api.jar",
         "c:\\Users\\Alex\\Documents\\My Games\\Starsector\\starsector-core\\xstream-1.4.10.jar",
-        "c:\\Users\\Alex\\Documents\\My Games\\Starsector\\starsector-core\\log4j-1.2.9.jar"
+        "c:\\Users\\Alex\\Documents\\My Games\\Starsector\\starsector-core\\log4j-1.2.9.jar",
+        "c:\\Users\\Alex\\Documents\\My Games\\Starsector\\starsector-core\\json.jar"
     ],
     "java.project.exportJar.targetPath": "${workspaceFolder}/jars/${workspaceFolderBasename}.jar"
 }

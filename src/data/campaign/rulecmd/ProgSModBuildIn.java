@@ -37,14 +37,14 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
         }
 
         final String titleString = "Choose hull mods to build in";
-        final List<HullModSpecAPI> builtInMods = new ArrayList<>();
+        final List<HullModSpecAPI> nonBuiltInMods = new ArrayList<>();
         final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).getVarNameAndMemory(memoryMap).name);
         final List<SelectorData> selectorList = new LinkedList<>();
         final ProgSModBuildInPlugin plugin = new ProgSModBuildInPlugin();
         
-        Collection<String> builtInIds = fleetMember.getVariant().getNonBuiltInHullmods();
-        for (String id : builtInIds) {
-            builtInMods.add(Global.getSettings().getHullModSpec(id));
+        Collection<String> nonBuiltInIds = fleetMember.getVariant().getNonBuiltInHullmods();
+        for (String id : nonBuiltInIds) {
+            nonBuiltInMods.add(Global.getSettings().getHullModSpec(id));
         }
 
         dialog.showCustomDialog(500, 500, 
@@ -55,7 +55,7 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
                         ProgSModSelectPanelCreator.createHullModSelectionPanel(
                             panel, 
                             titleString, 
-                            builtInMods, 
+                            nonBuiltInMods, 
                             fleetMember, 
                             false
                         )

@@ -1,0 +1,34 @@
+{
+    # How many story points it costs to raise 
+    # a ship's maximum number of built-in hull mods
+    # the first time.
+    "BaseExtraSModCostFrigate": 2,
+    "BaseExtraSModCostDestroyer": 2,
+    "BaseExtraSModCostCruiser": 3,
+    "BaseExtraSModCostCapital": 4,
+
+    # Determines how the story point cost grows as
+    # a ship's build-in limit grows.
+    "extraSModCostGrowthType": 1, # 0 for linear, 1 for exponential
+    "extraSModCostGrowthFactor": 2, # story point cost is base * fac^n OR base + n*fac
+
+    # Coefficients for a polynomial that maps hull mods' OP cost to their
+    # build-in XP cost, listed in ascending order (constant term first)
+    "xpCostCoefficients": [50, 5, 5],
+
+    # Additional multipliers that increase XP costs for larger hulls
+    "xpCostFrigateMultiplier": 1,
+    "xpCostDestroyerMultiplier": 1.25,
+    "xpCostCruiserMultiplier": 1.5,
+    "xpCostCapitalMultiplier": 2,
+
+    # Fraction of spent XP that will be refunded
+    # when a built-in hull mod is removed
+    "xpRefundFactor": 0.8,
+
+    "giveXPToDisabledShips": false, # Whether player ships that are disabled in battle should still receive XP
+    "onlyGiveXPForKills": false, # Whether enemy ships that get away should still give XP
+
+    # All XP gained by ships in combat is multiplied by this amount
+    "xpGainMultiplier": 36
+}
