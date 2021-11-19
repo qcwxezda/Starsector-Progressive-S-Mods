@@ -28,6 +28,8 @@ public class ProgSModSelectPanelCreator {
     static final float TRACKER_HEIGHT = 20f;
     static final String NMODS_PREFIX = "Selected: ";
     static final String XP_PREFIX = "XP Remaining: ";
+    static final Color RED = Global.getSettings().getColor("progressBarDangerColor");
+    static final Color YELLOW = Global.getSettings().getColor("progressBarWarningColor");
 
     private static final Color BASE_COLOR, DARK_COLOR, BRIGHT_COLOR;
 
@@ -61,7 +63,8 @@ public class ProgSModSelectPanelCreator {
     private static SelectorData addHullModSelector(
                 TooltipMakerAPI tooltip, 
                 HullModSpecAPI hullMod,
-                HullSize hullSize, 
+                HullSize hullSize,
+                float deploymentCost, 
                 float width, 
                 float height, 
                 float pad,
@@ -85,7 +88,7 @@ public class ProgSModSelectPanelCreator {
         imageAndText.setParaFontOrbitron();
         int hullModCost = 0;
         LabelAPI costTextLabel = null;
-        hullModCost = SModUtils.getBuildInCost(hullMod, hullSize);
+        hullModCost = SModUtils.getBuildInCost(hullMod, hullSize, deploymentCost);
         String costText = 
             removeMode 
                 ? "refunds " + (int) (hullModCost * SModUtils.Constants.XP_REFUND_FACTOR) + " XP" 
@@ -105,7 +108,7 @@ public class ProgSModSelectPanelCreator {
         String newText = NMODS_PREFIX + left + "/" + right;
         textLabel.setText(newText);
         textLabel.setHighlight(NMODS_PREFIX.length(), NMODS_PREFIX.length() + String.valueOf(left).length() - 1);
-        textLabel.setHighlightColor(left < right ? Color.WHITE : Color.ORANGE);
+        textLabel.setHighlightColor(left < right ? Color.WHITE : YELLOW);
         return textLabel;
     }
 
@@ -120,10 +123,10 @@ public class ProgSModSelectPanelCreator {
     }
 
     /** Disable a hull mod entry by disabling its button, 
-     * darkening the font, and setting the XP color to gray. */
+     * darkening the font, and setting the XP color to orange. */
     public static void disableEntry(SelectorData entry) {
         entry.button.setEnabled(false);
-        entry.costLabel.setHighlightColor(Color.GRAY);
+        entry.costLabel.setHighlightColor(RED);
         entry.nameLabel.setHighlightColor(Color.GRAY);
     }
 
@@ -187,6 +190,7 @@ public class ProgSModSelectPanelCreator {
                 buttonsList, 
                 hullMod, 
                 fleetMember.getVariant().getHullSize(), 
+                fleetMember.getDeploymentPointsCost(),
                 buttonWidth, 
                 buttonHeight, 
                 buttonPadding,

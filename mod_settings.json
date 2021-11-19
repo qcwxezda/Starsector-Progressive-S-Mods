@@ -12,19 +12,24 @@
     "extraSModCostGrowthType": 1, # 0 for linear, 1 for exponential
     "extraSModCostGrowthFactor": 2, # story point cost is base * fac^n OR base + n*fac
 
-    # Coefficients for a polynomial p that maps hull mods' OP cost to their
-    # build-in XP cost, listed in ascending order (constant term first)
-    "xpCostCoefficients": [375, 100, 7.5],
+    # Coefficients for a polynomial that maps hull mods' OP cost to their
+    # base build-in XP cost, listed in ascending order (constant term first)
+    "xpCostCoeffFrigate": [-800, 836, -145.6, 14.21, -0.556, 0.00736],
+    "xpCostCoeffDestroyer": [550, -80, 34, -1.24, 0.015],
+    "xpCostCoeffCruiser": [5100, -1372, 146.5, -4.756, 0.05],
+    "xpCostCoeffCapital": [-3000, 1350, -170, 10.28, -0.256, 0.00222],
 
-    # Additional multipliers that increase XP costs for larger hulls
-    "xpCostFrigateMultiplier": 1,
-    "xpCostDestroyerMultiplier": 1,
-    "xpCostCruiserMultiplier": 1.25,
-    "xpCostCapitalMultiplier": 1.5,
+    # The above functions assume that the ship in question has the base 
+    # DP cost for its ship class. Otherwise an additional multiplicative
+    # factor is assessed.
+    "baseDPFrigate": 5,
+    "baseDPDestroyer": 10,
+    "baseDPCruiser": 20,
+    "baseDPCapital": 40, 
 
-    # Cost formula for building in a hull mod with OP cost n
-    # on a hull with size factor s is
-    # cost(n, s) = s*p(n)
+    # XP cost for a hull mod that costs x OP on a ship that takes y DP
+    # to deploy is (y / baseDP) * p(x)
+    # where p is the polynomial defined by the coefficients in xpCostCoeff
 
     # Fraction of spent XP that will be refunded
     # when a built-in hull mod is removed
@@ -38,7 +43,7 @@
 
     # Non-combat ships gain this fraction of the total XP
     # gained by all ships as additional XP
-    "nonCombatXPFraction": 0.2,
+    "nonCombatXPFraction": 0.1,
 
     # Ignore the "no_build_in" tag, allowing building in
     # normally prohibited hull mods (specifically Safety Overrides)
