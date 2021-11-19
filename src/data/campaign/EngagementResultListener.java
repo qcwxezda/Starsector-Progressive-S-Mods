@@ -35,6 +35,10 @@ public class EngagementResultListener extends BaseCampaignEventListener {
 
         // Populate player ships, including fighters
         List<DeployedFleetMemberAPI> playerFleet = playerResult.getAllEverDeployedCopy();
+        // If nobody was deployed (second-in-command handles pursuit) no damage data
+        if (playerFleet == null) {
+            return;
+        }
 
         // carrierTable[id] points to carrier that owns id
         Map<String, String> carrierTable = new HashMap<>();
@@ -195,7 +199,9 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         for (DeployedFleetMemberAPI member : playerFleet) {
             if (member.isFighterWing() && member.getShip() != null) {
                 FighterWingAPI wing = member.getShip().getWing();
-                if (wing.getSourceShip() != null && wing.getSourceShip().getFleetMember() != null)
+                if (wing != null
+                     && wing.getSourceShip() != null 
+                     && wing.getSourceShip().getFleetMember() != null)
                     carrierTable.put(member.getMember().getId(), wing.getSourceShip().getFleetMemberId());
             }
         }

@@ -14,7 +14,7 @@
 
     # Coefficients for a polynomial p that maps hull mods' OP cost to their
     # build-in XP cost, listed in ascending order (constant term first)
-    "xpCostCoefficients": [300, 80, 6],
+    "xpCostCoefficients": [375, 100, 7.5],
 
     # Additional multipliers that increase XP costs for larger hulls
     "xpCostFrigateMultiplier": 1,
@@ -38,7 +38,7 @@
 
     # Non-combat ships gain this fraction of the total XP
     # gained by all ships as additional XP
-    "nonCombatXPFraction": 0.15,
+    "nonCombatXPFraction": 0.2,
 
     # Ignore the "no_build_in" tag, allowing building in
     # normally prohibited hull mods (specifically Safety Overrides)
