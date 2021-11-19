@@ -2,7 +2,7 @@
     "id": "progressiveSMods",
     "name": "Progressive S-Mods",
     "author": "qcwzezda",
-    "version": {"major":0, "minor":4, "patch":0},
+    "version": {"major":0, "minor":4, "patch":2},
     "dependencies": [],
     "description": "Placeholder",
     "gameVersion": "0.95a-RC15",

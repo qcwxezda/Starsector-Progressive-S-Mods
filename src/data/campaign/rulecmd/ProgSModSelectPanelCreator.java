@@ -47,7 +47,7 @@ public class ProgSModSelectPanelCreator {
         public int hullModCost;
         public String hullModId;
 
-        SelectorData(ButtonAPI button, LabelAPI nameLabel, LabelAPI costLabel, int hullModCost, String hullModId) {
+        public SelectorData(ButtonAPI button, LabelAPI nameLabel, LabelAPI costLabel, int hullModCost, String hullModId) {
             this.button = button;
             this.nameLabel = nameLabel;
             this.costLabel = costLabel;

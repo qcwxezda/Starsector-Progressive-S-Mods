@@ -33,7 +33,9 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 		shipXP = shipData == null ? 0f : shipData.xp;
 		numCanBuildIn = SModUtils.getMaxSMods(fleetMember) - fleetMember.getVariant().getSMods().size();
 
-		removeCantBuildIn();
+		if (!SModUtils.Constants.IGNORE_NO_BUILD_IN) {
+			removeCantBuildIn();
+		}
 	}
 
 	/** Remove the hull mods that can't be built in (i.e. SO)

@@ -55,6 +55,8 @@ public class SModUtils {
         public static boolean ONLY_GIVE_XP_FOR_KILLS;
         /** XP gain multiplier */
         public static float XP_GAIN_MULTIPLIER;
+        /** Ignore the 'no_build_in' tag */
+        public static boolean IGNORE_NO_BUILD_IN;
 
         /** Load constants from a json file */
         private static void load(String filePath) throws IOException, JSONException {
@@ -79,6 +81,7 @@ public class SModUtils {
             GIVE_XP_TO_DISABLED_SHIPS = json.optBoolean("giveXPToDisabledShips");
             ONLY_GIVE_XP_FOR_KILLS = json.optBoolean("onlyGiveXPForKills");
             XP_GAIN_MULTIPLIER = (float) json.optDouble("xpGainMultiplier");
+            IGNORE_NO_BUILD_IN = json.optBoolean("ignoreNoBuildIn");
         }
     }
 
@@ -254,10 +257,9 @@ public class SModUtils {
 
     /** Polynomial coefficients are listed in [coeff] lowest order first. */
     public static float computePolynomial(int x, List<Float> coeff) {
-        int s = coeff.size() - 1;
-        float result = coeff.get(s);
-        for (int i = s; i >= 0; i--) {
-            result += result*s + coeff.get(i);
+        float result = 0;
+        for (int i = coeff.size() - 1; i >= 0; i--) {
+            result = result*x + coeff.get(i);
         }
         return result;
     }
