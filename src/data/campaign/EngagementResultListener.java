@@ -67,7 +67,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
             new WeightedDamageFn() {
                 public float compute(float damage, FleetMemberAPI target) {
                     float hp = target.getStats().getHullBonus().computeEffective(target.getHullSpec().getHitpoints());
-                    return damage / hp * target.getDeploymentPointsCost();
+                    return Math.min(damage / hp, 1f) * target.getDeploymentCostSupplies();
                 }
             }
         );
