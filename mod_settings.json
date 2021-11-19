@@ -36,6 +36,10 @@
     # All XP gained by ships in combat is multiplied by this amount
     "xpGainMultiplier": 36,
 
+    # Non-combat ships gain this fraction of the total XP
+    # gained by all ships as additional XP
+    "nonCombatXPFraction": 0.15,
+
     # Ignore the "no_build_in" tag, allowing building in
     # normally prohibited hull mods (specifically Safety Overrides)
     "ignoreNoBuildIn": true

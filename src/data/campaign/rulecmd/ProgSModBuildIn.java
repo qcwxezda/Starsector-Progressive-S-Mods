@@ -70,21 +70,15 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
                 @Override
                 public void customDialogConfirm() {
                     boolean addedAtLeastOne = false;
-                    ShipData shipData = SModUtils.SHIP_DATA_TABLE.get(fleetMember.getId());
-                    if (shipData == null) {
-                        return;
-                    }
+                    String fmId = fleetMember.getId();
                     
                     for (SelectorData data : selectorList) {
-                        if (data.button.isChecked()) {
-                            if (shipData.xp >= data.hullModCost) {
-                                fleetMember.getVariant().addPermaMod(data.hullModId, true);
-                                shipData.xp -= data.hullModCost;
-                                String hullModName = Global.getSettings().getHullModSpec(data.hullModId).getDisplayName();
-                                LabelAPI confirmText = dialog.getTextPanel().addPara("Built in " + hullModName);
-                                confirmText.setHighlight(hullModName);
-                                addedAtLeastOne = true;
-                            }
+                        if (data.button.isChecked() && SModUtils.spendXP(fmId, data.hullModCost)) {
+                            fleetMember.getVariant().addPermaMod(data.hullModId, true);
+                            String hullModName = Global.getSettings().getHullModSpec(data.hullModId).getDisplayName();
+                            LabelAPI confirmText = dialog.getTextPanel().addPara("Built in " + hullModName);
+                            confirmText.setHighlight(hullModName);
+                            addedAtLeastOne = true;
                         }
                     }
                     if (addedAtLeastOne) {

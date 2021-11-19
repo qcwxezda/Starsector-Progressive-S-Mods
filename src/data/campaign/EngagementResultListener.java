@@ -74,30 +74,25 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         transferWeightedDamage(carrierTable, weightedDamageTable);
 
         // Use the weighted damage table to update ship data
-        ShipDataTable shipDataTable = ((ShipDataTable) Global.getSector().getPersistentData().get(SModUtils.SHIP_DATA_KEY));
+        float totalXPGain = 0f;
         for (Map.Entry<String, Float> weightedDamageEntry : weightedDamageTable.entrySet()) {
-            String shipId = weightedDamageEntry.getKey();
             float xpGain = weightedDamageEntry.getValue() * SModUtils.Constants.XP_GAIN_MULTIPLIER;
-            
-            if (xpGain == 0) {
-                continue;
-            }
+            SModUtils.giveXP(weightedDamageEntry.getKey(), xpGain);
+            totalXPGain += xpGain;
+        }
 
-            ShipData shipData = shipDataTable.get(shipId);
-            if (shipData == null) { 
-                shipData = new ShipData(xpGain, 0);
-                shipDataTable.put(shipId, shipData);
-            }
-            else {
-                shipData.xp += xpGain;
+        // Give additional XP to non-combat ships in the player's fleet
+        for (DeployedFleetMemberAPI dfm : playerFleet) {
+            FleetMemberAPI member = dfm.getMember();
+            if (member.isCivilian()) {
+                SModUtils.giveXP(member.getId(), totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
             }
         }
 
         // Add an XP tracking hullmod to any ship that has XP
         for (DeployedFleetMemberAPI deployedMember : playerFleet) {
             FleetMemberAPI member = deployedMember.getMember();
-            ShipData data = shipDataTable.get(member.getId());
-            if (data != null && data.xp > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {
+            if (SModUtils.getXP(member.getId()) > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {
                 member.getVariant().addPermaMod("progsmod_xptracker", false);
             }
         }
@@ -243,14 +238,16 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         }
     }
 
-    /** For each <k, v> pair in transferMap, adds k's weighted damage to v's weighted damage. Modifies weightedDamageTable. */
+    /** For each <k, v> pair in transferMap, transfers k's weighted damage to v's weighted damage. Modifies weightedDamageTable. */
     private void transferWeightedDamage(Map<String, String> transferMap, Map<String, Float> weightedDamageTable) {
         for (Map.Entry<String, String> transfer : transferMap.entrySet()) {
-            Float transferDamage = weightedDamageTable.get(transfer.getKey());
+            String giver = transfer.getKey();
+            Float transferDamage = weightedDamageTable.get(giver);
             if (transferDamage != null && transferDamage > 0) {
                 String receiver = transfer.getValue();
                 Float totalDamage = weightedDamageTable.get(receiver);
                 weightedDamageTable.put(receiver, totalDamage == null ? transferDamage : transferDamage + totalDamage);
+                weightedDamageTable.remove(giver);
             }
         }
     }

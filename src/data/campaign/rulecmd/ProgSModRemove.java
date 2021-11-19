@@ -65,11 +65,6 @@ public class ProgSModRemove extends BaseCommandPlugin {
                 @Override
                 public void customDialogConfirm() {
                     boolean removedAtLeastOne = false;
-                    ShipData shipData = SModUtils.SHIP_DATA_TABLE.get(fleetMember.getId());
-                    if (shipData == null) {
-                        shipData = new ShipData(0, 0);
-                        SModUtils.SHIP_DATA_TABLE.put(fleetMember.getId(), shipData);
-                    }
                     
                     int xpGained = 0;
                     for (SelectorData data : selectorList) {
@@ -84,7 +79,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
                     }
                     if (removedAtLeastOne) {
                         Global.getSoundPlayer().playUISound("ui_objective_constructed", 1f, 1f);
-                        shipData.xp += xpGained;
+                        SModUtils.giveXP(fleetMember.getId(), xpGained);
                         LabelAPI xpGainText = dialog.getTextPanel().addPara("The " 
                             + fleetMember.getShipName() + " gained " + xpGained);
                         xpGainText.setHighlight(fleetMember.getShipName(), "" + xpGained + " XP");

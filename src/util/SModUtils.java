@@ -55,6 +55,8 @@ public class SModUtils {
         public static boolean ONLY_GIVE_XP_FOR_KILLS;
         /** XP gain multiplier */
         public static float XP_GAIN_MULTIPLIER;
+        /** XP gained by non-combat ships as a fraction of total XP gain */
+        public static float NON_COMBAT_XP_FRACTION;
         /** Ignore the 'no_build_in' tag */
         public static boolean IGNORE_NO_BUILD_IN;
 
@@ -81,6 +83,7 @@ public class SModUtils {
             GIVE_XP_TO_DISABLED_SHIPS = json.optBoolean("giveXPToDisabledShips");
             ONLY_GIVE_XP_FOR_KILLS = json.optBoolean("onlyGiveXPForKills");
             XP_GAIN_MULTIPLIER = (float) json.optDouble("xpGainMultiplier");
+            NON_COMBAT_XP_FRACTION = (float) json.optDouble("nonCombatXPFraction");
             IGNORE_NO_BUILD_IN = json.optBoolean("ignoreNoBuildIn");
         }
     }
@@ -137,6 +140,54 @@ public class SModUtils {
         else {
             SHIP_DATA_TABLE = (ShipDataTable) Global.getSector().getPersistentData().get(SModUtils.SHIP_DATA_KEY);
         }
+    }
+
+    /** Add [xp] XP to [fmId]'s entry in the ship data table,
+     *  creating the entry if it doesn't exist yet.
+     *  Returns whether a new entry was created. */
+    public static boolean giveXP(String fmId, float xp) {
+        ShipData data = SHIP_DATA_TABLE.get(fmId);
+        if (data == null) { 
+            SHIP_DATA_TABLE.put(fmId, new ShipData(xp, 0));
+            return true;
+        }
+        else {
+            data.xp += xp;
+            return false;
+        }
+    }
+
+    /** Remove [xp] XP from [fmId]'s entry in the ship data table.
+     *  Returns [true] if and only if the operation succeeded. */
+    public static boolean spendXP(String fmId, float xp) {
+        ShipData data = SHIP_DATA_TABLE.get(fmId);
+        if (data == null || data.xp < xp) return false;
+        data.xp -= xp;
+        return true;
+    }
+
+    /** Increases [fmId]'s limit of built in hull mods by 1.
+     *  Returns [true] if and only if a new entry was created. */
+    public static boolean incrementSModLimit(String fmId) {
+        ShipData data = SHIP_DATA_TABLE.get(fmId);
+        if (data == null) {
+            SHIP_DATA_TABLE.put(fmId, new ShipData(0, 1));
+            return true;
+        }
+        else {
+            data.permaModsOverLimit++;
+            return false;
+        }
+    }
+
+    public static float getXP(String fmId) {
+        ShipData data = SHIP_DATA_TABLE.get(fmId);
+        return data == null ? 0f : data.xp;
+    }
+
+    public static int getNumOverLimit(String fmId) {
+        ShipData data = SHIP_DATA_TABLE.get(fmId);
+        return data == null ? 0 : data.permaModsOverLimit;
     }
 
     /** Gets the story point cost of increasing the number of built-in hullmods of [ship] by 1. */

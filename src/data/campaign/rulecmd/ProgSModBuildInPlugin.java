@@ -29,8 +29,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 		remainingXPLabel = remainingXP;
 		selectorList = list;
 		fleetMember = member;
-		ShipData shipData = SModUtils.SHIP_DATA_TABLE.get(fleetMember.getId());
-		shipXP = shipData == null ? 0f : shipData.xp;
+		shipXP = SModUtils.getXP(fleetMember.getId());
 		numCanBuildIn = SModUtils.getMaxSMods(fleetMember) - fleetMember.getVariant().getSMods().size();
 
 		if (!SModUtils.Constants.IGNORE_NO_BUILD_IN) {
