@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BaseCampaignEventListener;
 import com.fs.starfarer.api.campaign.CombatDamageData;
 import com.fs.starfarer.api.campaign.EngagementResultForFleetAPI;
@@ -18,8 +17,6 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 
 import util.SModUtils;
 import util.SModUtils.Constants;
-import util.SModUtils.ShipData;
-import util.SModUtils.ShipDataTable;
 
 public class EngagementResultListener extends BaseCampaignEventListener {
 

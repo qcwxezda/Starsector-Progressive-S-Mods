@@ -23,7 +23,6 @@ import com.fs.starfarer.api.util.Misc.Token;
 
 import data.campaign.rulecmd.ProgSModSelectPanelCreator.SelectorData;
 import util.SModUtils;
-import util.SModUtils.ShipData;
 
 /** ProgSModBuildIn [fleetMember] [trigger] -- shows the build-in interface for [fleetMember].
  *  Build in the selected hull mods.

@@ -15,7 +15,6 @@ import com.fs.starfarer.api.util.Pair;
 
 import data.campaign.rulecmd.ProgSModSelectPanelCreator.SelectorData;
 import util.SModUtils;
-import util.SModUtils.ShipData;
 public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 
 	private LabelAPI nSelectedLabel, remainingXPLabel;

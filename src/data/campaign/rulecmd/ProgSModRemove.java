@@ -21,7 +21,6 @@ import com.fs.starfarer.api.util.Misc.Token;
 
 import data.campaign.rulecmd.ProgSModSelectPanelCreator.SelectorData;
 import util.SModUtils;
-import util.SModUtils.ShipData;
 
 /** ProgSModRemove [fleetMember] -- shows the built-in hull mods for [fleetMember].
  *  Remove the selected built-in hull mods. 
