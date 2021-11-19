@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BaseCampaignEventListener;
 import com.fs.starfarer.api.campaign.CombatDamageData;
 import com.fs.starfarer.api.campaign.EngagementResultForFleetAPI;
@@ -79,22 +80,16 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         }
 
         // Give additional XP to non-combat ships in the player's fleet
-        for (DeployedFleetMemberAPI dfm : playerFleet) {
-            FleetMemberAPI member = dfm.getMember();
+        // Also add XP tracking hullmod to any ship that has XP
+        List<FleetMemberAPI> playerEntireFleet = Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy();
+        for (FleetMemberAPI member : playerEntireFleet) {
             if (member.isCivilian()) {
                 SModUtils.giveXP(member.getId(), totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
             }
-        }
-
-        // Add an XP tracking hullmod to any ship that has XP
-        for (DeployedFleetMemberAPI deployedMember : playerFleet) {
-            FleetMemberAPI member = deployedMember.getMember();
             if (SModUtils.getXP(member.getId()) > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {
                 member.getVariant().addPermaMod("progsmod_xptracker", false);
             }
         }
-
-
 
         // for (Map.Entry<String, FleetMemberAPI> entry : carrierTable.entrySet()) {
         //     logger.info("The wing with id " + entry.getKey() + " has owner " + entry.getValue() + " with id " + entry.getValue().getId());
