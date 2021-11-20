@@ -1,4 +1,4 @@
-package data.campaign.rulecmd;
+package data.campaign.rulecmd.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,7 +13,7 @@ import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.PositionAPI;
 import com.fs.starfarer.api.util.Pair;
 
-import data.campaign.rulecmd.ProgSModSelectPanelCreator.SelectorData;
+import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
 import util.SModUtils;
 public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 

@@ -21,7 +21,9 @@ import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.util.Pair;
 import com.fs.starfarer.api.util.Misc.Token;
 
-import data.campaign.rulecmd.ProgSModSelectPanelCreator.SelectorData;
+import data.campaign.rulecmd.util.ProgSModBuildInPlugin;
+import data.campaign.rulecmd.util.ProgSModSelectPanelCreator;
+import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
 import util.SModUtils;
 
 /** ProgSModBuildIn [fleetMember] [trigger] -- shows the build-in interface for [fleetMember].

@@ -1,4 +1,4 @@
-package data.campaign.rulecmd;
+package data.campaign.rulecmd.util;
 
 import java.util.ArrayList;
 import java.util.List;

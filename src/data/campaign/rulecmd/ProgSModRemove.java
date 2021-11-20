@@ -18,7 +18,8 @@ import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.util.Misc.Token;
 
-import data.campaign.rulecmd.ProgSModSelectPanelCreator.SelectorData;
+import data.campaign.rulecmd.util.ProgSModSelectPanelCreator;
+import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
 import util.SModUtils;
 
 /** ProgSModRemove [fleetMember] -- shows the built-in hull mods for [fleetMember].
