@@ -37,7 +37,7 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
 
         final String titleString = "Choose hull mods to build in";
         final List<HullModSpecAPI> nonBuiltInMods = new ArrayList<>();
-        final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).getVarNameAndMemory(memoryMap).name);
+        final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
         final List<SelectorData> selectorList = new LinkedList<>();
         final ProgSModBuildInPlugin plugin = new ProgSModBuildInPlugin();
         

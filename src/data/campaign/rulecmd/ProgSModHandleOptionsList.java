@@ -27,7 +27,7 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin {
             return false;
         }
 
-        FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).getVarNameAndMemory(memoryMap).name);
+        FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
         int nSMods = fleetMember.getVariant().getSMods().size();
         int nSModsLimit = SModUtils.getMaxSMods(fleetMember);
         int nRemaining = nSModsLimit - nSMods;

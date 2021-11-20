@@ -34,7 +34,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
 
         final String titleString = "Choose built-in hull mods to remove";
         final List<HullModSpecAPI> builtInMods = new ArrayList<>();
-        final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).getVarNameAndMemory(memoryMap).name);
+        final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
         final List<SelectorData> selectorList = new ArrayList<>();
         
         Collection<String> builtInIds = fleetMember.getVariant().getSMods();
