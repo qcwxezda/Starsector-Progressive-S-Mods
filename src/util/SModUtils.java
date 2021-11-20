@@ -63,6 +63,8 @@ public class SModUtils {
         public static float NON_COMBAT_XP_FRACTION;
         /** Ignore the 'no_build_in' tag */
         public static boolean IGNORE_NO_BUILD_IN;
+        /** Allows increasing # of built-in hull mods with story points */
+        public static boolean ALLOW_INCREASE_SMOD_LIMIT;
 
         /** Load constants from a json file */
         private static void load(String filePath) throws IOException, JSONException {
@@ -88,6 +90,7 @@ public class SModUtils {
             XP_GAIN_MULTIPLIER = (float) json.optDouble("xpGainMultiplier");
             NON_COMBAT_XP_FRACTION = (float) json.optDouble("nonCombatXPFraction");
             IGNORE_NO_BUILD_IN = json.optBoolean("ignoreNoBuildIn");
+            ALLOW_INCREASE_SMOD_LIMIT = json.optBoolean("allowIncreaseSModLimit");
         }
 
         private static float[] loadCoeffsFromJSON(JSONObject json, String name) throws JSONException {
@@ -294,23 +297,6 @@ public class SModUtils {
                                      .getDynamic()
                                      .getMod(Stats.MAX_PERMANENT_HULLMODS_MOD)
                                      .computeEffective(Global.getSettings().getInt("maxPermanentHullmods"));
-    }
-
-    /** Writes data about [fleetMember]'s built-in hull mods into MemKeys.LOCAL */
-    public static void writeShipDataToMemory(FleetMemberAPI fleetMember, Map<String, MemoryAPI> memoryMap) {
-        int maxSMods = getMaxSMods(fleetMember);
-        int currentSMods = fleetMember.getVariant().getSMods().size();
-        memoryMap.get(MemKeys.LOCAL).set("$selectedShipMax", maxSMods, 0f);
-        memoryMap.get(MemKeys.LOCAL).set("$selectedShipMaxPlusOne", maxSMods + 1, 0f);
-        memoryMap.get(MemKeys.LOCAL).set("$selectedShipCurrent", currentSMods, 0f);
-        memoryMap.get(MemKeys.LOCAL).set("$selectedShipRemaining", maxSMods - currentSMods, 0f);
-        memoryMap.get(MemKeys.LOCAL).set("$selectedShipName", fleetMember.getShipName());
-        memoryMap.get(MemKeys.LOCAL).set("$xpRefund", (int) (100 * SModUtils.Constants.XP_REFUND_FACTOR), 0f);
-        memoryMap.get(MemKeys.LOCAL).set("$nextStoryPointCost", SModUtils.getStoryPointCost(fleetMember), 0f);
-        int overLimit = getNumOverLimit(fleetMember.getId());
-        memoryMap.get(MemKeys.LOCAL).set("$augmentTimes", overLimit);
-        memoryMap.get(MemKeys.LOCAL).set("$modSingOrPlural", maxSMods - currentSMods == 1 ? "mod" : "mods");
-        memoryMap.get(MemKeys.LOCAL).set("$timeSingOrPlural", overLimit == 1 ? "time" : "times");
     }
 
     /** Polynomial coefficients are listed in [coeff] lowest order first. */

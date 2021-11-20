@@ -16,7 +16,6 @@ import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.impl.campaign.rulecmd.FireAll;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
-import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.util.Misc.Token;
 
 import data.campaign.rulecmd.ProgSModSelectPanelCreator.SelectorData;
@@ -71,18 +70,16 @@ public class ProgSModRemove extends BaseCommandPlugin {
                             fleetMember.getVariant().removePermaMod(data.hullModId);
                             xpGained += data.hullModCost * SModUtils.Constants.XP_REFUND_FACTOR;
                             String hullModName = Global.getSettings().getHullModSpec(data.hullModId).getDisplayName();
-                            LabelAPI confirmText = dialog.getTextPanel().addPara("Removed " + hullModName);
-                            confirmText.setHighlight(hullModName);
+                            dialog.getTextPanel().addPara("Removed " + hullModName).setHighlight(hullModName);
                             removedAtLeastOne = true;
                         }
                     }
                     if (removedAtLeastOne) {
                         Global.getSoundPlayer().playUISound("ui_objective_constructed", 1f, 1f);
                         SModUtils.giveXP(fleetMember.getId(), xpGained);
-                        LabelAPI xpGainText = dialog.getTextPanel().addPara("The " 
-                            + fleetMember.getShipName() + " gained " + xpGained);
-                        xpGainText.setHighlight(fleetMember.getShipName(), "" + xpGained + " XP");
-                        SModUtils.writeShipDataToMemory(fleetMember, memoryMap);
+                        dialog.getTextPanel()
+                            .addPara(String.format("The %s gained %s XP", fleetMember.getShipName(), xpGained))
+                            .setHighlight(fleetMember.getShipName(), "" + xpGained);
                         FireAll.fire(ruleId, dialog, memoryMap, params.get(1).getString(memoryMap));
                     }
                 }

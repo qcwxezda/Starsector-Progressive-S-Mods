@@ -2,14 +2,14 @@
     # How many story points it costs to raise 
     # a ship's maximum number of built-in hull mods
     # the first time.
-    "BaseExtraSModCostFrigate": 1,
+    "BaseExtraSModCostFrigate": 2,
     "BaseExtraSModCostDestroyer": 2,
     "BaseExtraSModCostCruiser": 2,
     "BaseExtraSModCostCapital": 3,
 
     # Determines how the story point cost grows as
     # a ship's build-in limit grows.
-    "extraSModCostGrowthType": 1, # 0 for linear, 1 for exponential
+    "extraSModCostGrowthType": 0, # 0 for linear, 1 for exponential
     "extraSModCostGrowthFactor": 2, # story point cost is base * fac^n OR base + n*fac
 
     # Coefficients for a polynomial that maps hull mods' OP cost to their
@@ -33,6 +33,7 @@
 
     # Fraction of spent XP that will be refunded
     # when a built-in hull mod is removed
+    # If less than 0, removing built-in hull mods is disabled
     "xpRefundFactor": 0.8,
 
     "giveXPToDisabledShips": false, # Whether player ships that are disabled in battle should still receive XP
@@ -47,5 +48,9 @@
 
     # Ignore the "no_build_in" tag, allowing building in
     # normally prohibited hull mods (specifically Safety Overrides)
-    "ignoreNoBuildIn": true
+    "ignoreNoBuildIn": true,
+
+    # Whether or not to allow increasing max S-Mods
+    # with story points
+    "allowIncreaseSModLimit": false
 }

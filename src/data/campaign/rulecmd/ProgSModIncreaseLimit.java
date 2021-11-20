@@ -23,7 +23,6 @@ public class ProgSModIncreaseLimit extends BaseCommandPlugin {
 
         FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).getVarNameAndMemory(memoryMap).name);
         SModUtils.incrementSModLimit(fleetMember.getId());
-        SModUtils.writeShipDataToMemory(fleetMember, memoryMap);
 
         return true;
     }

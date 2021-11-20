@@ -13,8 +13,6 @@ import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.impl.campaign.rulecmd.FireAll;
 import com.fs.starfarer.api.util.Misc.Token;
 
-import util.SModUtils;
-
 /** ProgSModPickFleetMember [trigger] [menuId] 
  * -- fires [trigger] and changes $menuState to [menuId] 
  *    upon successful selection of a ship */
@@ -42,8 +40,6 @@ public class ProgSModPickFleetMember extends BaseCommandPlugin {
 
                     FleetMemberAPI picked = fleetMembers.get(0);
                     memoryMap.get(MemKeys.LOCAL).set("$selectedShip", picked, 0f);
-
-                    SModUtils.writeShipDataToMemory(picked, memoryMap);
                     
                     // Wait for player to finish picking a ship before messing with
                     // the menu states.

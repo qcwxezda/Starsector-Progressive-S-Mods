@@ -75,14 +75,13 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
                         if (data.button.isChecked() && SModUtils.spendXP(fmId, data.hullModCost)) {
                             fleetMember.getVariant().addPermaMod(data.hullModId, true);
                             String hullModName = Global.getSettings().getHullModSpec(data.hullModId).getDisplayName();
-                            LabelAPI confirmText = dialog.getTextPanel().addPara("Built in " + hullModName);
-                            confirmText.setHighlight(hullModName);
+                            dialog.getTextPanel().addPara("Built in " + hullModName)
+                                .setHighlight(hullModName);
                             addedAtLeastOne = true;
                         }
                     }
                     if (addedAtLeastOne) {
                         Global.getSoundPlayer().playUISound("ui_acquired_hullmod", 1f, 1f);
-                        SModUtils.writeShipDataToMemory(fleetMember, memoryMap);
                         FireAll.fire(ruleId, dialog, memoryMap, params.get(1).getString(memoryMap));
                     }
                 }

@@ -44,7 +44,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 			SelectorData entry = itr.next();
 			HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(entry.hullModId);
 			if (hullMod.hasTag("no_build_in")) {
-				ProgSModSelectPanelCreator.disableEntry(entry);
+				ProgSModSelectPanelCreator.disableEntryRed(entry);
 				entry.costLabel.setText("Cannot be built in");
 				entry.costLabel.setHighlight("Cannot be built in");
 				itr.remove();
@@ -104,15 +104,21 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 					if (entry.button.isChecked()) {
 						continue;
 					}
-					if (entry.hullModCost > remainingXP|| numAndSum.one >= numCanBuildIn) {
+					if (entry.hullModCost > remainingXP) {
 						if (entry.button.isEnabled()) {
-							ProgSModSelectPanelCreator.disableEntry(entry);
+							ProgSModSelectPanelCreator.disableEntryRed(entry);
 						}
-					} else {
+					}
+					else if (numAndSum.one >= numCanBuildIn) {
+						if (entry.button.isEnabled()) {
+							ProgSModSelectPanelCreator.disableEntryGray(entry);
+						}
+					}
+					else {
 						if (!entry.button.isEnabled()) {
 							ProgSModSelectPanelCreator.enableEntry(entry);
 						}
-					}
+					}	
 				}
 			}
 		}

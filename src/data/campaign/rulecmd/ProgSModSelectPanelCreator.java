@@ -91,7 +91,7 @@ public class ProgSModSelectPanelCreator {
         hullModCost = SModUtils.getBuildInCost(hullMod, hullSize, deploymentCost);
         String costText = 
             removeMode 
-                ? "refunds " + (int) (hullModCost * SModUtils.Constants.XP_REFUND_FACTOR) + " XP" 
+                ? String.format("refunds %s XP", (int) (hullModCost * SModUtils.Constants.XP_REFUND_FACTOR)) 
                 : hullModCost + " XP";
         costTextLabel = imageAndText.addPara(costText, 0f);
         costTextLabel.setHighlight(costText);
@@ -105,7 +105,7 @@ public class ProgSModSelectPanelCreator {
      *  "Selected: [left]/[right]".
      *  Modifies and returns [textLabel]. */
     public static LabelAPI setNSelectedModsText(LabelAPI textLabel, int left, int right) {
-        String newText = NMODS_PREFIX + left + "/" + right;
+        String newText = String.format("%s%s/%s", NMODS_PREFIX, left, right);
         textLabel.setText(newText);
         textLabel.setHighlight(NMODS_PREFIX.length(), NMODS_PREFIX.length() + String.valueOf(left).length() - 1);
         textLabel.setHighlightColor(left < right ? Color.WHITE : YELLOW);
@@ -123,10 +123,18 @@ public class ProgSModSelectPanelCreator {
     }
 
     /** Disable a hull mod entry by disabling its button, 
-     * darkening the font, and setting the XP color to orange. */
-    public static void disableEntry(SelectorData entry) {
+     * darkening the font, and setting the XP color to red. */
+    public static void disableEntryRed(SelectorData entry) {
         entry.button.setEnabled(false);
         entry.costLabel.setHighlightColor(RED);
+        entry.nameLabel.setHighlightColor(Color.GRAY);
+    }
+
+    /** Disable a hull mod entry by disabling its button, 
+     * darkening the font, and setting the XP color to gray. */
+    public static void disableEntryGray(SelectorData entry) {
+        entry.button.setEnabled(false);
+        entry.costLabel.setHighlightColor(Color.GRAY);
         entry.nameLabel.setHighlightColor(Color.GRAY);
     }
 
