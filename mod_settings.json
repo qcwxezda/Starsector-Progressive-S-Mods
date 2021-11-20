@@ -2,10 +2,10 @@
     # How many story points it costs to raise 
     # a ship's maximum number of built-in hull mods
     # the first time.
-    "BaseExtraSModCostFrigate": 2,
+    "BaseExtraSModCostFrigate": 1,
     "BaseExtraSModCostDestroyer": 2,
-    "BaseExtraSModCostCruiser": 3,
-    "BaseExtraSModCostCapital": 4,
+    "BaseExtraSModCostCruiser": 2,
+    "BaseExtraSModCostCapital": 3,
 
     # Determines how the story point cost grows as
     # a ship's build-in limit grows.
@@ -14,10 +14,10 @@
 
     # Coefficients for a polynomial that maps hull mods' OP cost to their
     # base build-in XP cost, listed in ascending order (constant term first)
-    "xpCostCoeffFrigate": [-800, 836, -145.6, 14.21, -0.556, 0.00736],
-    "xpCostCoeffDestroyer": [550, -80, 34, -1.24, 0.015],
-    "xpCostCoeffCruiser": [5100, -1372, 146.5, -4.756, 0.05],
-    "xpCostCoeffCapital": [-3000, 1350, -170, 10.28, -0.256, 0.00222],
+    "xpCostCoeffFrigate": [-700, 500, -19, 0.25],
+    "xpCostCoeffDestroyer": [-1100, 490, -21.4, 0.47],
+    "xpCostCoeffCruiser": [-1600, 410, -6.78, 0.077],
+    "xpCostCoeffCapital": [-2590, 450, -7.15, 0.0994],
 
     # The above functions assume that the ship in question has the base 
     # DP cost for its ship class. Otherwise an additional multiplicative

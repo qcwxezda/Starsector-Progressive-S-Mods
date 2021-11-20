@@ -29,21 +29,17 @@ public class ProgSModFilterOptionsList extends BaseCommandPlugin {
         FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).getVarNameAndMemory(memoryMap).name);
         Collection<String> sMods = fleetMember.getVariant().getSMods();
 
-        // If the ship does not have any hull mods that can be built in 
-        // or has reached its build-in capacity, disable the build-in option
+        // If the ship does not have any hull mods that can be built in,
+        // disable the build-in option
         final int numRemaining = SModUtils.getMaxSMods(fleetMember) - sMods.size();
-        if (fleetMember.getVariant().getNonBuiltInHullmods().isEmpty() || numRemaining <= 0) {
+        if (fleetMember.getVariant().getNonBuiltInHullmods().isEmpty()) {
             String buildInOption = params.get(1).getString(memoryMap);
             dialog.getOptionPanel().setEnabled(buildInOption, false);
             dialog.getOptionPanel().addOptionTooltipAppender(buildInOption, 
                 new OptionTooltipCreator() {
                     @Override
                     public void createTooltip(TooltipMakerAPI tooltip, boolean hadOtherText) {
-                        if (numRemaining <= 0) {
-                            tooltip.addPara("Maximum built-in hull mod limit reached.", 0f);
-                        } else {
-                            tooltip.addPara("This ship does not have any active hull mods that can be built in.", 0f);
-                        }
+                        tooltip.addPara("This ship does not have any active hull mods that can be built in.", 0f);
                     }
                 }
             );
