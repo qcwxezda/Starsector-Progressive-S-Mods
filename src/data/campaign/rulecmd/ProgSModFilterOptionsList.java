@@ -13,9 +13,6 @@ import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc.Token;
 
-import util.SModUtils;
-
-
 /** ProgSModFilterOptionsList [$fleetMember] [option1] (option2) disables options based on $fleetMember's 
  *  data. [option1] is the option to build in hull mods; [option2] is the option to remove them. */
 public class ProgSModFilterOptionsList extends BaseCommandPlugin {
@@ -31,7 +28,6 @@ public class ProgSModFilterOptionsList extends BaseCommandPlugin {
 
         // If the ship does not have any hull mods that can be built in,
         // disable the build-in option
-        final int numRemaining = SModUtils.getMaxSMods(fleetMember) - sMods.size();
         if (fleetMember.getVariant().getNonBuiltInHullmods().isEmpty()) {
             String buildInOption = params.get(1).getString(memoryMap);
             dialog.getOptionPanel().setEnabled(buildInOption, false);
