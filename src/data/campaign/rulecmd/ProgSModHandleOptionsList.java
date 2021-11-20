@@ -1,8 +1,10 @@
 package data.campaign.rulecmd;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.OptionPanelAPI.OptionTooltipCreator;
 import com.fs.starfarer.api.campaign.rules.MemKeys;
@@ -11,6 +13,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc.Token;
+import com.fs.starfarer.api.util.Misc.TokenType;
 
 import util.SModUtils;
 
@@ -35,6 +38,7 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin {
         String removeOption = params.get(2).getString(memoryMap);
         String augmentOption = params.get(3).getString(memoryMap);
         String goBackOption = params.get(4).getString(memoryMap);
+        float spRefundFraction = 0f;
 
         dialog.getOptionPanel().clearOptions();
 
@@ -76,15 +80,22 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin {
             }
         }
 
-        // Add in the augment option if that was allowed
+        // Add in the +extra S-Mods option if that was allowed
         if (SModUtils.Constants.ALLOW_INCREASE_SMOD_LIMIT) {
             dialog.getOptionPanel().addOption(
                     String.format("Increase this ship's built-in hull mod limit from %s to %s", nSModsLimit, nSModsLimit + 1), 
                 augmentOption);
+            int nextSPCost = SModUtils.getStoryPointCost(fleetMember);
+            List<Token> storyParams = new ArrayList<>();
+            storyParams.add(params.get(3));
+            storyParams.add(new Token("" + nextSPCost, TokenType.LITERAL));
+            storyParams.add(new Token("" + spRefundFraction, TokenType.LITERAL));
+            new ProgSModSetStoryOption().execute(ruleId, dialog, storyParams, memoryMap);
         }
 
         // Add in the back to main menu option
         dialog.getOptionPanel().addOption("Go back", goBackOption);
+        dialog.getOptionPanel().setShortcut(goBackOption, Global.getSettings().getCodeFor("ESCAPE"), false, false, false, true);
 
         // Add in the text panel
         dialog.getTextPanel()
