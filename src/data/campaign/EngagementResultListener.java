@@ -15,6 +15,7 @@ import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.EngagementResultAPI;
 import com.fs.starfarer.api.combat.FighterWingAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
+import com.fs.starfarer.api.loading.VariantSource;
 
 import util.SModUtils;
 import util.SModUtils.Constants;
@@ -91,6 +92,10 @@ public class EngagementResultListener extends BaseCampaignEventListener {
                 SModUtils.giveXP(member.getId(), totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
             }
             if (SModUtils.getXP(member.getId()) > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {
+                if (member.getVariant().isStockVariant()) {
+                    member.setVariant(member.getVariant().clone(), false, false);
+                    member.getVariant().setSource(VariantSource.REFIT);
+                }
                 member.getVariant().addPermaMod("progsmod_xptracker", false);
             }
         }
