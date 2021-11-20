@@ -12,6 +12,10 @@
     "extraSModCostGrowthType": 0, # 0 for linear, 1 for exponential
     "extraSModCostGrowthFactor": 2, # story point cost is base * fac^n OR base + n*fac
 
+    # Whether or not to allow increasing max S-Mods
+    # with story points
+    "allowIncreaseSModLimit": true,
+
     # Coefficients for a polynomial that maps hull mods' OP cost to their
     # base build-in XP cost, listed in ascending order (constant term first)
     "xpCostCoeffFrigate": [-700, 500, -19, 0.25],
@@ -37,7 +41,7 @@
     "xpRefundFactor": 0.8,
 
     "giveXPToDisabledShips": false, # Whether player ships that are disabled in battle should still receive XP
-    "onlyGiveXPForKills": false, # Whether enemy ships that get away should still give XP
+    "onlyGiveXPForKills": false, # Whether enemy ships that get away shouldn't give XP
 
     # All XP gained by ships in combat is multiplied by this amount
     "xpGainMultiplier": 36,
@@ -48,9 +52,5 @@
 
     # Ignore the "no_build_in" tag, allowing building in
     # normally prohibited hull mods (specifically Safety Overrides)
-    "ignoreNoBuildIn": true,
-
-    # Whether or not to allow increasing max S-Mods
-    # with story points
-    "allowIncreaseSModLimit": false
+    "ignoreNoBuildIn": true
 }
