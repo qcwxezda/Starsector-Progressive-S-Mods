@@ -62,23 +62,37 @@ public class EngagementResultListener extends BaseCampaignEventListener {
             eligibleTargets.addAll(SModUtils.getFleetMemberIds(enemyResult.getDeployed()));
         }
         
-        // Table that maps each ship's id to the total weighted damage that it caused to eligible targets
-        Map<String, Float> weightedDamageTable = new HashMap<>();
-        populateWeightedDamageTable(result.getLastCombatDamageData(), eligibleReceivers, eligibleTargets, weightedDamageTable,
-            new WeightedDamageFn() {
-                public float compute(float damage, FleetMemberAPI target) {
-                    float hp = target.getStats().getHullBonus().computeEffective(target.getHullSpec().getHitpoints());
-                    return Math.min(damage / hp, 1f) * target.getDeploymentCostSupplies();
-                }
+        // Table that maps each ship's id to the total weighted damage that it caused to
+        // each eligible target.
+        Map<String, Map<String, Float>> weightedDamageTable = new HashMap<>();
+        WeightedDamageFn damageFn = new WeightedDamageFn() {
+            @Override
+            public float compute(float damageFrac, FleetMemberAPI target) {
+                return Math.min(damageFrac, 1f)
+                        * Math.max(
+                            target.getDeploymentCostSupplies(), 
+                            SModUtils.Constants.TARGET_DMOD_LOWER_BOUND * target.getDeploymentPointsCost()
+                        );
             }
-        );
+        };
+        populateWeightedDamageTable(result.getLastCombatDamageData(), eligibleReceivers, eligibleTargets, weightedDamageTable, damageFn);
 
         // Transfer damage from fighters to their carriers
         transferWeightedDamage(carrierTable, weightedDamageTable);
 
+        // Flatten the damage table into total weighted damage per ship, 
+        // taking minimum contribution into account
+        Map<String, Float> minContributionMap = new HashMap<>();
+        for (DeployedFleetMemberAPI dfm : enemyResult.getAllEverDeployedCopy()) {
+            FleetMemberAPI target = dfm.getMember();
+            minContributionMap.put(target.getId(), damageFn.compute(SModUtils.Constants.MIN_CONTRIBUTION_FRACTION, target));
+        }
+        Map<String, Float> totalWeightedDamage = new HashMap<>();
+        flattenWeightedDamage(weightedDamageTable, minContributionMap, totalWeightedDamage);
+
         // Use the weighted damage table to update ship data
         float totalXPGain = 0f;
-        for (Map.Entry<String, Float> weightedDamageEntry : weightedDamageTable.entrySet()) {
+        for (Map.Entry<String, Float> weightedDamageEntry : totalWeightedDamage.entrySet()) {
             float xpGain = weightedDamageEntry.getValue() * SModUtils.Constants.XP_GAIN_MULTIPLIER;
             SModUtils.giveXP(weightedDamageEntry.getKey(), xpGain);
             totalXPGain += xpGain;
@@ -99,104 +113,6 @@ public class EngagementResultListener extends BaseCampaignEventListener {
                 member.getVariant().addPermaMod("progsmod_xptracker", false);
             }
         }
-
-        // for (Map.Entry<String, FleetMemberAPI> entry : carrierTable.entrySet()) {
-        //     logger.info("The wing with id " + entry.getKey() + " has owner " + entry.getValue() + " with id " + entry.getValue().getId());
-        // }
-        
-        // // For a ship s, weightedDamageTable[s] is the damage dealt by s and its fighters,
-        // // weighted by the DP cost of damaged targets.
-        // Map<String, Float> weightedDamageTable = new HashMap<>();
-
-        // Set<String> playerShipIds = new HashSet<>();
-        // for (DeployedFleetMemberAPI member : playerFleet) {
-        //     if (member.getMember() != null) {
-        //         String memberId = member.getMember().getId();
-        //         playerShipIds.add(memberId);
-        //         weightedDamageTable.put(memberId, 0f);
-        //         logger.info("Added the ship " + member + " with id " + member.getMember().getId() + " to the list of ships");
-        //         logger.info("Trying to lookup with global: " + Global.getCombatEngine().getFleetManager(0).getShipFor(member.getMember()));
-        //     }
-        // }
-
-        // // for (FleetMemberAPI member : playerShips) {
-        // //     playerShipIds.add(member.getId());
-        // //     ShipAPI ship = playerFleetManager.getShipFor(member);
-        // //     if (ship != null) {
-        // //         weightedDamageTable.put(new HashableShipAPI(ship), 0f);
-        // //         logger.info("Successfully added the ship " + member);
-        // //     }
-        // //     else {
-        // //         logger.info("No info for the ship " + member);
-        // //     }
-        // // }
-
-        // // Populate disabled and destroyed ships for enemy and player fleets
-        // Set<String> disabledPlayerShips = new HashSet<>();
-        // Set<String> disabledEnemyShips = new HashSet<>();
-        // for (FleetMemberAPI ship : playerResult.getDestroyed()) {
-        //     disabledPlayerShips.add(ship.getId());
-        // }
-        // for (FleetMemberAPI ship : playerResult.getDisabled()) {
-        //     disabledPlayerShips.add(ship.getId());
-        // }
-        // for (FleetMemberAPI ship : enemyResult.getDestroyed()) {
-        //     disabledEnemyShips.add(ship.getId());
-        // }
-        // for (FleetMemberAPI ship : enemyResult.getDisabled()) { 
-        //     disabledEnemyShips.add(ship.getId());
-        // }
-
-        // // // Populate the weighted damage table with info from the last combat
-        // // for (Map.Entry<FleetMemberAPI, DealtByFleetMember> dealt : result.getLastCombatDamageData().getDealt().entrySet()) {
-        // //     String memberId = dealt.getKey().getId();
-
-        // //     logger.info("The damage dealer is " + dealt.getKey() + ", " + memberId);
-
-        // //     // Ignore ships not in player's fleet
-        // //     if (!playerShipIds.contains(memberId)) {
-        // //         continue;
-        // //     }
-
-        // //     // Ignore disabled player ships if applicable
-        // //     if (!SModUtils.Constants.GIVE_XP_TO_DISABLED_SHIPS && disabledPlayerShips.contains(memberId)) {
-        // //         continue;
-        // //     }
-
-        // //     float weightedDamage = 0f;
-        // //     //logger.info("For the fleet member, " + dealt.getKey() + " with id " + dealt.getKey().getId() + ": ");
-        // //     for (Map.Entry<FleetMemberAPI, DamageToFleetMember> dealtTo : dealt.getValue().getDamage().entrySet()) {
-        // //         //logger.info("  - damage dealt to " + dealtTo.getKey() + " is " + dealtTo.getValue().hullDamage);
-        // //         FleetMemberAPI target = dealtTo.getKey();
-
-        // //         // Ignore non-disabled enemy ships if applicable
-        // //         if (SModUtils.Constants.ONLY_GIVE_XP_FOR_KILLS && !disabledEnemyShips.contains(target.getId())) {
-        // //             continue;
-        // //         }
-
-        // //         float hp = target.getStats().getHullBonus().computeEffective(target.getHullSpec().getHitpoints());
-        // //         weightedDamage += dealtTo.getValue().hullDamage / hp * target.getDeploymentPointsCost();
-        // //     }
-
-        // //     // If the fleet member is a wing, give the damage to the carrier
-        // //     if (carrierTable.containsKey(memberId)) {
-        // //         logger.info("The ship " + dealt.getKey() + " with id " + memberId+ " is a wing owned by " + carrierTable.get(memberId) + " with id " + carrierTable.get(memberId).getId());
-        // //         String carrierId = carrierTable.get(memberId).getId();
-        // //         //logger.info(dealt.getKey() + " is a wing owned by " + wingLeaders.get(dealt.getKey().getId()));
-        // //         Float totalDamage = weightedDamageTable.get(carrierId);
-        // //         weightedDamageTable.put(carrierId, totalDamage == null ? weightedDamage : totalDamage + weightedDamage);
-        // //         logger.info("Adding damage to the carrier with id " + carrierId);
-        // //         logger.info("The total weighted damage dealt is " + weightedDamageTable.get(carrierId));
-        // //     } 
-        // //     else {
-        // //         Float totalDamage = weightedDamageTable.get(memberId);
-        // //         weightedDamageTable.put(memberId, totalDamage == null ? weightedDamage : totalDamage + weightedDamage);
-        // //         logger.info("Adding damage to the ship with id " + memberId);
-        // //         logger.info("The total weighted damage dealt is " + weightedDamageTable.get(memberId));
-        // //     }
-        // // }
-
-
     }
 
     /** Populates the [carrierTable] map with mapping from wing -> leader ship. Modifies carrierTable. */
@@ -215,7 +131,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
     /** Uses the combat data to generate, for each ship in keyFilter and combatDamageData.getDealt().keySet(), 
      *  the sum of its weighted damage to each ship in targetFilter. Modifies weightedDamageTable. */
     private void populateWeightedDamageTable(CombatDamageData combatDamageData, Set<String> keyFilter, Set<String> targetFilter,
-                                             Map<String, Float> weightedDamageTable, WeightedDamageFn damageFn) {
+                                             Map<String, Map<String, Float>> weightedDamageTable, WeightedDamageFn damageFn) {
         for (Map.Entry<FleetMemberAPI, DealtByFleetMember> dealt : combatDamageData.getDealt().entrySet()) {
             String memberId = dealt.getKey().getId();
 
@@ -224,40 +140,72 @@ public class EngagementResultListener extends BaseCampaignEventListener {
                 continue;
             }
 
-            float weightedDamage = 0f;
+            weightedDamageTable.put(memberId, new HashMap<String, Float>());
+
             for (Map.Entry<FleetMemberAPI, DamageToFleetMember> dealtTo : dealt.getValue().getDamage().entrySet()) {
                 FleetMemberAPI target = dealtTo.getKey();
+                String targetId = target.getId();
 
                 // Only consider damage to ships in the targetFilter
-                if (!targetFilter.contains(target.getId())) {
+                if (!targetFilter.contains(targetId)) {
                     continue;
                 }
 
-                weightedDamage += damageFn.compute(dealtTo.getValue().hullDamage, target);
+                float hp = target.getStats().getHullBonus().computeEffective(target.getHullSpec().getHitpoints());
+                weightedDamageTable.get(memberId).put(targetId, damageFn.compute(dealtTo.getValue().hullDamage / hp, target));
             }
-
-            Float totalDamage = weightedDamageTable.get(memberId);
-            weightedDamageTable.put(memberId, totalDamage == null ? weightedDamage : totalDamage + weightedDamage);
         }
     }
 
     /** For each <k, v> pair in transferMap, transfers k's weighted damage to v's weighted damage. Modifies weightedDamageTable. */
-    private void transferWeightedDamage(Map<String, String> transferMap, Map<String, Float> weightedDamageTable) {
+    private void transferWeightedDamage(Map<String, String> transferMap, Map<String, Map<String, Float>> weightedDamageTable) {
         for (Map.Entry<String, String> transfer : transferMap.entrySet()) {
             String giver = transfer.getKey();
-            Float transferDamage = weightedDamageTable.get(giver);
-            if (transferDamage != null && transferDamage > 0) {
-                String receiver = transfer.getValue();
-                Float totalDamage = weightedDamageTable.get(receiver);
-                weightedDamageTable.put(receiver, totalDamage == null ? transferDamage : transferDamage + totalDamage);
-                weightedDamageTable.remove(giver);
+            String receiver = transfer.getValue();
+
+            if (!weightedDamageTable.containsKey(receiver)) {
+                weightedDamageTable.put(receiver, new HashMap<String, Float>());
             }
+            
+            Map<String, Float> dmgData = weightedDamageTable.get(giver);
+            if (dmgData != null) {
+                for (Map.Entry<String, Float> dmgEntry : dmgData.entrySet()) {
+                    String targetId = dmgEntry.getKey();
+                    float newDmg = dmgEntry.getValue();
+                    Float curDmg = weightedDamageTable.get(receiver).get(targetId);
+                    weightedDamageTable.get(receiver).put(targetId, curDmg == null ? newDmg : newDmg + curDmg);
+                }
+            }
+
+            weightedDamageTable.remove(giver);
         }
     }
 
-    /** Classes implementing this interface provide a function that takes raw hull damage on a target and
+    /** Sums up the weighted damage entries for each player ship, using the minimum contribution table as a lower bound
+     *  for each of that ship's targets. Modifies [totalWeightedDamage] */
+    private void flattenWeightedDamage(
+            Map<String, Map<String, Float>> weightedDamageTable, 
+            Map<String, Float> minContributionMap, 
+            Map<String, Float> totalWeightedDamage
+        ) {
+        for (Map.Entry<String, Map<String, Float>> dmgEntry : weightedDamageTable.entrySet()) {
+            String receiver = dmgEntry.getKey();
+            float total = 0f;
+            for (Map.Entry<String, Float> targetEntry : dmgEntry.getValue().entrySet()) {
+                float damage = targetEntry.getValue();
+                if (damage <= 0) {
+                    continue;
+                }
+                Float minContribution = minContributionMap.get(targetEntry.getKey());
+                total += Math.max(damage, minContribution == null ? 0f : minContribution);
+            }
+            totalWeightedDamage.put(receiver, total);
+        }
+    }
+
+    /** Classes implementing this interface provide a function that takes percent hull damage on a target and
      *  weights it according to the target's statistics.*/
     private interface WeightedDamageFn {
-        public float compute(float damage, FleetMemberAPI target);
+        public float compute(float damageFrac, FleetMemberAPI target);
     }
 }

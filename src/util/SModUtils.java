@@ -56,6 +56,13 @@ public class SModUtils {
         public static boolean ONLY_GIVE_XP_FOR_KILLS;
         /** XP gain multiplier */
         public static float XP_GAIN_MULTIPLIER;
+        /** Minimum contribution percentage -- ships that deal any hull damage gain XP as if
+         *  they did this fraction of total hull damage. */
+        public static float MIN_CONTRIBUTION_FRACTION;
+        /** Enemy ships with d-mods give less XP than pristine ships;
+         *  however, regardless of the number of D-mods, they will always
+         *  give at least this fraction of a pristine ship's XP. */
+        public static float TARGET_DMOD_LOWER_BOUND;
         /** XP gained by non-combat ships as a fraction of total XP gain */
         public static float NON_COMBAT_XP_FRACTION;
         /** Ignore the 'no_build_in' tag */
@@ -66,28 +73,31 @@ public class SModUtils {
         /** Load constants from a json file */
         private static void load(String filePath) throws IOException, JSONException {
             JSONObject json = Global.getSettings().loadJSON(filePath);
-            BASE_EXTRA_SMOD_COST_FRIGATE = json.optInt("BaseExtraSModCostFrigate");
-            BASE_EXTRA_SMOD_COST_DESTROYER = json.optInt("BaseExtraSModCostDestroyer");
-            BASE_EXTRA_SMOD_COST_CRUISER = json.optInt("BaseExtraSModCostCruiser");
-            BASE_EXTRA_SMOD_COST_CAPITAL = json.optInt("BaseExtraSModCostCapital");
+            BASE_EXTRA_SMOD_COST_FRIGATE = json.getInt("BaseExtraSModCostFrigate");
+            BASE_EXTRA_SMOD_COST_DESTROYER = json.getInt("BaseExtraSModCostDestroyer");
+            BASE_EXTRA_SMOD_COST_CRUISER = json.getInt("BaseExtraSModCostCruiser");
+            BASE_EXTRA_SMOD_COST_CAPITAL = json.getInt("BaseExtraSModCostCapital");
             EXTRA_SMOD_COST_GROWTHTYPE = 
-                json.optInt("extraSModCostGrowthType") == 0 ? GrowthType.LINEAR : GrowthType.EXPONENTIAL;
-            EXTRA_SMOD_COST_GROWTHFACTOR = (float) json.optDouble("extraSModCostGrowthFactor");
+                json.getInt("extraSModCostGrowthType") == 0 ? GrowthType.LINEAR : GrowthType.EXPONENTIAL;
+            EXTRA_SMOD_COST_GROWTHFACTOR = (float) json.getDouble("extraSModCostGrowthFactor");
             XP_COST_COEFF_FRIGATE = loadCoeffsFromJSON(json, "xpCostCoeffFrigate");
             XP_COST_COEFF_DESTROYER = loadCoeffsFromJSON(json, "xpCostCoeffDestroyer");
             XP_COST_COEFF_CRUISER = loadCoeffsFromJSON(json, "xpCostCoeffCruiser");
             XP_COST_COEFF_CAPITAL = loadCoeffsFromJSON(json, "xpCostCoeffCapital");
-            BASE_DP_FRIGATE = (float) json.optDouble("baseDPFrigate");
-            BASE_DP_DESTROYER = (float) json.optDouble("baseDPDestroyer");
-            BASE_DP_CRUISER = (float) json.optDouble("baseDPCruiser");
-            BASE_DP_CAPITAL = (float) json.optDouble("baseDPCapital");
-            XP_REFUND_FACTOR = (float) json.optDouble("xpRefundFactor");
-            GIVE_XP_TO_DISABLED_SHIPS = json.optBoolean("giveXPToDisabledShips");
-            ONLY_GIVE_XP_FOR_KILLS = json.optBoolean("onlyGiveXPForKills");
-            XP_GAIN_MULTIPLIER = (float) json.optDouble("xpGainMultiplier");
-            NON_COMBAT_XP_FRACTION = (float) json.optDouble("nonCombatXPFraction");
-            IGNORE_NO_BUILD_IN = json.optBoolean("ignoreNoBuildIn");
-            ALLOW_INCREASE_SMOD_LIMIT = json.optBoolean("allowIncreaseSModLimit");
+            BASE_DP_FRIGATE = (float) json.getDouble("baseDPFrigate");
+            BASE_DP_DESTROYER = (float) json.getDouble("baseDPDestroyer");
+            BASE_DP_CRUISER = (float) json.getDouble("baseDPCruiser");
+            BASE_DP_CAPITAL = (float) json.getDouble("baseDPCapital");
+            XP_REFUND_FACTOR = (float) json.getDouble("xpRefundFactor");
+            IGNORE_NO_BUILD_IN = json.getBoolean("ignoreNoBuildIn");
+            ALLOW_INCREASE_SMOD_LIMIT = json.getBoolean("allowIncreaseSModLimit");
+            JSONObject combat = json.getJSONObject("combat");
+            GIVE_XP_TO_DISABLED_SHIPS = combat.getBoolean("giveXPToDisabledShips");
+            ONLY_GIVE_XP_FOR_KILLS = combat.getBoolean("onlyGiveXPForKills");
+            XP_GAIN_MULTIPLIER = (float) combat.getDouble("xpGainMultiplier");
+            MIN_CONTRIBUTION_FRACTION = (float) combat.getDouble("minContributionFraction");
+            NON_COMBAT_XP_FRACTION = (float) combat.getDouble("nonCombatXPFraction");
+            TARGET_DMOD_LOWER_BOUND = (float) combat.getDouble("targetDModLowerBound");
         }
 
         private static float[] loadCoeffsFromJSON(JSONObject json, String name) throws JSONException {
@@ -95,7 +105,7 @@ public class SModUtils {
             int length = jsonArray.length();
             float[] coeffs = new float[length];
             for (int i = 0; i < jsonArray.length(); i++) {
-                coeffs[i] = (float) jsonArray.optDouble(i);
+                coeffs[i] = (float) jsonArray.getDouble(i);
             }
             return coeffs;
         }

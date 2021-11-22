@@ -40,17 +40,29 @@
     # If less than 0, removing built-in hull mods is disabled
     "xpRefundFactor": 0.8,
 
-    "giveXPToDisabledShips": false, # Whether player ships that are disabled in battle should still receive XP
-    "onlyGiveXPForKills": false, # Whether enemy ships that get away shouldn't give XP
-
-    # All XP gained by ships in combat is multiplied by this amount
-    "xpGainMultiplier": 36,
-
-    # Non-combat ships gain this fraction of the total XP
-    # gained by all ships as additional XP
-    "nonCombatXPFraction": 0.1,
-
     # Ignore the "no_build_in" tag, allowing building in
     # normally prohibited hull mods (specifically Safety Overrides)
-    "ignoreNoBuildIn": true
+    "ignoreNoBuildIn": true,
+
+    "combat": {
+        "giveXPToDisabledShips": false, # Whether player ships that are disabled in battle should still receive XP
+        "onlyGiveXPForKills": false, # Whether enemy ships that get away shouldn't give XP
+
+        # All XP gained by ships in combat is multiplied by this amount
+        "xpGainMultiplier": 36,
+
+        # If a ship deals any hull damage to an opponent, it counts as if
+        # it had done at least this fraction of the target's total HP
+        # as hull damage
+        "minContributionFraction": 0.9,
+
+        # Enemy ships with d-mods give less XP than pristine ships;
+        # however, regardless of the number of D-mods, they will always
+        # give at least this fraction of a pristine ship's XP. 
+        "targetDModLowerBound": 0.6, 
+
+        # Non-combat ships gain this fraction of the total XP
+        # gained by all ships as additional XP
+        "nonCombatXPFraction": 0.1
+    }
 }
