@@ -45,7 +45,10 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
         
         Collection<String> nonBuiltInIds = fleetMember.getVariant().getNonBuiltInHullmods();
         for (String id : nonBuiltInIds) {
-            nonBuiltInMods.add(Global.getSettings().getHullModSpec(id));
+            HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
+            if (!hullMod.isHidden() && !hullMod.isHiddenEverywhere()) {
+                nonBuiltInMods.add(hullMod);
+            }
         }
 
         dialog.showCustomDialog(500, 500, 

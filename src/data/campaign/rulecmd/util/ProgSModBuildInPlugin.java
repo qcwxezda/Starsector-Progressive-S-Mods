@@ -53,7 +53,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
     }
 
     /** Returns the pair (number of checked buttons, sum of checked buttons' XP costs). 
-     * Populates [checkedEntries] with the checked buttons if a non-null list was passed in.*/
+     * Populates [checkedEntries] with the checked buttons.*/
     public Pair<Integer, Integer> tallyCheckedEntries(List<SelectorData> selectorList, List<SelectorData> checkedEntries) {
         if (!checkedEntries.isEmpty()) {
             checkedEntries.clear();

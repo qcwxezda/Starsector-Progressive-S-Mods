@@ -27,7 +27,7 @@ public class ProgSModSelectPanelCreator {
     static final float BUTTON_PADDING = 10f;
     static final float TRACKER_HEIGHT = 20f;
     static final String NMODS_PREFIX = "Selected: ";
-    static final String XP_PREFIX = "XP Remaining: ";
+    static final String XP_PREFIX = "XP: ";
     static final Color RED = Global.getSettings().getColor("progressBarDangerColor");
     static final Color YELLOW = Global.getSettings().getColor("progressBarWarningColor");
 
@@ -97,7 +97,6 @@ public class ProgSModSelectPanelCreator {
         costTextLabel.setHighlight(costText);
         costTextLabel.setHighlightColor(Color.WHITE);
         tooltip.addImageWithText(-height);
-        tooltip.setForceProcessInput(true);
         return new SelectorData(button, nameText, costTextLabel, hullModCost, hullMod.getId());
     }
 
@@ -146,7 +145,7 @@ public class ProgSModSelectPanelCreator {
         entry.nameLabel.setHighlightColor(Color.WHITE);
     }
 
-    /** Adds the "Selected: x/y" and "XP remaining: z" counters
+    /** Adds the "Selected: x/y" and "XP: z" counters
      *  to the hull mod selection interface.
      *  Returns both LabelAPI objects. */
     public static Pair<LabelAPI, LabelAPI> addCountAndXPToPanel(CustomPanelAPI panel) {
@@ -159,6 +158,17 @@ public class ProgSModSelectPanelCreator {
         remainingXPText.setAlignment(Alignment.RMID);
         panel.addUIElement(countTracker).inTMid(30f);
         return new Pair<>(nSelectedText, remainingXPText);
+    }
+
+    /** Adds "XP: x" counter to the hull mod selection interface. */
+    public static LabelAPI addXPToPanel(CustomPanelAPI panel) {
+        float width = panel.getPosition().getWidth();
+        float trackerWidth = width * 0.85f;
+        TooltipMakerAPI xpTracker = panel.createUIElement(trackerWidth, TRACKER_HEIGHT, false);
+        LabelAPI xpText = setRemainingXPText(xpTracker.addTitle(""), 0);
+        xpText.setAlignment(Alignment.MID);
+        panel.addUIElement(xpTracker).inTMid(30f);
+        return xpText;
     }
 
     /** Creates the interface used for selecting hull mods, both when 
@@ -174,10 +184,9 @@ public class ProgSModSelectPanelCreator {
             boolean removeMode) {
         float width = panel.getPosition().getWidth();
         float height = panel.getPosition().getHeight();
-        float titleHeight = removeMode ? TITLE_HEIGHT - 25 : TITLE_HEIGHT;
 
         // TITLE
-        TooltipMakerAPI title = panel.createUIElement(width - 10f, titleHeight, false);
+        TooltipMakerAPI title = panel.createUIElement(width - 10f, TITLE_HEIGHT, false);
         title.setTitleOrbitronLarge();
         title.addTitle(titleString).setAlignment(Alignment.MID);
         panel.addUIElement(title).inTMid(0f);
@@ -186,7 +195,7 @@ public class ProgSModSelectPanelCreator {
         float buttonWidth = width * 0.95f;
         float buttonHeight = BUTTON_HEIGHT;
         float buttonPadding = BUTTON_PADDING;
-        float buttonListHeight = height - titleHeight - BUTTON_PADDING;
+        float buttonListHeight = height - TITLE_HEIGHT - BUTTON_PADDING;
         // There seems to be a base horizontal padding of 10f, 
         // need to account for this for true centering 
         float buttonListHorizontalPadding = 0.5f * (width - buttonWidth - 10f);

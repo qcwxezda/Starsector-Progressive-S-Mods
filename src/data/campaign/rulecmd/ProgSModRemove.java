@@ -16,8 +16,10 @@ import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.impl.campaign.rulecmd.FireAll;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
+import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.util.Misc.Token;
 
+import data.campaign.rulecmd.util.ProgSModRemovePlugin;
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator;
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
 import util.SModUtils;
@@ -37,6 +39,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
         final List<HullModSpecAPI> builtInMods = new ArrayList<>();
         final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
         final List<SelectorData> selectorList = new ArrayList<>();
+        final ProgSModRemovePlugin plugin = new ProgSModRemovePlugin();
         
         Collection<String> builtInIds = fleetMember.getVariant().getSMods();
         for (String id : builtInIds) {
@@ -56,6 +59,8 @@ public class ProgSModRemove extends BaseCommandPlugin {
                             true
                         )
                     );
+                    LabelAPI xpLabel = ProgSModSelectPanelCreator.addXPToPanel(panel);
+                    plugin.setData(xpLabel, selectorList, SModUtils.getXP(fleetMember.getId()));
                 }
 
                 @Override
@@ -97,7 +102,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
             
                 @Override
                 public CustomUIPanelPlugin getCustomPanelPlugin() {
-                    return null;
+                    return plugin;
                 }
             
                 @Override

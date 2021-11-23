@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
@@ -69,6 +70,8 @@ public class SModUtils {
         public static boolean IGNORE_NO_BUILD_IN;
         /** Allows increasing # of built-in hull mods with story points */
         public static boolean ALLOW_INCREASE_SMOD_LIMIT;
+        /** Set to true to disable this mod's features */
+        public static boolean DISABLE_MOD;
 
         /** Load constants from a json file */
         private static void load(String filePath) throws IOException, JSONException {
@@ -91,6 +94,7 @@ public class SModUtils {
             XP_REFUND_FACTOR = (float) json.getDouble("xpRefundFactor");
             IGNORE_NO_BUILD_IN = json.getBoolean("ignoreNoBuildIn");
             ALLOW_INCREASE_SMOD_LIMIT = json.getBoolean("allowIncreaseSModLimit");
+            DISABLE_MOD = json.getBoolean("disableMod");
             JSONObject combat = json.getJSONObject("combat");
             GIVE_XP_TO_DISABLED_SHIPS = combat.getBoolean("giveXPToDisabledShips");
             ONLY_GIVE_XP_FOR_KILLS = combat.getBoolean("onlyGiveXPForKills");
@@ -156,15 +160,15 @@ public class SModUtils {
 
     /** Retrieve the persistent data for this mod, if it exists. Else create it. */
     public static void loadShipData() {
-        if (!Global.getSector().getPersistentData().containsKey(SModUtils.SHIP_DATA_KEY)) {
+        if (!Global.getSector().getPersistentData().containsKey(SHIP_DATA_KEY)) {
             SHIP_DATA_TABLE = new ShipDataTable();
-            Global.getSector().getPersistentData().put(SModUtils.SHIP_DATA_KEY, SModUtils.SHIP_DATA_TABLE); 
+            Global.getSector().getPersistentData().put(SHIP_DATA_KEY, SHIP_DATA_TABLE); 
         }
         else {
-            SHIP_DATA_TABLE = (ShipDataTable) Global.getSector().getPersistentData().get(SModUtils.SHIP_DATA_KEY);
+            SHIP_DATA_TABLE = (ShipDataTable) Global.getSector().getPersistentData().get(SHIP_DATA_KEY);
         }
     }
-
+    
     /** Add [xp] XP to [fmId]'s entry in the ship data table,
      *  creating the entry if it doesn't exist yet.
      *  Returns whether a new entry was created. */

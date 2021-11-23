@@ -1,5 +1,6 @@
 id,trigger,conditions,script,text,options,notes,,
-progsmod_Start,PopulateOptions,$menuState == main,"SetShortcut progsmod_OptionManage ""H""",,16:progsmod_OptionManage:Manage built-in hull mods,,,
+progsmod_Start,PopulateOptions,"$global.progsmodEnabled
+$menuState == main","SetShortcut progsmod_OptionManage ""H""",,16:progsmod_OptionManage:Manage built-in hull mods,,,
 progsmod_Manage,DialogOptionSelected,$option == progsmod_OptionManage,ProgSModPickFleetMember progsmod_SelectShip progsmodMain,,,,,
 progsmod_ShipSelected1,progsmod_SelectShip,"$menuState == progsmodMain
 $selectedShip != null",ProgSModHandleOptionsList $selectedShip progsmod_OptionBuildIn progsmod_OptionRemove progsmod_OptionAugment progsmod_OptionBackMain,,,,,

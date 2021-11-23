@@ -44,6 +44,11 @@
     # normally prohibited hull mods (specifically Safety Overrides)
     "ignoreNoBuildIn": true,
 
+    # Set this to true in order to disable this mod's features
+    # and go back to building in S-Mods with story points.
+    # S-mods that have been built in with XP are not removed.
+    "disableMod": false,
+
     "combat": {
         "giveXPToDisabledShips": false, # Whether player ships that are disabled in battle should still receive XP
         "onlyGiveXPForKills": false, # Whether enemy ships that get away shouldn't give XP
@@ -54,7 +59,7 @@
         # If a ship deals any hull damage to an opponent, it counts as if
         # it had done at least this fraction of the target's total HP
         # as hull damage
-        "minContributionFraction": 0.9,
+        "minContributionFraction": 0.15,
 
         # Enemy ships with d-mods give less XP than pristine ships;
         # however, regardless of the number of D-mods, they will always
