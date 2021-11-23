@@ -18,8 +18,8 @@
 
     # Coefficients for a polynomial that maps hull mods' OP cost to their
     # base build-in XP cost, listed in ascending order (constant term first)
-    "xpCostCoeffFrigate": [-700, 500, -19, 0.25],
-    "xpCostCoeffDestroyer": [-1100, 490, -21.4, 0.47],
+    "xpCostCoeffFrigate": [-455, 325, -12.35, 0.1625],
+    "xpCostCoeffDestroyer": [-880, 392, -17.12, 0.376],
     "xpCostCoeffCruiser": [-1600, 410, -6.78, 0.077],
     "xpCostCoeffCapital": [-2590, 450, -7.15, 0.0994],
 
