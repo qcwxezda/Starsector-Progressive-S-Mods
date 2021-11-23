@@ -12,6 +12,7 @@ import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.rules.MemKeys;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.impl.campaign.rulecmd.FireAll;
@@ -26,7 +27,8 @@ import data.campaign.rulecmd.util.ProgSModSelectPanelCreator;
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
 import util.SModUtils;
 
-/** ProgSModBuildIn [fleetMember] [trigger] -- shows the build-in interface for [fleetMember].
+/** ProgSModBuildIn [fleetMember] [selectedVariant] [trigger] -- shows the build-in interface for
+ *  the module of [fleetMember] whose variant is [selectedVariant].
  *  Build in the selected hull mods.
  *  Fire [trigger] upon confirmation. */
 public class ProgSModBuildIn extends BaseCommandPlugin {
@@ -40,10 +42,11 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
         final String titleString = "Choose hull mods to build in";
         final List<HullModSpecAPI> nonBuiltInMods = new ArrayList<>();
         final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
+        final ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(1).string);
         final List<SelectorData> selectorList = new LinkedList<>();
         final ProgSModBuildInPlugin plugin = new ProgSModBuildInPlugin();
         
-        Collection<String> nonBuiltInIds = fleetMember.getVariant().getNonBuiltInHullmods();
+        Collection<String> nonBuiltInIds = selectedVariant.getNonBuiltInHullmods();
         for (String id : nonBuiltInIds) {
             HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
             if (!hullMod.isHidden() && !hullMod.isHiddenEverywhere()) {
@@ -60,12 +63,20 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
                             panel, 
                             titleString, 
                             nonBuiltInMods, 
-                            fleetMember, 
+                            selectedVariant.getHullSize(),
+                            fleetMember.getDeploymentPointsCost(), 
                             false
                         )
                     );
                     Pair<LabelAPI, LabelAPI> textPair = ProgSModSelectPanelCreator.addCountAndXPToPanel(panel);
-                    plugin.setData(textPair.one, textPair.two, selectorList, fleetMember);
+                    plugin.setData(
+                        textPair.one, 
+                        textPair.two, 
+                        selectorList,
+                        SModUtils.getXP(fleetMember.getId()), 
+                        SModUtils.getMaxSMods(fleetMember) - 
+                        selectedVariant.getSMods().size()
+                    );
                 }
 
                 @Override
@@ -78,7 +89,7 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
                     
                     for (SelectorData data : selectorList) {
                         if (data.button.isChecked() && SModUtils.spendXP(fmId, data.hullModCost)) {
-                            fleetMember.getVariant().addPermaMod(data.hullModId, true);
+                            selectedVariant.addPermaMod(data.hullModId, true);
                             String hullModName = Global.getSettings().getHullModSpec(data.hullModId).getDisplayName();
                             dialog.getTextPanel().addPara("Built in " + hullModName)
                                 .setHighlight(hullModName);
@@ -87,7 +98,7 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
                     }
                     if (addedAtLeastOne) {
                         Global.getSoundPlayer().playUISound("ui_acquired_hullmod", 1f, 1f);
-                        FireAll.fire(ruleId, dialog, memoryMap, params.get(1).getString(memoryMap));
+                        FireAll.fire(ruleId, dialog, memoryMap, params.get(2).getString(memoryMap));
                     }
                 }
             

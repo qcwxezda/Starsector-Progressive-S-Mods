@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
@@ -168,7 +167,7 @@ public class SModUtils {
             SHIP_DATA_TABLE = (ShipDataTable) Global.getSector().getPersistentData().get(SHIP_DATA_KEY);
         }
     }
-    
+
     /** Add [xp] XP to [fmId]'s entry in the ship data table,
      *  creating the entry if it doesn't exist yet.
      *  Returns whether a new entry was created. */
@@ -188,6 +187,12 @@ public class SModUtils {
      *  Returns [true] if and only if the operation succeeded. */
     public static boolean spendXP(String fmId, float xp) {
         ShipData data = SHIP_DATA_TABLE.get(fmId);
+        // Edge case: no ship data (technically 0 XP)
+        // should still be able to build in hull mods
+        // that cost 0 XP
+        if (xp == 0f) {
+            return true;
+        }
         if (data == null || data.xp < xp) return false;
         data.xp -= xp;
         return true;

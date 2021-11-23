@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
-import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.input.InputEventAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.LabelAPI;
@@ -19,17 +18,15 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 
     private LabelAPI nSelectedLabel, remainingXPLabel;
     private List<SelectorData> selectorList;
-    private FleetMemberAPI fleetMember;
     private float shipXP;
     private int numCanBuildIn;
 
-    public void setData(LabelAPI nSelected, LabelAPI remainingXP, List<SelectorData> list, FleetMemberAPI member) {
+    public void setData(LabelAPI nSelected, LabelAPI remainingXP, List<SelectorData> list, float shipXP, int numCanBuildIn) {
         nSelectedLabel = nSelected;
         remainingXPLabel = remainingXP;
         selectorList = list;
-        fleetMember = member;
-        shipXP = SModUtils.getXP(fleetMember.getId());
-        numCanBuildIn = SModUtils.getMaxSMods(fleetMember) - fleetMember.getVariant().getSMods().size();
+        this.shipXP = shipXP;
+        this.numCanBuildIn = numCanBuildIn;
 
         if (!SModUtils.Constants.IGNORE_NO_BUILD_IN) {
             removeCantBuildIn();

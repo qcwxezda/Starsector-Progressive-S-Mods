@@ -11,6 +11,7 @@ import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.rules.MemKeys;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.impl.campaign.rulecmd.FireAll;
@@ -24,7 +25,8 @@ import data.campaign.rulecmd.util.ProgSModSelectPanelCreator;
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
 import util.SModUtils;
 
-/** ProgSModRemove [fleetMember] -- shows the built-in hull mods for [fleetMember].
+/** ProgSModRemove [fleetMember] [selectedVariant] [trigger] -- shows the built-in hull mods for 
+ *  the module of [fleetMember] whose variant is [selectedVariant].
  *  Remove the selected built-in hull mods. 
  *  Fire [trigger] upon confirmation. */
 public class ProgSModRemove extends BaseCommandPlugin {
@@ -38,10 +40,11 @@ public class ProgSModRemove extends BaseCommandPlugin {
         final String titleString = "Choose built-in hull mods to remove";
         final List<HullModSpecAPI> builtInMods = new ArrayList<>();
         final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
+        final ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(1).string);
         final List<SelectorData> selectorList = new ArrayList<>();
         final ProgSModRemovePlugin plugin = new ProgSModRemovePlugin();
         
-        Collection<String> builtInIds = fleetMember.getVariant().getSMods();
+        Collection<String> builtInIds = selectedVariant.getSMods();
         for (String id : builtInIds) {
             builtInMods.add(Global.getSettings().getHullModSpec(id));
         }
@@ -55,7 +58,8 @@ public class ProgSModRemove extends BaseCommandPlugin {
                             panel, 
                             titleString, 
                             builtInMods, 
-                            fleetMember, 
+                            selectedVariant.getHullSize(),
+                            fleetMember.getDeploymentPointsCost(), 
                             true
                         )
                     );
@@ -73,7 +77,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
                     int xpGained = 0;
                     for (SelectorData data : selectorList) {
                         if (data.button.isChecked()) {
-                            fleetMember.getVariant().removePermaMod(data.hullModId);
+                            selectedVariant.removePermaMod(data.hullModId);
                             xpGained += data.hullModCost * SModUtils.Constants.XP_REFUND_FACTOR;
                             String hullModName = Global.getSettings().getHullModSpec(data.hullModId).getDisplayName();
                             dialog.getTextPanel().addPara("Removed " + hullModName).setHighlight(hullModName);
@@ -86,7 +90,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
                         dialog.getTextPanel()
                             .addPara(String.format("The %s gained %s XP", fleetMember.getShipName(), xpGained))
                             .setHighlight(fleetMember.getShipName(), "" + xpGained);
-                        FireAll.fire(ruleId, dialog, memoryMap, params.get(1).getString(memoryMap));
+                        FireAll.fire(ruleId, dialog, memoryMap, params.get(2).getString(memoryMap));
                     }
                 }
             

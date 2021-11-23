@@ -6,7 +6,6 @@ import java.util.List;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
-import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.ButtonAPI;
@@ -174,13 +173,14 @@ public class ProgSModSelectPanelCreator {
     /** Creates the interface used for selecting hull mods, both when 
      *  building them in and removing them, just with minor differences.
      *  The panel will have title [titleString] and the XP costs, if applicable,
-     *  will be based on [fleetMember]. All hull mods from [hullModList] are
+     *  will be based on [hullSize] and [dpCost]. All hull mods from [hullModList] are
      *  shown. */
     public static List<SelectorData> createHullModSelectionPanel(
             CustomPanelAPI panel, 
             String titleString, 
             List<HullModSpecAPI> hullModList,
-            FleetMemberAPI fleetMember,
+            HullSize hullSize,
+            float dpCost,
             boolean removeMode) {
         float width = panel.getPosition().getWidth();
         float height = panel.getPosition().getHeight();
@@ -206,8 +206,8 @@ public class ProgSModSelectPanelCreator {
             SelectorData entry = addHullModSelector(
                 buttonsList, 
                 hullMod, 
-                fleetMember.getVariant().getHullSize(), 
-                fleetMember.getDeploymentPointsCost(),
+                hullSize, 
+                dpCost,
                 buttonWidth, 
                 buttonHeight, 
                 buttonPadding,
