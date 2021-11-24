@@ -286,6 +286,9 @@ public class ProgSModSelectPanelCreator {
     }
 
     public String shortenText(String text, LabelAPI label) {
+        if (text == null) {
+            return null;
+        }
         float ellipsesWidth = label.computeTextWidth("...");
         float maxWidth = buttonWidth * 0.95f - BUTTON_HEIGHT - ellipsesWidth;
         if (label.computeTextWidth(text) <= maxWidth) {

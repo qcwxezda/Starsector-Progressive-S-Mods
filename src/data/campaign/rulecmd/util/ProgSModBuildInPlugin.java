@@ -1,12 +1,11 @@
 package data.campaign.rulecmd.util;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
@@ -37,7 +36,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
     private ProgSModSelectPanelCreator panelCreator;
     private ShipVariantAPI variant;
     private FleetMemberAPI fleetMember;
-    private Set<String> selectedHullModIds;
+    private BitSet selectedHullModIds;
     private boolean isShowingAll = false;
     private MarketAPI market;
 
@@ -94,21 +93,39 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
         }
     }
 
-    /** Returns the pair (number of checked buttons, sum of checked buttons' XP costs). 
-     * Populates [checkedEntries] with hull mod ids of the checked buttons.*/
-    public Pair<Integer, Integer> tallyCheckedEntries(List<SelectorData> selectorList, Set<String> checkedEntries) {
-        if (!checkedEntries.isEmpty()) {
-            checkedEntries.clear();
-        }
+    /** Populates the pair (number of checked buttons, sum of checked buttons' XP costs). 
+     * Returns [true] iff the checked entries are the same as [selectedHullModIds].
+     * Changes [selectedHullModIds] to match current checked ids. */ 
+    public boolean tallyCheckedEntries(List<SelectorData> selectorList, Pair<Integer, Integer> numAndSum) {
         int numChecked = 0, sumChecked = 0;
-        for (SelectorData entry : selectorList) {
+        boolean noChange = true;
+        if (selectedHullModIds == null) {
+            noChange = false;
+            selectedHullModIds = new BitSet(selectorList.size());
+        }
+        Iterator<SelectorData> itr = selectorList.iterator();
+        int i = 0;
+        while (itr.hasNext()) {
+            SelectorData entry = itr.next();
             if (entry.button.isChecked()) {
-                checkedEntries.add(entry.hullModId);
                 numChecked++;
                 sumChecked += entry.hullModCost;
+                if (!selectedHullModIds.get(i)) {
+                    noChange = false;
+                    selectedHullModIds.set(i);
+                }
             }
+            else {
+                if (selectedHullModIds.get(i)) {
+                    noChange = false;
+                    selectedHullModIds.clear(i);
+                }
+            }
+            i++;
         }
-        return new Pair<>(numChecked, sumChecked);
+        numAndSum.one = numChecked;
+        numAndSum.two = sumChecked;
+        return noChange;
     }
 
     @Override
@@ -153,14 +170,12 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
                     isShowingAll = true;
                 }
 
-                Set<String> checkedIds = new HashSet<>();
-                Pair<Integer, Integer> numAndSum = tallyCheckedEntries(selectorList, checkedIds);
+                Pair<Integer, Integer> numAndSum = new Pair<>();
 
                 // If nothing was changed, return early to avoid unnecessary computation
-                if (checkedIds.equals(selectedHullModIds)) {
+                if (tallyCheckedEntries(selectorList, numAndSum)) {
                     continue;
                 }
-                selectedHullModIds = checkedIds;
 
                 numChecked = numAndSum.one;
                 remainingXP = shipXP - numAndSum.two;
@@ -246,9 +261,8 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
             // Since hull mods may have dependencies, some checked entries may
             // need to be unchecked.
             // Since dependencies can be chained, we need to do this in a loop.
-            // (Viewing hull mod dependencies as a DAG, highest possible loop order is
-            //  the length of the longest path in the DAG, also since entries
-            // only get unchecked the loop order is upper bounded by the # of checked entries.)
+            // (# of loops is bounded by # of checked entries as well as
+            // longest hull mod dependency chain)
             checkedEntriesChanged = false;
             for (SelectorData entry : selectorList) {
                 HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(entry.hullModId);
@@ -260,6 +274,9 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
                         remainingXP += entry.hullModCost;
                     }
                     String unapplicableReason = panelCreator.shortenText(hullMod.getEffect().getUnapplicableReason(tempShip), entry.costLabel);
+                    if (unapplicableReason == null) {
+                        unapplicableReason = "Can't build in (no reason given, default message)";
+                    }
                     panelCreator.disableRedAndChangeText(entry, unapplicableReason);
                 } else {
                     panelCreator.changeText(entry, entry.hullModCost + " XP");
