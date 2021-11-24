@@ -1,16 +1,29 @@
 package data.campaign.rulecmd.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
+import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import com.fs.starfarer.api.combat.HullModEffect;
+import com.fs.starfarer.api.combat.ShipAPI;
+import com.fs.starfarer.api.combat.ShipVariantAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.input.InputEventAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
+import com.fs.starfarer.api.mission.FleetSide;
+import com.fs.starfarer.api.ui.ButtonAPI;
 import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.PositionAPI;
 import com.fs.starfarer.api.util.Pair;
+
+import org.lwjgl.util.vector.Vector2f;
 
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
 import util.SModUtils;
@@ -18,19 +31,39 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 
     private LabelAPI nSelectedLabel, remainingXPLabel;
     private List<SelectorData> selectorList;
-    private float shipXP;
-    private int numCanBuildIn;
+    private float shipXP, remainingXP;
+    private int numCanBuildIn, numChecked;
+    private ButtonAPI showAllButton;
+    private ProgSModSelectPanelCreator panelCreator;
+    private ShipVariantAPI variant;
+    private FleetMemberAPI fleetMember;
+    private Set<String> selectedHullModIds;
+    private boolean isShowingAll = false;
+    private MarketAPI market;
 
-    public void setData(LabelAPI nSelected, LabelAPI remainingXP, List<SelectorData> list, float shipXP, int numCanBuildIn) {
+    public void setData(
+            LabelAPI nSelected, 
+            LabelAPI remainingXP, 
+            List<SelectorData> list, 
+            FleetMemberAPI fleetMember,
+            ShipVariantAPI variant, 
+            ButtonAPI showAllButton, 
+            ProgSModSelectPanelCreator panelCreator,
+            MarketAPI market) {
         nSelectedLabel = nSelected;
         remainingXPLabel = remainingXP;
         selectorList = list;
-        this.shipXP = shipXP;
-        this.numCanBuildIn = numCanBuildIn;
+        this.fleetMember = fleetMember;
+        shipXP = SModUtils.getXP(fleetMember.getId());
+        this.remainingXP = shipXP;
+        numCanBuildIn = SModUtils.getMaxSMods(fleetMember) - variant.getSMods().size();
+        numChecked = 0;
+        this.variant = variant;
+        this.showAllButton = showAllButton;
+        this.panelCreator = panelCreator;
+        this.market = market;
 
-        if (!SModUtils.Constants.IGNORE_NO_BUILD_IN) {
-            removeCantBuildIn();
-        }
+        pruneHullMods();
     }
 
     /** Remove the hull mods that can't be built in (i.e. SO)
@@ -41,24 +74,36 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
             SelectorData entry = itr.next();
             HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(entry.hullModId);
             if (hullMod.hasTag("no_build_in")) {
-                ProgSModSelectPanelCreator.disableEntryRed(entry);
-                entry.costLabel.setText("Cannot be built in");
-                entry.costLabel.setHighlight("Cannot be built in");
+                panelCreator.disableRedAndChangeText(entry, "Cannot be built in");
+                itr.remove();
+            }
+        }
+    }
+
+    /** Remove the hull mods that require a station or spaceport,
+     *  if fleet is not at either. */
+    private void removeIfStationRequired() {
+        Iterator<SelectorData> itr = selectorList.iterator();
+        while (itr.hasNext()) {
+            SelectorData entry = itr.next();
+            HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(entry.hullModId);
+            if (!SModUtils.canModifyHullMod(hullMod, market)) {
+                panelCreator.disableRedAndChangeText(entry, "Requires a non-hostile spaceport or orbital station");
                 itr.remove();
             }
         }
     }
 
     /** Returns the pair (number of checked buttons, sum of checked buttons' XP costs). 
-     * Populates [checkedEntries] with the checked buttons.*/
-    public Pair<Integer, Integer> tallyCheckedEntries(List<SelectorData> selectorList, List<SelectorData> checkedEntries) {
+     * Populates [checkedEntries] with hull mod ids of the checked buttons.*/
+    public Pair<Integer, Integer> tallyCheckedEntries(List<SelectorData> selectorList, Set<String> checkedEntries) {
         if (!checkedEntries.isEmpty()) {
             checkedEntries.clear();
         }
         int numChecked = 0, sumChecked = 0;
         for (SelectorData entry : selectorList) {
             if (entry.button.isChecked()) {
-                checkedEntries.add(entry);
+                checkedEntries.add(entry.hullModId);
                 numChecked++;
                 sumChecked += entry.hullModCost;
             }
@@ -88,12 +133,37 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
             // get consumed by the button click and the second doesn't seem to
             // exist.
             if (event.isMouseMoveEvent()) {
-                Pair<Integer, Integer> numAndSum = tallyCheckedEntries(selectorList, new ArrayList<SelectorData>());
-                float remainingXP = shipXP - numAndSum.two;
 
-                // Update the xp remaining and number selected labels
-                ProgSModSelectPanelCreator.setNSelectedModsText(nSelectedLabel, numAndSum.one, numCanBuildIn);
-                ProgSModSelectPanelCreator.setRemainingXPText(remainingXPLabel, remainingXP);
+                // If the show all button was checked, disable it
+                // and show the list of all hull mods
+                if (showAllButton.isChecked()) {
+                    showAllButton.setChecked(false);
+                    showAllButton.setEnabled(false);
+
+                    List<HullModSpecAPI> allHullMods = new ArrayList<>();
+                    for (String id : Global.getSector().getPlayerFaction().getKnownHullMods()) {
+                        allHullMods.add(Global.getSettings().getHullModSpec(id));
+                    }
+
+                    panelCreator.showAdditionalHullMods(filterHullMods(allHullMods), variant.getHullSize(), fleetMember.getDeploymentPointsCost(), selectorList);
+                    pruneHullMods();
+
+                    // Also, set the selected hull mods to null to force an update
+                    selectedHullModIds = null;
+                    isShowingAll = true;
+                }
+
+                Set<String> checkedIds = new HashSet<>();
+                Pair<Integer, Integer> numAndSum = tallyCheckedEntries(selectorList, checkedIds);
+
+                // If nothing was changed, return early to avoid unnecessary computation
+                if (checkedIds.equals(selectedHullModIds)) {
+                    continue;
+                }
+                selectedHullModIds = checkedIds;
+
+                numChecked = numAndSum.one;
+                remainingXP = shipXP - numAndSum.two;
 
                 // Disable or enable buttons depending on the remaining XP
                 // and hull mod build-in slots
@@ -103,20 +173,28 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
                     }
                     if (entry.hullModCost > remainingXP) {
                         if (entry.button.isEnabled()) {
-                            ProgSModSelectPanelCreator.disableEntryRed(entry);
+                            panelCreator.disableEntryRed(entry);
                         }
                     }
-                    else if (numAndSum.one >= numCanBuildIn) {
+                    else if (numChecked >= numCanBuildIn) {
                         if (entry.button.isEnabled()) {
-                            ProgSModSelectPanelCreator.disableEntryGray(entry);
+                            panelCreator.disableEntryGray(entry);
                         }
                     }
                     else {
                         if (!entry.button.isEnabled()) {
-                            ProgSModSelectPanelCreator.enableEntry(entry);
+                            panelCreator.enableEntry(entry);
                         }
                     }	
                 }
+
+                if (isShowingAll) { 
+                    disableUnapplicable();
+                }
+
+                // Update the xp remaining and number selected labels
+                panelCreator.setNSelectedModsText(nSelectedLabel, numChecked, numCanBuildIn);
+                panelCreator.setRemainingXPText(remainingXPLabel, remainingXP);
             }
         }
     }
@@ -127,4 +205,110 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 
     @Override
     public void renderBelow(float alphaMult) {}
+
+    /* Disable the hull mods that are not applicable to the current ship variant.
+       Returns the number of entries that were checked that became unchecked. */
+    private void disableUnapplicable() {
+        // Temporarily hijack the player shuttle (lol) so we have a ShipAPI for testing
+        // ShipAPI tempShip = Global.getCombatEngine().getPlayerShip();
+        // ShipVariantAPI originalVariant = tempShip.getVariant();
+        // HullSize originalHullSize = tempShip.getHullSize();
+        // float originalMaxHP = tempShip.getMaxHitpoints();
+        // ShipVariantAPI checkerVariant = variant.clone();
+        // tempShip.setVariantForHullmodCheckOnly(checkerVariant);
+        // tempShip.setHullSize(variant.getHullSize());
+        // tempShip.setMaxHitpoints(variant.getHullSpec().getHitpoints());
+        // ShieldSpecAPI variantShields = variant.getHullSpec().getShieldSpec();
+        // tempShip.setShield(variantShields.getType(), variantShields.getUpkeepCost(), variantShields.getFluxPerDamageAbsorbed(), variantShields.getArc());
+        boolean checkedEntriesChanged = true;
+        while (checkedEntriesChanged) {
+            ShipVariantAPI checkerVariant = variant.clone();
+            ShipAPI tempShip = Global.getCombatEngine().getFleetManager(FleetSide.PLAYER).spawnShipOrWing(variant.getHullVariantId(), new Vector2f(), 0f);
+            tempShip.setVariantForHullmodCheckOnly(checkerVariant);
+            
+            // Add all the mods that are currently checked
+            // as well as all the hullmods already in [variant]
+            checkerVariant.getHullMods().clear();
+            for (SelectorData entry : selectorList) {
+                if (entry.button.isChecked()) {
+                    checkerVariant.addPermaMod(entry.hullModId);
+                    applyHullModEffectsToShip(tempShip, Global.getSettings().getHullModSpec(entry.hullModId));
+                }
+            }
+            for (String id : variant.getHullMods()) {
+                if (!checkerVariant.hasHullMod(id)) {
+                    checkerVariant.addPermaMod(id);
+                    applyHullModEffectsToShip(tempShip, Global.getSettings().getHullModSpec(id));
+                }
+            }
+
+            // Now check which mods are no longer applicable
+            // Since hull mods may have dependencies, some checked entries may
+            // need to be unchecked.
+            // Since dependencies can be chained, we need to do this in a loop.
+            // (Viewing hull mod dependencies as a DAG, highest possible loop order is
+            //  the length of the longest path in the DAG, also since entries
+            // only get unchecked the loop order is upper bounded by the # of checked entries.)
+            checkedEntriesChanged = false;
+            for (SelectorData entry : selectorList) {
+                HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(entry.hullModId);
+                if (!hullMod.getEffect().isApplicableToShip(tempShip)) {
+                    if (entry.button.isChecked()) {
+                        entry.button.setChecked(false);
+                        checkedEntriesChanged = true;
+                        numChecked--;
+                        remainingXP += entry.hullModCost;
+                    }
+                    String unapplicableReason = panelCreator.shortenText(hullMod.getEffect().getUnapplicableReason(tempShip), entry.costLabel);
+                    panelCreator.disableRedAndChangeText(entry, unapplicableReason);
+                } else {
+                    panelCreator.changeText(entry, entry.hullModCost + " XP");
+                    // Enable entry if possible
+                    if (remainingXP >= entry.hullModCost && numChecked < numCanBuildIn) {
+                        panelCreator.enableEntry(entry);
+                    }
+                }
+            }
+        }
+
+        // tempShip.setShield(ShieldType.NONE, 0f, 1f, 0f);
+        // tempShip.setMaxHitpoints(originalMaxHP);
+        // tempShip.setHullSize(originalHullSize);
+        // tempShip.setVariantForHullmodCheckOnly(originalVariant);
+    }
+
+    private void applyHullModEffectsToShip(ShipAPI ship, HullModSpecAPI hullMod) {
+        HullModEffect effect = hullMod.getEffect();
+        effect.applyEffectsBeforeShipCreation(ship.getHullSize(), ship.getMutableStats(), hullMod.getId());
+        effect.applyEffectsAfterShipCreation(ship, hullMod.getId());
+    }
+
+    /** Returns a sorted list of the hull mods that [variant] does not already have. */
+    private List<HullModSpecAPI> filterHullMods(List<HullModSpecAPI> hullMods) {
+        List<HullModSpecAPI> filteredHullMods = new ArrayList<>();
+        for (HullModSpecAPI hullMod : hullMods) {
+            if (variant.hasHullMod(hullMod.getId())) {
+                continue;
+            }
+            filteredHullMods.add(hullMod);
+        }
+        Collections.sort(filteredHullMods, 
+            new Comparator<HullModSpecAPI> () {
+                @Override
+                public int compare(HullModSpecAPI a, HullModSpecAPI b) {
+                    return a.getDisplayName().compareTo(b.getDisplayName());
+                }
+            }
+        );
+        return filteredHullMods;
+    }
+
+    /** Permanently disable and remove hull mods from the selector list
+     *  that will never be able to be modified.*/
+    private void pruneHullMods() {
+        if (!SModUtils.Constants.IGNORE_NO_BUILD_IN) {
+            removeCantBuildIn();
+        }
+        removeIfStationRequired();
+    }
 }

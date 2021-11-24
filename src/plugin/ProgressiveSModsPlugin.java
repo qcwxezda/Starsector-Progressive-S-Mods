@@ -25,6 +25,8 @@ public class ProgressiveSModsPlugin extends com.fs.starfarer.api.BaseModPlugin {
         else {
             Global.getSettings().getHullModSpec("progsmod_xptracker").setHiddenEverywhere(true);
             Global.getSector().getMemory().set("$progsmodEnabled", false);
+
+            Misc.MAX_PERMA_MODS = Global.getSettings().getInt("maxPermanentHullmods");
         }
     }
 }

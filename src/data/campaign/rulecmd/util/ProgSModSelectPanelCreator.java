@@ -1,6 +1,5 @@
 package data.campaign.rulecmd.util;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fs.starfarer.api.Global;
@@ -39,6 +38,24 @@ public class ProgSModSelectPanelCreator {
         BRIGHT_COLOR = playerFaction.getBrightUIColor();
     }
 
+    private TooltipMakerAPI buttonsList, title;
+    private final CustomPanelAPI panel;
+    private float width, height;
+    private float buttonWidth, buttonListHorizontalPadding;
+    private boolean removeMode;
+
+    public ProgSModSelectPanelCreator(CustomPanelAPI panel, boolean removeMode) {
+        this.panel = panel;
+        this.removeMode = removeMode;
+
+        width = panel.getPosition().getWidth();
+        height = panel.getPosition().getHeight();
+        buttonWidth = width * 0.95f;
+        // There seems to be a base horizontal padding of 10f, 
+        // need to account for this for true centering 
+        buttonListHorizontalPadding = 0.5f * (width - buttonWidth - 10f);
+    }
+
     /** A container for the button, text, etc. in a 
      * hull mod entry that needs to be modifiable. */
     public static class SelectorData {
@@ -59,11 +76,10 @@ public class ProgSModSelectPanelCreator {
 
     /** Adds an area checkbox on top of an image-with-text. 
      *  Returns the button, title text, and cost info text. */
-    private static SelectorData addHullModSelector(
+    private SelectorData addHullModSelector(
                 TooltipMakerAPI tooltip, 
                 HullModSpecAPI hullMod,
-                HullSize hullSize,
-                float deploymentCost, 
+                int hullModCost, 
                 float width, 
                 float height, 
                 float pad,
@@ -85,9 +101,7 @@ public class ProgSModSelectPanelCreator {
         nameText.setHighlight(hullMod.getDisplayName());
         nameText.setHighlightColor(removeMode ? Misc.getStoryOptionColor() : Color.WHITE);
         imageAndText.setParaFontOrbitron();
-        int hullModCost = 0;
         LabelAPI costTextLabel = null;
-        hullModCost = SModUtils.getBuildInCost(hullMod, hullSize, deploymentCost);
         String costText = 
             removeMode 
                 ? String.format("refunds %s XP", (int) (hullModCost * SModUtils.Constants.XP_REFUND_FACTOR)) 
@@ -102,7 +116,7 @@ public class ProgSModSelectPanelCreator {
     /** Update the number of selected hull mods text to show the following:
      *  "Selected: [left]/[right]".
      *  Modifies and returns [textLabel]. */
-    public static LabelAPI setNSelectedModsText(LabelAPI textLabel, int left, int right) {
+    public LabelAPI setNSelectedModsText(LabelAPI textLabel, int left, int right) {
         String newText = String.format("%s%s/%s", NMODS_PREFIX, left, right);
         textLabel.setText(newText);
         textLabel.setHighlight(NMODS_PREFIX.length(), NMODS_PREFIX.length() + String.valueOf(left).length() - 1);
@@ -113,7 +127,7 @@ public class ProgSModSelectPanelCreator {
     /** Update the remaining XP label to show the following:
      *  "XP remaining: [xp]"
      *  Modifies and returns [textLabel]. */
-    public static LabelAPI setRemainingXPText(LabelAPI textLabel, float xp) {
+    public LabelAPI setRemainingXPText(LabelAPI textLabel, float xp) {
         String newText = XP_PREFIX + (int) xp;
         textLabel.setText(newText);
         textLabel.setHighlight(XP_PREFIX.length(), newText.length() - 1);
@@ -122,15 +136,24 @@ public class ProgSModSelectPanelCreator {
 
     /** Disable a hull mod entry by disabling its button, 
      * darkening the font, and setting the XP color to red. */
-    public static void disableEntryRed(SelectorData entry) {
+    public void disableEntryRed(SelectorData entry) {
         entry.button.setEnabled(false);
         entry.costLabel.setHighlightColor(RED);
         entry.nameLabel.setHighlightColor(Color.GRAY);
     }
 
     /** Disable a hull mod entry by disabling its button, 
+     * darkening the font, and setting the XP color to red. 
+     * Also changes the cost text to show [newText]. */
+    public void disableRedAndChangeText(SelectorData entry, String newText) {
+        entry.costLabel.setText(newText);
+        entry.costLabel.setHighlight(newText);
+        disableEntryRed(entry);
+    }
+
+    /** Disable a hull mod entry by disabling its button, 
      * darkening the font, and setting the XP color to gray. */
-    public static void disableEntryGray(SelectorData entry) {
+    public void disableEntryGray(SelectorData entry) {
         entry.button.setEnabled(false);
         entry.costLabel.setHighlightColor(Color.GRAY);
         entry.nameLabel.setHighlightColor(Color.GRAY);
@@ -138,16 +161,22 @@ public class ProgSModSelectPanelCreator {
 
     /** Enable a hull mod entry by enabling its button,
      *  lightening the font, and setting the XP color to white. */
-    public static void enableEntry(SelectorData entry) {
+    public void enableEntry(SelectorData entry) {
         entry.button.setEnabled(true);
         entry.costLabel.setHighlightColor(Color.WHITE);
         entry.nameLabel.setHighlightColor(Color.WHITE);
     }
 
+    /** Changes the cost text to show [newText]. */
+    public void changeText(SelectorData entry, String newText) {
+        entry.costLabel.setText(newText);
+        entry.costLabel.setHighlight(newText);
+    }
+
     /** Adds the "Selected: x/y" and "XP: z" counters
      *  to the hull mod selection interface.
      *  Returns both LabelAPI objects. */
-    public static Pair<LabelAPI, LabelAPI> addCountAndXPToPanel(CustomPanelAPI panel) {
+    public Pair<LabelAPI, LabelAPI> addCountAndXPToPanel() {
         float width = panel.getPosition().getWidth();
         float trackerWidth = width * 0.85f;
         TooltipMakerAPI countTracker = panel.createUIElement(trackerWidth, TRACKER_HEIGHT, false);
@@ -160,7 +189,7 @@ public class ProgSModSelectPanelCreator {
     }
 
     /** Adds "XP: x" counter to the hull mod selection interface. */
-    public static LabelAPI addXPToPanel(CustomPanelAPI panel) {
+    public LabelAPI addXPToPanel() {
         float width = panel.getPosition().getWidth();
         float trackerWidth = width * 0.85f;
         TooltipMakerAPI xpTracker = panel.createUIElement(trackerWidth, TRACKER_HEIGHT, false);
@@ -174,48 +203,107 @@ public class ProgSModSelectPanelCreator {
      *  building them in and removing them, just with minor differences.
      *  The panel will have title [titleString] and the XP costs, if applicable,
      *  will be based on [hullSize] and [dpCost]. All hull mods from [hullModList] are
-     *  shown. */
-    public static List<SelectorData> createHullModSelectionPanel(
-            CustomPanelAPI panel, 
+     *  shown. 
+     *  Fills in the [selectorList] argument.
+     *  Returns the "show all" button in add mode or null in remove mode. */
+    public ButtonAPI createHullModSelectionPanel(
             String titleString, 
             List<HullModSpecAPI> hullModList,
             HullSize hullSize,
             float dpCost,
-            boolean removeMode) {
-        float width = panel.getPosition().getWidth();
-        float height = panel.getPosition().getHeight();
+            List<SelectorData> selectorList) {
+        
 
         // TITLE
-        TooltipMakerAPI title = panel.createUIElement(width - 10f, TITLE_HEIGHT, false);
+        title = panel.createUIElement(width - 10f, TITLE_HEIGHT, false);
         title.setTitleOrbitronLarge();
         title.addTitle(titleString).setAlignment(Alignment.MID);
         panel.addUIElement(title).inTMid(0f);
 
         // BUTTON LIST
-        float buttonWidth = width * 0.95f;
-        float buttonHeight = BUTTON_HEIGHT;
-        float buttonPadding = BUTTON_PADDING;
         float buttonListHeight = height - TITLE_HEIGHT - BUTTON_PADDING;
-        // There seems to be a base horizontal padding of 10f, 
-        // need to account for this for true centering 
-        float buttonListHorizontalPadding = 0.5f * (width - buttonWidth - 10f);
 
-        List<SelectorData> selectorList = new ArrayList<>();
-        TooltipMakerAPI buttonsList = panel.createUIElement(width, buttonListHeight, true);
+        buttonsList = panel.createUIElement(width, buttonListHeight, true);
         for (HullModSpecAPI hullMod : hullModList) {
-            SelectorData entry = addHullModSelector(
-                buttonsList, 
-                hullMod, 
-                hullSize, 
-                dpCost,
-                buttonWidth, 
-                buttonHeight, 
-                buttonPadding,
-                removeMode
+            selectorList.add(
+                addHullModSelector(
+                    buttonsList, 
+                    hullMod, 
+                    SModUtils.getBuildInCost(hullMod, hullSize, dpCost),
+                    buttonWidth, 
+                    BUTTON_HEIGHT, 
+                    BUTTON_PADDING,
+                    removeMode
+                )
             );
-            selectorList.add(entry);
         }
         panel.addUIElement(buttonsList).belowLeft(title, buttonListHorizontalPadding);
-        return selectorList;
+
+        if (!removeMode) {
+            float showAllWidth = 100f;
+            float showAllHeight = 25f;
+            TooltipMakerAPI showAllElement = panel.createUIElement(showAllWidth, showAllHeight, false);
+            ButtonAPI showAllButton = 
+                showAllElement.addAreaCheckbox(
+                    "Show all", 
+                    "SHOWALLBUTTON", 
+                    BASE_COLOR, 
+                    DARK_COLOR,
+                    BRIGHT_COLOR, 
+                    showAllWidth, 
+                    25f, 
+                    showAllHeight
+                );
+            panel.addUIElement(showAllElement).inBL(5f, -35f);
+            return showAllButton;
+        }
+
+        return null;
+    }
+
+    /** Adds the given hull mods to the UI component with the hull mod selector buttons.
+     *  Appends the list of corresponding SelectorData to [selectorList]. */
+    public void showAdditionalHullMods(List<HullModSpecAPI> hullModList, HullSize hullSize, float dpCost, List<SelectorData> selectorList) {
+        if (buttonsList == null) {
+            return;
+        }
+        
+        for (HullModSpecAPI hullMod : hullModList) {
+            selectorList.add(
+                addHullModSelector(
+                    buttonsList, 
+                    hullMod, 
+                    SModUtils.getBuildInCost(hullMod, hullSize, dpCost), 
+                    buttonWidth, 
+                    BUTTON_HEIGHT, 
+                    BUTTON_PADDING, 
+                    removeMode
+                )
+            );
+        }
+
+        panel.addUIElement(buttonsList).belowLeft(title, buttonListHorizontalPadding);
+    }
+
+    public String shortenText(String text, LabelAPI label) {
+        float ellipsesWidth = label.computeTextWidth("...");
+        float maxWidth = buttonWidth * 0.95f - BUTTON_HEIGHT - ellipsesWidth;
+        if (label.computeTextWidth(text) <= maxWidth) {
+            return text;
+        }
+        int left = 0, right = text.length();
+
+        String newText = text;
+        while (right > left) {
+            int mid = (left + right) / 2;
+            newText = text.substring(0, mid);
+            float curWidth = label.computeTextWidth(newText);
+            if (curWidth > maxWidth) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return newText + "...";
     }
 }

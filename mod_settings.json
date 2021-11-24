@@ -2,14 +2,14 @@
     # How many story points it costs to raise 
     # a ship's maximum number of built-in hull mods
     # the first time.
-    "BaseExtraSModCostFrigate": 2,
-    "BaseExtraSModCostDestroyer": 2,
+    "BaseExtraSModCostFrigate": 1,
+    "BaseExtraSModCostDestroyer": 1,
     "BaseExtraSModCostCruiser": 2,
     "BaseExtraSModCostCapital": 3,
 
     # Determines how the story point cost grows as
     # a ship's build-in limit grows.
-    "extraSModCostGrowthType": 0, # 0 for linear, 1 for exponential
+    "extraSModCostGrowthType": 1, # 0 for linear, 1 for exponential
     "extraSModCostGrowthFactor": 2, # story point cost is base * fac^n OR base + n*fac
 
     # Whether or not to allow increasing max S-Mods

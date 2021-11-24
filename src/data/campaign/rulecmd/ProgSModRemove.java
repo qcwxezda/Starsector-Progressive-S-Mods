@@ -53,18 +53,22 @@ public class ProgSModRemove extends BaseCommandPlugin {
             new CustomDialogDelegate() {
                 @Override
                 public void createCustomDialog(CustomPanelAPI panel) {
-                    selectorList.addAll(
-                        ProgSModSelectPanelCreator.createHullModSelectionPanel(
-                            panel, 
-                            titleString, 
-                            builtInMods, 
-                            selectedVariant.getHullSize(),
-                            fleetMember.getDeploymentPointsCost(), 
-                            true
-                        )
+                    ProgSModSelectPanelCreator panelCreator = new ProgSModSelectPanelCreator(panel, true);
+                    panelCreator.createHullModSelectionPanel(
+                        titleString, 
+                        builtInMods, 
+                        selectedVariant.getHullSize(),
+                        fleetMember.getDeploymentPointsCost(), 
+                        selectorList
                     );
-                    LabelAPI xpLabel = ProgSModSelectPanelCreator.addXPToPanel(panel);
-                    plugin.setData(xpLabel, selectorList, SModUtils.getXP(fleetMember.getId()));
+                    LabelAPI xpLabel = panelCreator.addXPToPanel();
+                    plugin.setData(
+                        xpLabel, 
+                        selectorList, 
+                        SModUtils.getXP(fleetMember.getId()), 
+                        panelCreator,
+                        dialog.getInteractionTarget() == null ? null : dialog.getInteractionTarget().getMarket()
+                    );
                 }
 
                 @Override

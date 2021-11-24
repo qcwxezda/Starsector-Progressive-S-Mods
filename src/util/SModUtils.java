@@ -6,9 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.RepLevel;
+import com.fs.starfarer.api.campaign.econ.Industry;
+import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
+import com.fs.starfarer.api.impl.campaign.ids.HullMods;
+import com.fs.starfarer.api.impl.campaign.ids.Industries;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 
@@ -323,4 +328,25 @@ public class SModUtils {
         }
         return result;
     }
+
+    /** Mostly copied from the API */
+    public static boolean canModifyHullMod(HullModSpecAPI spec, MarketAPI market) {
+        if (spec == null) return true;
+        
+        boolean reqSpaceport = spec.hasTag(HullMods.TAG_REQ_SPACEPORT);
+        if (!reqSpaceport) return true;
+        
+        if (market == null) return false;
+
+        RepLevel level = market.getFaction().getRelToPlayer().getLevel();
+        if (level == RepLevel.VENGEFUL || level == RepLevel.HOSTILE || level == RepLevel.INHOSPITABLE) return false;
+        
+        for (Industry ind : market.getIndustries()) {
+            if (ind.getSpec().hasTag(Industries.TAG_STATION)) return true;
+            if (ind.getSpec().hasTag(Industries.TAG_SPACEPORT)) return true;
+        }
+        
+        return false;
+    }
+    
 }

@@ -17,6 +17,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.impl.campaign.rulecmd.FireAll;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
+import com.fs.starfarer.api.ui.ButtonAPI;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.util.Pair;
@@ -58,24 +59,25 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
             new CustomDialogDelegate() {
                 @Override
                 public void createCustomDialog(CustomPanelAPI panel) {
-                    selectorList.addAll(
-                        ProgSModSelectPanelCreator.createHullModSelectionPanel(
-                            panel, 
+                    ProgSModSelectPanelCreator panelCreator = new ProgSModSelectPanelCreator(panel, false);
+                    ButtonAPI showAllButton = 
+                        panelCreator.createHullModSelectionPanel(
                             titleString, 
                             nonBuiltInMods, 
                             selectedVariant.getHullSize(),
                             fleetMember.getDeploymentPointsCost(), 
-                            false
-                        )
-                    );
-                    Pair<LabelAPI, LabelAPI> textPair = ProgSModSelectPanelCreator.addCountAndXPToPanel(panel);
+                            selectorList
+                        );
+                    Pair<LabelAPI, LabelAPI> textPair = panelCreator.addCountAndXPToPanel();
                     plugin.setData(
                         textPair.one, 
                         textPair.two, 
                         selectorList,
-                        SModUtils.getXP(fleetMember.getId()), 
-                        SModUtils.getMaxSMods(fleetMember) - 
-                        selectedVariant.getSMods().size()
+                        fleetMember,
+                        selectedVariant,
+                        showAllButton,
+                        panelCreator,
+                        dialog.getInteractionTarget() == null ? null : dialog.getInteractionTarget().getMarket()
                     );
                 }
 

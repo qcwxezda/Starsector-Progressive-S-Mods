@@ -57,7 +57,9 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
         // a copy of this plugin
         boolean firstTimeOpened;
         if (dialog.getPlugin() instanceof ProgSModHandleOptionsList) {
-            originalPlugin = ((ProgSModHandleOptionsList) dialog.getPlugin()).originalPlugin;
+            ProgSModHandleOptionsList plugin = (ProgSModHandleOptionsList) dialog.getPlugin(); 
+            originalPlugin = plugin.originalPlugin;
+            currentModuleId = plugin.currentModuleId;
             firstTimeOpened = false;
         } else {
             originalPlugin = dialog.getPlugin();
@@ -204,9 +206,6 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
     /** Disables or enables the build in and remove options
      *  based on the S-Mod stats of [variant]. */
     private void updateOptions(ShipVariantAPI variant){ 
-        // If the ship does not have any hull mods that can be built in,
-        // disable the build-in option
-        dialog.getOptionPanel().setEnabled(buildInOption, !variant.getNonBuiltInHullmods().isEmpty());
         // If the ship does not have any S-Mods to remove, disable the remove option
         if (CAN_REFUND_SMODS) {
             dialog.getOptionPanel().setEnabled(removeOption, !variant.getSMods().isEmpty());

@@ -13,6 +13,8 @@ progsmod_ShipAugment,DialogOptionSelected,"$option == progsmod_OptionAugment
 $selectedShip != null","ProgSModIncreaseLimit $selectedShip
 FireAll progsmod_SelectShip",,,,,
 progsmod_ShipBuildIn,DialogOptionSelected,"$option == progsmod_OptionBuildIn
-$selectedShip != null",ProgSModBuildIn $selectedShip $selectedVariant progsmod_SelectShip,,,,,
+$selectedShip != null
+$selectedVariant != null",ProgSModBuildIn $selectedShip $selectedVariant progsmod_SelectShip,,,,,
 progsmod_ShipRemove,DialogOptionSelected,"$option == progsmod_OptionRemove
-$selectedShip != null",ProgSModRemove $selectedShip $selectedVariant progsmod_SelectShip,,,,,
+$selectedShip != null
+$selectedVariant != null",ProgSModRemove $selectedShip $selectedVariant progsmod_SelectShip,,,,,
