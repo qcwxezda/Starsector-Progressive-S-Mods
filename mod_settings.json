@@ -49,7 +49,7 @@
         "onlyGiveXPForKills": false, # Whether enemy ships that get away shouldn't give XP
 
         # All XP gained by ships in combat is multiplied by this amount
-        "xpGainMultiplier": 100000,#36,
+        "xpGainMultiplier": 36,
 
         # If a ship deals any hull damage to an opponent, it counts as if
         # it had done at least this fraction of the target's total HP
