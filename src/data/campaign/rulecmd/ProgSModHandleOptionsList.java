@@ -95,7 +95,7 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
 
         // Add options to select ship modules
         List<String> moduleIds = fleetMember.getVariant().getModuleSlots();
-        if (moduleIds.size() > 0) {
+        if (moduleIds != null) {
             for (String id : moduleIds) { 
                 dialog.getOptionPanel().addOption(MANAGE_MODULE_TEXT + "module: " + id, MODULE_OPTION_PREFIX + id);
                 moduleOptionIds.add(id);

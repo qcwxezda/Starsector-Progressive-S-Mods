@@ -190,7 +190,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         }
         for (DeployedFleetMemberAPI member : playerFleet) {
             ShipVariantAPI variant = member.getMember().getVariant();
-            if (variant.getModuleSlots().size() > 0) {
+            if (variant.getModuleSlots() != null) {
                 for (String moduleId : variant.getModuleSlots()) {
                     String moduleFleetId = variantToFleetId.get(variant.getModuleVariant(moduleId));
                     if (moduleFleetId != null) {
