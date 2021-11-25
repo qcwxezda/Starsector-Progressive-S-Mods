@@ -1,4 +1,5 @@
 package data.campaign;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +17,7 @@ import com.fs.starfarer.api.campaign.CombatDamageData.DealtByFleetMember;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.EngagementResultAPI;
 import com.fs.starfarer.api.combat.FighterWingAPI;
+import com.fs.starfarer.api.combat.ShipHullSpecAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.VariantSource;
@@ -121,6 +123,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         // Give additional XP to non-combat ships in the player's fleet
         // Also add XP tracking hullmod to any ship that has XP
         List<FleetMemberAPI> playerEntireFleet = Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy();
+        List<FleetMemberAPI> civilianShips = new ArrayList<>();
         for (FleetMemberAPI member : playerEntireFleet) {
             // Show the XP gain in the dialog
             if (totalWeightedDamage.containsKey(member.getId())) {
@@ -128,7 +131,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
             }
             if (member.isCivilian()) {
                 SModUtils.giveXP(member.getId(), totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
-                addXPGainToDialog(member, (int) (totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION), "due to being a civilian ship.");
+                civilianShips.add(member);
             }
             if (SModUtils.getXP(member.getId()) > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {
                 if (member.getVariant().isStockVariant()) {
@@ -138,6 +141,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
                 member.getVariant().addPermaMod("progsmod_xptracker", false);
             }
         }
+        addCoalescedXPGainToDialog(civilianShips, (int) (totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION), "due to being civilian ships");
     }
 
     /** Creates the text "The [fleetMember] gained [xp] xp. 
@@ -150,16 +154,35 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         StringBuilder sb = new StringBuilder();
         sb.append("The ");
         String shipName = fleetMember.getShipName();
-        sb.append(shipName);
-        sb.append(", ");
-        String hullName = fleetMember.getVariant().getFullDesignationWithHullName();
-        sb.append(hullName);
-        sb.append(" gained ");
-        sb.append(xp);
-        sb.append(" XP");
+        sb.append(shipName + ", ");
+        ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
+        sb.append(hullSpec.getHullNameWithDashClass() + " gained " + xp + " XP");
         lastDialog.getTextPanel().setFontSmallInsignia();
         LabelAPI para = lastDialog.getTextPanel().addPara(sb.toString() + " " + (additionalText == null ? "" : additionalText));
-        para.setHighlight(shipName, hullName, "" + xp);
+        para.setHighlight(hullSpec.getHullName(), "" + xp);
+        lastDialog.getTextPanel().setFontInsignia();
+    }
+
+    /** Adds "the following ships gained [xp] XP [additionalText]:" followed by the list of ships in
+     *  [fleetMembers]. */
+    private void addCoalescedXPGainToDialog(List<FleetMemberAPI> fleetMembers, int xp, String additionalText) {
+        if (lastDialog == null || lastDialog.getTextPanel() == null) {
+            return;
+        }
+        List<String> highlights = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        sb.append("The following ships gained " + xp + " xp " + additionalText + ":");
+        highlights.add("" + xp);
+        for (FleetMemberAPI fleetMember : fleetMembers) {
+            sb.append("\n    -");
+            String shipName = fleetMember.getShipName();
+            ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
+            sb.append(shipName + ", " + hullSpec.getHullNameWithDashClass());
+            highlights.add(hullSpec.getHullName());
+        }
+        lastDialog.getTextPanel().setFontSmallInsignia();
+        LabelAPI text = lastDialog.getTextPanel().addPara(sb.toString());
+        text.setHighlight(highlights.toArray(new String[0]));
         lastDialog.getTextPanel().setFontInsignia();
     }
 
