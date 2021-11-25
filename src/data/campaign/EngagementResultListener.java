@@ -9,6 +9,7 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BaseCampaignEventListener;
 import com.fs.starfarer.api.campaign.CombatDamageData;
 import com.fs.starfarer.api.campaign.EngagementResultForFleetAPI;
+import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.CombatDamageData.DamageToFleetMember;
 import com.fs.starfarer.api.campaign.CombatDamageData.DealtByFleetMember;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
@@ -24,6 +25,10 @@ public class EngagementResultListener extends BaseCampaignEventListener {
 
     public EngagementResultListener(boolean permaRegister) {
         super(permaRegister);
+    }
+
+    @Override
+    public void reportShownInteractionDialog(InteractionDialogAPI dialog) {
     }
 
     @Override

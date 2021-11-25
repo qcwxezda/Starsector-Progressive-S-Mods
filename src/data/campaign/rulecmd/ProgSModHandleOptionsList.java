@@ -81,7 +81,9 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
         dialog.getOptionPanel().clearOptions();
 
         // The selected variant is the base ship, by default
-        memoryMap.get(MemKeys.LOCAL).set(selectedVariantKey, fleetMember.getVariant(), 0f);
+        if (firstTimeOpened) {
+            memoryMap.get(MemKeys.LOCAL).set(selectedVariantKey, fleetMember.getVariant(), 0f);
+        }
 
         // Add build in option
         dialog.getOptionPanel().addOption(String.format(BUILD_IN_TEXT + THIS_SHIP_TEXT, nRemaining), buildInOption);
@@ -100,7 +102,11 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
             }
         }
 
-        updateOptions(fleetMember.getVariant());
+        if (currentModuleId.equals(MODULE_ID_BASE)) {
+            updateOptions(fleetMember.getVariant());
+        } else {
+            updateOptions(fleetMember.getVariant().getModuleVariant(currentModuleId));
+        }
 
         // Add in the +extra S-Mods option if that was allowed
         if (SModUtils.Constants.ALLOW_INCREASE_SMOD_LIMIT) {

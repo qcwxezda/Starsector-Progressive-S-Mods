@@ -35,6 +35,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
     private ButtonAPI showAllButton;
     private ProgSModSelectPanelCreator panelCreator;
     private ShipVariantAPI variant;
+    private String variantId;
     private FleetMemberAPI fleetMember;
     private BitSet selectedHullModIds;
     private boolean isShowingAll = false;
@@ -61,6 +62,20 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
         this.showAllButton = showAllButton;
         this.panelCreator = panelCreator;
         this.market = market;
+
+        // Get the variant id for [variant]
+        // If it doesnt exist, find one from the settings.
+        // If that doesn't exist, just disable the show all button
+        variantId = variant.getHullVariantId();
+        if (!Global.getSettings().doesVariantExist(variantId)) {
+            List<String> possibleIds = Global.getSettings().getHullIdToVariantListMap().get(variant.getHullSpec().getHullId());
+            if (!possibleIds.isEmpty()) {
+                variantId = possibleIds.get(0);
+            } 
+            else {
+                showAllButton.setEnabled(false);
+            }
+        }
 
         pruneHullMods();
     }
@@ -237,12 +252,13 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
         // tempShip.setShield(variantShields.getType(), variantShields.getUpkeepCost(), variantShields.getFluxPerDamageAbsorbed(), variantShields.getArc());
         boolean checkedEntriesChanged = true;
         while (checkedEntriesChanged) {
-            ShipVariantAPI checkerVariant = variant.clone();
-            ShipAPI tempShip = Global.getCombatEngine().getFleetManager(FleetSide.PLAYER).spawnShipOrWing(variant.getHullVariantId(), new Vector2f(), 0f);
-            tempShip.setVariantForHullmodCheckOnly(checkerVariant);
+            //ShipVariantAPI checkerVariant = variant.clone();
+            ShipAPI tempShip = Global.getCombatEngine().getFleetManager(FleetSide.PLAYER).spawnShipOrWing(variantId, new Vector2f(), 0f);
+            //tempShip.setVariantForHullmodCheckOnly(checkerVariant);
+            ShipVariantAPI checkerVariant = tempShip.getVariant();
             
             // Add all the mods that are currently checked
-            // as well as all the hullmods already in [variant]
+            // a s well as all the hullmods already in [variant]
             checkerVariant.getHullMods().clear();
             for (SelectorData entry : selectorList) {
                 if (entry.button.isChecked()) {
