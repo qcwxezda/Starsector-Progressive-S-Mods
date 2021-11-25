@@ -1,4 +1,5 @@
 package data.campaign;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,13 +16,17 @@ import com.fs.starfarer.api.campaign.CombatDamageData.DealtByFleetMember;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.EngagementResultAPI;
 import com.fs.starfarer.api.combat.FighterWingAPI;
+import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.VariantSource;
+import com.fs.starfarer.api.ui.LabelAPI;
 
 import util.SModUtils;
 import util.SModUtils.Constants;
 
 public class EngagementResultListener extends BaseCampaignEventListener {
+
+    private InteractionDialogAPI lastDialog;
 
     public EngagementResultListener(boolean permaRegister) {
         super(permaRegister);
@@ -29,6 +34,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
 
     @Override
     public void reportShownInteractionDialog(InteractionDialogAPI dialog) {
+        lastDialog = dialog;
     }
 
     @Override
@@ -49,7 +55,14 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         // carrierTable[id] points to carrier that owns id
         Map<String, String> carrierTable = new HashMap<>();
         populateCarrierTable(playerFleet, carrierTable);
+        
 
+        // moduleTable[id] points to the fleetMemberId that owns [id]
+        // Need the combat damage data to extract the temp fleet members for the modules
+        Map<String, String> moduleTable = new HashMap<>();
+        populateModuleTable(playerFleet, result.getLastCombatDamageData().getDealt().keySet(), moduleTable);
+        
+        
         // List of ships that are eligible to gain XP
         Set<String> eligibleReceivers = new HashSet<>();
         eligibleReceivers.addAll(SModUtils.getDeployedFleetMemberIds(playerFleet));
@@ -82,8 +95,10 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         };
         populateWeightedDamageTable(result.getLastCombatDamageData(), eligibleReceivers, eligibleTargets, weightedDamageTable, damageFn);
 
-        // Transfer damage from fighters to their carriers
+        // Transfer damage from fighters to their carriers,
+        // and from modules to their owners
         transferWeightedDamage(carrierTable, weightedDamageTable);
+        transferWeightedDamage(moduleTable, weightedDamageTable);
 
         // Flatten the damage table into total weighted damage per ship, 
         // taking minimum contribution into account
@@ -107,8 +122,13 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         // Also add XP tracking hullmod to any ship that has XP
         List<FleetMemberAPI> playerEntireFleet = Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy();
         for (FleetMemberAPI member : playerEntireFleet) {
+            // Show the XP gain in the dialog
+            if (totalWeightedDamage.containsKey(member.getId())) {
+                addXPGainToDialog(member, (int) (totalWeightedDamage.get(member.getId()) * SModUtils.Constants.XP_GAIN_MULTIPLIER), "from combat.");
+            }
             if (member.isCivilian()) {
                 SModUtils.giveXP(member.getId(), totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
+                addXPGainToDialog(member, (int) (totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION), "due to being a civilian ship.");
             }
             if (SModUtils.getXP(member.getId()) > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {
                 if (member.getVariant().isStockVariant()) {
@@ -120,8 +140,31 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         }
     }
 
+    /** Creates the text "The [fleetMember] gained [xp] xp. 
+     *  Adds the specified text as a paragraph on the last known dialog
+     *  Adds [additionalText] to the end of the XP gain text. */
+    private void addXPGainToDialog(FleetMemberAPI fleetMember, int xp, String additionalText) {
+        if (lastDialog == null || lastDialog.getTextPanel() == null) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("The ");
+        String shipName = fleetMember.getShipName();
+        sb.append(shipName);
+        sb.append(", ");
+        String hullName = fleetMember.getVariant().getFullDesignationWithHullName();
+        sb.append(hullName);
+        sb.append(" gained ");
+        sb.append(xp);
+        sb.append(" XP");
+        lastDialog.getTextPanel().setFontSmallInsignia();
+        LabelAPI para = lastDialog.getTextPanel().addPara(sb.toString() + " " + (additionalText == null ? "" : additionalText));
+        para.setHighlight(shipName, hullName, "" + xp);
+        lastDialog.getTextPanel().setFontInsignia();
+    }
+
     /** Populates the [carrierTable] map with mapping from wing -> leader ship. Modifies carrierTable. */
-    private void populateCarrierTable(List<DeployedFleetMemberAPI> playerFleet, Map<String, String> carrierTable) {
+    private void populateCarrierTable(Collection<DeployedFleetMemberAPI> playerFleet, Map<String, String> carrierTable) {
         for (DeployedFleetMemberAPI member : playerFleet) {
             if (member.isFighterWing() && member.getShip() != null) {
                 FighterWingAPI wing = member.getShip().getWing();
@@ -129,6 +172,31 @@ public class EngagementResultListener extends BaseCampaignEventListener {
                      && wing.getSourceShip() != null 
                      && wing.getSourceShip().getFleetMember() != null)
                     carrierTable.put(member.getMember().getId(), wing.getSourceShip().getFleetMemberId());
+            }
+        }
+    }
+
+    /** Populates the [moduleTable] map with mapping from module (temp) fleetMember id -> leader ship. Modifies moduleTable.
+     *  Needs both the player fleet and the CombatDamageData entries, i.e. if modules did damage but base ship did no damage,
+     *  base ship wouldn't be in [dealtToKeySet]. */
+    private void populateModuleTable(
+            Collection<DeployedFleetMemberAPI> playerFleet, 
+            Collection<FleetMemberAPI> dealtToKeySet, 
+            Map<String, String> moduleTable) {
+        // ShipVariantAPI has no unique identifier so need to use reference equality
+        Map<ShipVariantAPI, String> variantToFleetId = new HashMap<>();
+        for (FleetMemberAPI member : dealtToKeySet) {
+            variantToFleetId.put(member.getVariant(), member.getId());
+        }
+        for (DeployedFleetMemberAPI member : playerFleet) {
+            ShipVariantAPI variant = member.getMember().getVariant();
+            if (variant.getModuleSlots().size() > 0) {
+                for (String moduleId : variant.getModuleSlots()) {
+                    String moduleFleetId = variantToFleetId.get(variant.getModuleVariant(moduleId));
+                    if (moduleFleetId != null) {
+                        moduleTable.put(moduleFleetId, member.getMember().getId());
+                    }
+                }
             }
         }
     }
@@ -167,13 +235,12 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         for (Map.Entry<String, String> transfer : transferMap.entrySet()) {
             String giver = transfer.getKey();
             String receiver = transfer.getValue();
-
-            if (!weightedDamageTable.containsKey(receiver)) {
-                weightedDamageTable.put(receiver, new HashMap<String, Float>());
-            }
             
             Map<String, Float> dmgData = weightedDamageTable.get(giver);
             if (dmgData != null) {
+                if (!weightedDamageTable.containsKey(receiver)) {
+                    weightedDamageTable.put(receiver, new HashMap<String, Float>());
+                }
                 for (Map.Entry<String, Float> dmgEntry : dmgData.entrySet()) {
                     String targetId = dmgEntry.getKey();
                     float newDmg = dmgEntry.getValue();
