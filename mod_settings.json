@@ -14,10 +14,10 @@
     # the first time.
     # This is modified by the ship's DP cost.
     "baseExtraSModXPCost": {
-        "frigate": 2000,
-        "destroyer": 3500,
-        "cruiser": 6000,
-        "capital": 10000
+        "frigate": 1000,
+        "destroyer": 2000,
+        "cruiser": 4000,
+        "capital": 8000
     },
     
     # Determines how the story point cost grows as
