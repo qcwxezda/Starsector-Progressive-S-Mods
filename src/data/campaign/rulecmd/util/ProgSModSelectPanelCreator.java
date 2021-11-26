@@ -26,7 +26,7 @@ public class ProgSModSelectPanelCreator {
     static final float TRACKER_HEIGHT = 20f;
     static final String NMODS_PREFIX = "Selected: ";
     static final String XP_PREFIX = "XP: ";
-    static final Color RED = Global.getSettings().getColor("progressBarDangerColor");
+    static final Color RED = Misc.getNegativeHighlightColor();
     static final Color YELLOW = Global.getSettings().getColor("progressBarWarningColor");
 
     private static final Color BASE_COLOR, DARK_COLOR, BRIGHT_COLOR;

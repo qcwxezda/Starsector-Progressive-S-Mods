@@ -78,7 +78,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
                 public void customDialogConfirm() {
                     boolean removedAtLeastOne = false;
                     
-                    int xpGained = 0;
+                    float xpGained = 0;
                     for (SelectorData data : selectorList) {
                         if (data.button.isChecked()) {
                             selectedVariant.removePermaMod(data.hullModId);
@@ -91,9 +91,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
                     if (removedAtLeastOne) {
                         Global.getSoundPlayer().playUISound("ui_objective_constructed", 1f, 1f);
                         SModUtils.giveXP(fleetMember.getId(), xpGained);
-                        dialog.getTextPanel()
-                            .addPara(String.format("The %s gained %s XP", fleetMember.getShipName(), xpGained))
-                            .setHighlight(fleetMember.getShipName(), "" + xpGained);
+                        SModUtils.displayXP(dialog, fleetMember);
                         FireAll.fire(ruleId, dialog, memoryMap, params.get(2).getString(memoryMap));
                     }
                 }

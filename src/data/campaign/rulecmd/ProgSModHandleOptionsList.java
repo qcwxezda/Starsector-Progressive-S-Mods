@@ -114,10 +114,13 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
                     String.format("Increase this ship's built-in hull mod limit from %s to %s", nSModsLimit, nSModsLimit + 1), 
                 augmentOption);
             int nextSPCost = SModUtils.getStoryPointCost(fleetMember);
+            int nextXPCost = SModUtils.getAugmentXPCost(fleetMember);
             List<Token> storyParams = new ArrayList<>();
+            storyParams.add(params.get(0));
             storyParams.add(params.get(4));
             storyParams.add(new Token("" + nextSPCost, TokenType.LITERAL));
             storyParams.add(new Token("" + spRefundFraction, TokenType.LITERAL));
+            storyParams.add(new Token("" + nextXPCost, TokenType.LITERAL));
             new ProgSModSetStoryOption().execute(ruleId, dialog, storyParams, memoryMap);
         }
 
@@ -129,7 +132,7 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
         if (firstTimeOpened) {
             dialog.getTextPanel()
                 .addPara(String.format("The %s has %s out of %s built-in hull mods.", fleetMember.getShipName(), nSMods, nSModsLimit))
-                .setHighlight("" + fleetMember.getShipName(), "" + nSMods, "" + nSModsLimit);
+                .setHighlight(fleetMember.getShipName(), "" + nSMods, "" + nSModsLimit);
             
             if (CAN_REFUND_SMODS) {
                 int refundPercent = (int) (SModUtils.Constants.XP_REFUND_FACTOR * 100);
@@ -147,6 +150,7 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
                         )
                     .setHighlight("" + numOverLimit);
             }
+            SModUtils.displayXP(dialog, fleetMember);
         }
 
 		return true;

@@ -100,6 +100,7 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
                     }
                     if (addedAtLeastOne) {
                         Global.getSoundPlayer().playUISound("ui_acquired_hullmod", 1f, 1f);
+                        SModUtils.displayXP(dialog, fleetMember);
                         FireAll.fire(ruleId, dialog, memoryMap, params.get(2).getString(memoryMap));
                     }
                 }

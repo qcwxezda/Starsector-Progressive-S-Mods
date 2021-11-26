@@ -6,20 +6,31 @@ import java.util.Map;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.OptionPanelAPI.OptionTooltipCreator;
+import com.fs.starfarer.api.campaign.rules.MemKeys;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Misc.Token;
 
+import util.SModUtils;
 
-/** ProgSModSetStoryOption [n] [m] makes a story option costing n story points and giving m% bonus XP.
+
+/** ProgSModSetStoryOption [fleetMember] [n] [r] [x] makes a story option costing n story points and x ship XP,
+ *   and giving m% bonus character XP.
  *  Uses default sound. Modified from SetStoryOption in the base game. */
 public class ProgSModSetStoryOption extends SetStoryOption {
 
     private class ProgSModStoryPointActionDelegate extends BaseOptionStoryPointActionDelegate {
-        ProgSModStoryPointActionDelegate(InteractionDialogAPI dialog, String optionId, int cost, int bonusPercent) {
+
+        private final int reqShipXP;
+        private final FleetMemberAPI fleetMember;
+
+        ProgSModStoryPointActionDelegate(InteractionDialogAPI dialog, FleetMemberAPI fleetMember, String optionId, int reqShipXP, int cost, int bonusPercent) {
             super(dialog, new StoryOptionParams(optionId, cost, "", "general", null));
+            this.reqShipXP = reqShipXP;
+            this.fleetMember = fleetMember;
             bonusXPFraction = (float) bonusPercent / 100f;
         }
 
@@ -31,8 +42,25 @@ public class ProgSModSetStoryOption extends SetStoryOption {
             return numPoints;
         }
 
+        int getXPCost() {
+            return reqShipXP;
+        }
+
+        FleetMemberAPI getFleetMember() {
+            return fleetMember;
+        }
+
         String getSoundId() {
             return soundId;
+        }
+
+        @Override
+        protected void addActionCostSection(TooltipMakerAPI info) {
+            super.addActionCostSection(info);
+            int xp = (int) SModUtils.getXP(fleetMember.getId());
+            if (xp < reqShipXP) {
+                info.addPara("Ship only has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), "" + xp);
+            }
         }
     }
 
@@ -40,15 +68,17 @@ public class ProgSModSetStoryOption extends SetStoryOption {
     public boolean execute(String ruleId, final InteractionDialogAPI dialog, List<Token> params, Map<String, MemoryAPI> memoryMap) {
         if (dialog == null) return false;
 
-        String optionId = params.get(0).string;
-        int numPoints = params.get(1).getInt(memoryMap);
-        int bonusXPPercent = params.get(2).getInt(memoryMap);
+        FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
+        String optionId = params.get(1).string;
+        int numPoints = params.get(2).getInt(memoryMap);
+        int bonusXPPercent = params.get(3).getInt(memoryMap);
+        int reqShipXP = params.get(4).getInt(memoryMap);
 
-        return set(dialog, numPoints, optionId, bonusXPPercent);
+        return set(dialog, fleetMember, numPoints, reqShipXP, optionId, bonusXPPercent);
     }
 
-    private boolean set(InteractionDialogAPI dialog, int numPoints, String optionId, int bonusXPPercent) {
-            return set(dialog, new ProgSModStoryPointActionDelegate(dialog, optionId, numPoints, bonusXPPercent));
+    private boolean set(InteractionDialogAPI dialog, FleetMemberAPI fleetMember, int numPoints, int reqShipXP, String optionId, int bonusXPPercent) {
+            return set(dialog, new ProgSModStoryPointActionDelegate(dialog, fleetMember, optionId, reqShipXP, numPoints, bonusXPPercent));
     }
 
     private ProgSModStoryPointActionDelegate delegate = null;
@@ -57,11 +87,24 @@ public class ProgSModSetStoryOption extends SetStoryOption {
             ProgSModStoryPointActionDelegate del) {
         delegate = del;
         int cost = delegate.getCost();
+        final int xpCost = delegate.getXPCost();
+        final FleetMemberAPI fleetMember = del.getFleetMember();
         String optionId = delegate.getOptionId();
         float bonusXPFraction = delegate.getBonusXPFraction();
         dialog.makeStoryOption(optionId, cost, bonusXPFraction, delegate.getSoundId());
+        int nSModsLimit = SModUtils.getMaxSMods(fleetMember);
+        dialog.getOptionPanel().setOptionText(
+            String.format("Increase this ship's built-in hull mod limit from %s to %s [%s SP, %s ship XP, %s%% bonus character XP]",
+                nSModsLimit,
+                nSModsLimit + 1,
+                cost,
+                xpCost,
+                (int) (100 * bonusXPFraction)
+            ), 
+        optionId);
         
-        if (cost > Global.getSector().getPlayerStats().getStoryPoints()) {
+        if (cost > Global.getSector().getPlayerStats().getStoryPoints()
+            || xpCost > SModUtils.getXP(fleetMember.getId())) {
             dialog.getOptionPanel().setEnabled(optionId, false);
         }
         
@@ -71,6 +114,10 @@ public class ProgSModSetStoryOption extends SetStoryOption {
                 float initPad = 0f;
                 if (hadOtherText) initPad = opad;
                 tooltip.addStoryPointUseInfo(initPad, delegate.getCost(), delegate.getBonusXPFraction(), true);
+                int xp = (int) SModUtils.getXP(fleetMember.getId());
+                if (xp < xpCost) {
+                    tooltip.addPara("Ship only has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), "" + xp);
+                }
                 int sp = Global.getSector().getPlayerStats().getStoryPoints();
                 String points = "points";
                 if (sp == 1) points = "point";

@@ -2,15 +2,33 @@
     # How many story points it costs to raise 
     # a ship's maximum number of built-in hull mods
     # the first time.
-    "BaseExtraSModCostFrigate": 1,
-    "BaseExtraSModCostDestroyer": 1,
-    "BaseExtraSModCostCruiser": 2,
-    "BaseExtraSModCostCapital": 3,
+    "baseExtraSModSPCost": {
+        "frigate": 1,
+        "destroyer": 1,
+        "cruiser": 1,
+        "capital": 1
+    },
 
+    # How much XP (in addition to the SP) it costs to
+    # raise a ship's maximum number of built-in hull mods
+    # the first time.
+    # This is modified by the ship's DP cost.
+    "baseExtraSModXPCost": {
+        "frigate": 2000,
+        "destroyer": 3500,
+        "cruiser": 6000,
+        "capital": 10000
+    },
+    
     # Determines how the story point cost grows as
     # a ship's build-in limit grows.
-    "extraSModCostGrowthType": 1, # 0 for linear, 1 for exponential
-    "extraSModCostGrowthFactor": 2, # story point cost is base * fac^n OR base + n*fac
+    
+    "extraSModSPCostGrowthType": 1, # 0 for linear, 1 for exponential
+    # story point cost is base * fac^n OR base + n*fac
+    "extraSModSPCostGrowthFactor": 2,
+    # XP cost is base * fac^n OR base + base*n*fac 
+    "extraSModXPCostGrowthType": 1,
+    "extraSModXPCostGrowthFactor": 2,
 
     # Whether or not to allow increasing max S-Mods
     # with story points
@@ -18,10 +36,12 @@
 
     # Coefficients for a polynomial that maps hull mods' OP cost to their
     # base build-in XP cost, listed in ascending order (constant term first)
-    "xpCostCoeffFrigate": [-455, 325, -12.35, 0.1625],
-    "xpCostCoeffDestroyer": [-880, 392, -17.12, 0.376],
-    "xpCostCoeffCruiser": [-1600, 410, -6.78, 0.077],
-    "xpCostCoeffCapital": [-2590, 450, -7.15, 0.0994],
+    "xpCostCoeff": {
+        "frigate": [-455, 325, -12.35, 0.1625],
+        "destroyer": [-880, 392, -17.12, 0.376],
+        "cruiser": [-1600, 410, -6.78, 0.077],
+        "capital": [-2590, 450, -7.15, 0.0994]
+    },
 
     # The above functions assume that the ship in question has the base 
     # DP cost for its ship class. Otherwise an additional multiplicative
