@@ -141,7 +141,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
                 member.getVariant().addPermaMod("progsmod_xptracker", false);
             }
         }
-        addCoalescedXPGainToDialog(civilianShips, (int) (totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION), "due to being civilian ships");
+        addCoalescedXPGainToDialog(civilianShips, (int) (totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION), "due to being civilian ships or having no weapons equipped");
     }
 
     /** Creates the text "The [fleetMember] gained [xp] xp. 

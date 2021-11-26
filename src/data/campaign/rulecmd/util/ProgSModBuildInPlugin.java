@@ -9,7 +9,7 @@ import java.util.List;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
-import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.combat.HullModEffect;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
@@ -39,7 +39,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
     private FleetMemberAPI fleetMember;
     private BitSet selectedHullModIds;
     private boolean isShowingAll = false;
-    private MarketAPI market;
+    private SectorEntityToken interactionTarget;
 
     public void setData(
             LabelAPI nSelected, 
@@ -49,7 +49,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
             ShipVariantAPI variant, 
             ButtonAPI showAllButton, 
             ProgSModSelectPanelCreator panelCreator,
-            MarketAPI market) {
+            SectorEntityToken interactionTarget) {
         nSelectedLabel = nSelected;
         remainingXPLabel = remainingXP;
         selectorList = list;
@@ -61,7 +61,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
         this.variant = variant;
         this.showAllButton = showAllButton;
         this.panelCreator = panelCreator;
-        this.market = market;
+        this.interactionTarget = interactionTarget;
 
         // Get the variant id for [variant]
         // If it doesnt exist, find one from the settings.
@@ -101,8 +101,8 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
         while (itr.hasNext()) {
             SelectorData entry = itr.next();
             HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(entry.hullModId);
-            if (!SModUtils.canModifyHullMod(hullMod, market)) {
-                panelCreator.disableRedAndChangeText(entry, "Requires a non-hostile spaceport or orbital station");
+            if (!SModUtils.canModifyHullMod(hullMod, interactionTarget)) {
+                panelCreator.disableRedAndChangeText(entry, "Requires docking at a spaceport or orbital station");
                 itr.remove();
             }
         }

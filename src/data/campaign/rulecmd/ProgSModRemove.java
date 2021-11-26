@@ -67,7 +67,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
                         selectorList, 
                         SModUtils.getXP(fleetMember.getId()), 
                         panelCreator,
-                        dialog.getInteractionTarget() == null ? null : dialog.getInteractionTarget().getMarket()
+                        dialog.getInteractionTarget()
                     );
                 }
 

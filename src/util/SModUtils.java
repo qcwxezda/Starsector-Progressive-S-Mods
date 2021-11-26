@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.campaign.RepLevel;
+import com.fs.starfarer.api.campaign.SectorEntityToken;
+import com.fs.starfarer.api.campaign.CampaignUIAPI.CoreUITradeMode;
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
@@ -330,16 +331,19 @@ public class SModUtils {
     }
 
     /** Mostly copied from the API */
-    public static boolean canModifyHullMod(HullModSpecAPI spec, MarketAPI market) {
+    public static boolean canModifyHullMod(HullModSpecAPI spec, SectorEntityToken interactionTarget) {
         if (spec == null) return true;
         
         boolean reqSpaceport = spec.hasTag(HullMods.TAG_REQ_SPACEPORT);
         if (!reqSpaceport) return true;
         
+        MarketAPI market = interactionTarget.getMarket();
         if (market == null) return false;
 
-        RepLevel level = market.getFaction().getRelToPlayer().getLevel();
-        if (level == RepLevel.VENGEFUL || level == RepLevel.HOSTILE || level == RepLevel.INHOSPITABLE) return false;
+        Object tradeMode = interactionTarget.getMemory().get("$tradeMode");
+        if (tradeMode == null || tradeMode == CoreUITradeMode.NONE) {
+            return false;
+        }
         
         for (Industry ind : market.getIndustries()) {
             if (ind.getSpec().hasTag(Industries.TAG_STATION)) return true;

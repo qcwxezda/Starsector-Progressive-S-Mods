@@ -77,7 +77,7 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
                         selectedVariant,
                         showAllButton,
                         panelCreator,
-                        dialog.getInteractionTarget() == null ? null : dialog.getInteractionTarget().getMarket()
+                        dialog.getInteractionTarget()
                     );
                 }
 

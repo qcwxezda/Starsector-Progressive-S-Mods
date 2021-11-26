@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
-import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.input.InputEventAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.LabelAPI;
@@ -18,14 +18,14 @@ public class ProgSModRemovePlugin implements CustomUIPanelPlugin {
     private List<SelectorData> selectorList;
     private float shipXP;
     private ProgSModSelectPanelCreator panelCreator;
-    private MarketAPI market;
+    private SectorEntityToken interactionTarget;
 
-    public void setData(LabelAPI xpLabel, List<SelectorData> list, float shipXP, ProgSModSelectPanelCreator panelCreator, MarketAPI market) {
+    public void setData(LabelAPI xpLabel, List<SelectorData> list, float shipXP, ProgSModSelectPanelCreator panelCreator, SectorEntityToken interactionTarget) {
         this.xpLabel = xpLabel;
         selectorList = list;
         this.shipXP = shipXP;
         this.panelCreator = panelCreator;
-        this.market = market;
+        this.interactionTarget = interactionTarget;
 
         removeIfStationRequired();
     }
@@ -37,8 +37,8 @@ public class ProgSModRemovePlugin implements CustomUIPanelPlugin {
         while (itr.hasNext()) {
             SelectorData entry = itr.next();
             HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(entry.hullModId);
-            if (!SModUtils.canModifyHullMod(hullMod, market)) {
-                panelCreator.disableRedAndChangeText(entry, "Requires a non-hostile spaceport or orbital station");
+            if (!SModUtils.canModifyHullMod(hullMod, interactionTarget)) {
+                panelCreator.disableRedAndChangeText(entry, "Requires docking at a spaceport or orbital station");
                 itr.remove();
             }
         }
