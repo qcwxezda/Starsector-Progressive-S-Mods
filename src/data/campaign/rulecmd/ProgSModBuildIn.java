@@ -26,7 +26,7 @@ import com.fs.starfarer.api.util.Misc.Token;
 import data.campaign.rulecmd.util.ProgSModBuildInPlugin;
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator;
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
-import util.ProgSModUtils;
+import util.SModUtils;
 
 /** ProgSModBuildIn [fleetMember] [selectedVariant] [trigger] -- shows the build-in interface for
  *  the module of [fleetMember] whose variant is [selectedVariant].
@@ -90,7 +90,7 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
                     String fmId = fleetMember.getId();
                     
                     for (SelectorData data : selectorList) {
-                        if (data.button.isChecked() && ProgSModUtils.spendXP(fmId, data.hullModCost)) {
+                        if (data.button.isChecked() && SModUtils.spendXP(fmId, data.hullModCost)) {
                             selectedVariant.addPermaMod(data.hullModId, true);
                             String hullModName = Global.getSettings().getHullModSpec(data.hullModId).getDisplayName();
                             dialog.getTextPanel().addPara("Built in " + hullModName)

@@ -16,7 +16,7 @@ import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.util.Misc.Token;
 import com.fs.starfarer.api.util.Misc.TokenType;
 
-import util.ProgSModUtils;
+import util.SModUtils;
 
 /** ProgSModFilterOptionsList [$fleetMember] [$selectedVariant] [option1] [option2] [option3] [option4]
  *  [option1] is the option to build in hull mods; 
@@ -31,7 +31,7 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
     private static final String REMOVE_TEXT = "Select built-in hull mods to remove from ";
     private static final String MODULE_ID_BASE = "base";
     private static final String THIS_SHIP_TEXT = "this ship";
-    private static final boolean CAN_REFUND_SMODS = ProgSModUtils.Constants.XP_REFUND_FACTOR >= 0f;
+    private static final boolean CAN_REFUND_SMODS = SModUtils.Constants.XP_REFUND_FACTOR >= 0f;
 
     private Map<String, MemoryAPI> memoryMap;
     private InteractionDialogAPI dialog;
@@ -69,7 +69,7 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
 
         fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
         int nSMods = fleetMember.getVariant().getSMods().size();
-        nSModsLimit = ProgSModUtils.getMaxSMods(fleetMember);
+        nSModsLimit = SModUtils.getMaxSMods(fleetMember);
         nRemaining = nSModsLimit - nSMods;
         selectedVariantKey = params.get(1).string;
         buildInOption = params.get(2).getString(memoryMap);
@@ -109,11 +109,11 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
         }
 
         // Add in the +extra S-Mods option if that was allowed
-        if (ProgSModUtils.Constants.ALLOW_INCREASE_SMOD_LIMIT) {
+        if (SModUtils.Constants.ALLOW_INCREASE_SMOD_LIMIT) {
             dialog.getOptionPanel().addOption(
                     String.format("Increase this ship's built-in hull mod limit from %s to %s", nSModsLimit, nSModsLimit + 1), 
                 augmentOption);
-            int nextSPCost = ProgSModUtils.getStoryPointCost(fleetMember);
+            int nextSPCost = SModUtils.getStoryPointCost(fleetMember);
             List<Token> storyParams = new ArrayList<>();
             storyParams.add(params.get(4));
             storyParams.add(new Token("" + nextSPCost, TokenType.LITERAL));
@@ -132,13 +132,13 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin implements Inte
                 .setHighlight("" + fleetMember.getShipName(), "" + nSMods, "" + nSModsLimit);
             
             if (CAN_REFUND_SMODS) {
-                int refundPercent = (int) (ProgSModUtils.Constants.XP_REFUND_FACTOR * 100);
+                int refundPercent = (int) (SModUtils.Constants.XP_REFUND_FACTOR * 100);
                 dialog.getTextPanel()
                     .addPara(String.format("Removing an existing built-in hull mod will refund %s%% of the XP spent.",refundPercent))
                     .setHighlight("" + refundPercent);
             }
-            if (ProgSModUtils.Constants.ALLOW_INCREASE_SMOD_LIMIT) {
-                int numOverLimit = ProgSModUtils.getNumOverLimit(fleetMember.getId());
+            if (SModUtils.Constants.ALLOW_INCREASE_SMOD_LIMIT) {
+                int numOverLimit = SModUtils.getNumOverLimit(fleetMember.getId());
                 dialog.getTextPanel()
                     .addPara(
                         String.format("You have increased this ship's limit of built-in hull mods a total of %s time%s.",

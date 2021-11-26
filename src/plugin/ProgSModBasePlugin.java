@@ -3,21 +3,21 @@ package plugin;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.util.Misc;
 
-import data.campaign.EngagementResultListener;
-import util.ProgSModUtils;
+import data.campaign.ProgSModEngagementListener;
+import util.SModUtils;
 
-public class ProgressiveSModsPlugin extends com.fs.starfarer.api.BaseModPlugin {
+public class ProgSModBasePlugin extends com.fs.starfarer.api.BaseModPlugin {
 
     @Override
     public void onGameLoad(boolean newGame) {
 
-        ProgSModUtils.loadConstants("mod_settings.json");
+        SModUtils.loadConstants("mod_settings.json");
 
-        if (!ProgSModUtils.Constants.DISABLE_MOD) {
-            ProgSModUtils.loadShipData();
+        if (!SModUtils.Constants.DISABLE_MOD) {
+            SModUtils.loadShipData();
             Global.getSettings().getHullModSpec("progsmod_xptracker").setHiddenEverywhere(false);
             Global.getSector().getMemory().set("$progsmodEnabled", true);
-            Global.getSector().addTransientListener(new EngagementResultListener(false));
+            Global.getSector().addTransientListener(new ProgSModEngagementListener(false));
             
             // Disallow building-in hullmods via story points
             Misc.MAX_PERMA_MODS = -1;

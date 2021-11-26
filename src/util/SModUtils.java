@@ -22,7 +22,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-public class ProgSModUtils {
+public class SModUtils {
 
     public enum GrowthType {LINEAR, EXPONENTIAL};
 

@@ -14,7 +14,7 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Pair;
 
-import util.ProgSModUtils;
+import util.SModUtils;
 
 import java.awt.Color;
 
@@ -104,7 +104,7 @@ public class ProgSModSelectPanelCreator {
         LabelAPI costTextLabel = null;
         String costText = 
             removeMode 
-                ? String.format("refunds %s XP", (int) (hullModCost * ProgSModUtils.Constants.XP_REFUND_FACTOR)) 
+                ? String.format("refunds %s XP", (int) (hullModCost * SModUtils.Constants.XP_REFUND_FACTOR)) 
                 : hullModCost + " XP";
         costTextLabel = imageAndText.addPara(costText, 0f);
         costTextLabel.setHighlight(costText);
@@ -229,7 +229,7 @@ public class ProgSModSelectPanelCreator {
                 addHullModSelector(
                     buttonsList, 
                     hullMod, 
-                    ProgSModUtils.getBuildInCost(hullMod, hullSize, dpCost),
+                    SModUtils.getBuildInCost(hullMod, hullSize, dpCost),
                     buttonWidth, 
                     BUTTON_HEIGHT, 
                     BUTTON_PADDING,
@@ -273,7 +273,7 @@ public class ProgSModSelectPanelCreator {
                 addHullModSelector(
                     buttonsList, 
                     hullMod, 
-                    ProgSModUtils.getBuildInCost(hullMod, hullSize, dpCost), 
+                    SModUtils.getBuildInCost(hullMod, hullSize, dpCost), 
                     buttonWidth, 
                     BUTTON_HEIGHT, 
                     BUTTON_PADDING, 

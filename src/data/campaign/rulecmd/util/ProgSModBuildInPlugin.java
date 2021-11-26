@@ -25,7 +25,7 @@ import com.fs.starfarer.api.util.Pair;
 import org.lwjgl.util.vector.Vector2f;
 
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
-import util.ProgSModUtils;
+import util.SModUtils;
 public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 
     private LabelAPI nSelectedLabel, remainingXPLabel;
@@ -54,9 +54,9 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
         remainingXPLabel = remainingXP;
         selectorList = list;
         this.fleetMember = fleetMember;
-        shipXP = ProgSModUtils.getXP(fleetMember.getId());
+        shipXP = SModUtils.getXP(fleetMember.getId());
         this.remainingXP = shipXP;
-        numCanBuildIn = ProgSModUtils.getMaxSMods(fleetMember) - variant.getSMods().size();
+        numCanBuildIn = SModUtils.getMaxSMods(fleetMember) - variant.getSMods().size();
         numChecked = 0;
         this.variant = variant;
         this.showAllButton = showAllButton;
@@ -101,7 +101,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
         while (itr.hasNext()) {
             SelectorData entry = itr.next();
             HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(entry.hullModId);
-            if (!ProgSModUtils.canModifyHullMod(hullMod, interactionTarget)) {
+            if (!SModUtils.canModifyHullMod(hullMod, interactionTarget)) {
                 panelCreator.disableRedAndChangeText(entry, "Requires docking at a spaceport or orbital station");
                 itr.remove();
             }
@@ -339,7 +339,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
     /** Permanently disable and remove hull mods from the selector list
      *  that will never be able to be modified.*/
     private void pruneHullMods() {
-        if (!ProgSModUtils.Constants.IGNORE_NO_BUILD_IN) {
+        if (!SModUtils.Constants.IGNORE_NO_BUILD_IN) {
             removeCantBuildIn();
         }
         removeIfStationRequired();
