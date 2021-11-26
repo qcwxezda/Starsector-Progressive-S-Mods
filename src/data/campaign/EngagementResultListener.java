@@ -23,8 +23,8 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.VariantSource;
 import com.fs.starfarer.api.ui.LabelAPI;
 
-import util.SModUtils;
-import util.SModUtils.Constants;
+import util.ProgSModUtils;
+import util.ProgSModUtils.Constants;
 
 public class EngagementResultListener extends BaseCampaignEventListener {
 
@@ -67,19 +67,19 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         
         // List of ships that are eligible to gain XP
         Set<String> eligibleReceivers = new HashSet<>();
-        eligibleReceivers.addAll(SModUtils.getDeployedFleetMemberIds(playerFleet));
+        eligibleReceivers.addAll(ProgSModUtils.getDeployedFleetMemberIds(playerFleet));
         if (!Constants.GIVE_XP_TO_DISABLED_SHIPS) {
-            eligibleReceivers.removeAll(SModUtils.getFleetMemberIds(playerResult.getDestroyed()));
-            eligibleReceivers.removeAll(SModUtils.getFleetMemberIds(playerResult.getDisabled()));
+            eligibleReceivers.removeAll(ProgSModUtils.getFleetMemberIds(playerResult.getDestroyed()));
+            eligibleReceivers.removeAll(ProgSModUtils.getFleetMemberIds(playerResult.getDisabled()));
         }
 
         // List of ships that can give XP when damaged
         Set<String> eligibleTargets = new HashSet<>();
-        eligibleTargets.addAll(SModUtils.getFleetMemberIds(enemyResult.getDestroyed()));
-        eligibleTargets.addAll(SModUtils.getFleetMemberIds(enemyResult.getDisabled()));
+        eligibleTargets.addAll(ProgSModUtils.getFleetMemberIds(enemyResult.getDestroyed()));
+        eligibleTargets.addAll(ProgSModUtils.getFleetMemberIds(enemyResult.getDisabled()));
         if (!Constants.ONLY_GIVE_XP_FOR_KILLS) {
-            eligibleTargets.addAll(SModUtils.getFleetMemberIds(enemyResult.getRetreated()));
-            eligibleTargets.addAll(SModUtils.getFleetMemberIds(enemyResult.getDeployed()));
+            eligibleTargets.addAll(ProgSModUtils.getFleetMemberIds(enemyResult.getRetreated()));
+            eligibleTargets.addAll(ProgSModUtils.getFleetMemberIds(enemyResult.getDeployed()));
         }
         
         // Table that maps each ship's id to the total weighted damage that it caused to
@@ -91,7 +91,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
                 return Math.min(damageFrac, 1f)
                         * Math.max(
                             target.getDeploymentCostSupplies(), 
-                            SModUtils.Constants.TARGET_DMOD_LOWER_BOUND * target.getDeploymentPointsCost()
+                            ProgSModUtils.Constants.TARGET_DMOD_LOWER_BOUND * target.getDeploymentPointsCost()
                         );
             }
         };
@@ -107,7 +107,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         Map<String, Float> minContributionMap = new HashMap<>();
         for (DeployedFleetMemberAPI dfm : enemyResult.getAllEverDeployedCopy()) {
             FleetMemberAPI target = dfm.getMember();
-            minContributionMap.put(target.getId(), damageFn.compute(SModUtils.Constants.MIN_CONTRIBUTION_FRACTION, target));
+            minContributionMap.put(target.getId(), damageFn.compute(ProgSModUtils.Constants.MIN_CONTRIBUTION_FRACTION, target));
         }
         Map<String, Float> totalWeightedDamage = new HashMap<>();
         flattenWeightedDamage(weightedDamageTable, minContributionMap, totalWeightedDamage);
@@ -115,8 +115,8 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         // Use the weighted damage table to update ship data
         float totalXPGain = 0f;
         for (Map.Entry<String, Float> weightedDamageEntry : totalWeightedDamage.entrySet()) {
-            float xpGain = weightedDamageEntry.getValue() * SModUtils.Constants.XP_GAIN_MULTIPLIER;
-            SModUtils.giveXP(weightedDamageEntry.getKey(), xpGain);
+            float xpGain = weightedDamageEntry.getValue() * ProgSModUtils.Constants.XP_GAIN_MULTIPLIER;
+            ProgSModUtils.giveXP(weightedDamageEntry.getKey(), xpGain);
             totalXPGain += xpGain;
         }
 
@@ -127,13 +127,13 @@ public class EngagementResultListener extends BaseCampaignEventListener {
         for (FleetMemberAPI member : playerEntireFleet) {
             // Show the XP gain in the dialog
             if (totalWeightedDamage.containsKey(member.getId())) {
-                addXPGainToDialog(member, (int) (totalWeightedDamage.get(member.getId()) * SModUtils.Constants.XP_GAIN_MULTIPLIER), "from combat.");
+                addXPGainToDialog(member, (int) (totalWeightedDamage.get(member.getId()) * ProgSModUtils.Constants.XP_GAIN_MULTIPLIER), "from combat.");
             }
             if (member.isCivilian()) {
-                SModUtils.giveXP(member.getId(), totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
+                ProgSModUtils.giveXP(member.getId(), totalXPGain * ProgSModUtils.Constants.NON_COMBAT_XP_FRACTION);
                 civilianShips.add(member);
             }
-            if (SModUtils.getXP(member.getId()) > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {
+            if (ProgSModUtils.getXP(member.getId()) > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {
                 if (member.getVariant().isStockVariant()) {
                     member.setVariant(member.getVariant().clone(), false, false);
                     member.getVariant().setSource(VariantSource.REFIT);
@@ -141,7 +141,7 @@ public class EngagementResultListener extends BaseCampaignEventListener {
                 member.getVariant().addPermaMod("progsmod_xptracker", false);
             }
         }
-        addCoalescedXPGainToDialog(civilianShips, (int) (totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION), "due to being civilian ships or having no weapons equipped");
+        addCoalescedXPGainToDialog(civilianShips, (int) (totalXPGain * ProgSModUtils.Constants.NON_COMBAT_XP_FRACTION), "due to being civilian ships or having no weapons equipped");
     }
 
     /** Creates the text "The [fleetMember] gained [xp] xp. 

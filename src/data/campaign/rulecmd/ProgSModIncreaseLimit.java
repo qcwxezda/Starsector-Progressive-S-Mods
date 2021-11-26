@@ -10,7 +10,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.util.Misc.Token;
 
-import util.SModUtils;
+import util.ProgSModUtils;
 
 /** ProgSModIncreaseLimit [fleetMember] -- increases [fleetMember]'s built-in hull mod limit by one. */
 public class ProgSModIncreaseLimit extends BaseCommandPlugin {
@@ -22,7 +22,7 @@ public class ProgSModIncreaseLimit extends BaseCommandPlugin {
         }
 
         FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
-        SModUtils.incrementSModLimit(fleetMember.getId());
+        ProgSModUtils.incrementSModLimit(fleetMember.getId());
 
         return true;
     }

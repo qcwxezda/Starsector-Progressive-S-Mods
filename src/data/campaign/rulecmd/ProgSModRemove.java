@@ -23,7 +23,7 @@ import com.fs.starfarer.api.util.Misc.Token;
 import data.campaign.rulecmd.util.ProgSModRemovePlugin;
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator;
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
-import util.SModUtils;
+import util.ProgSModUtils;
 
 /** ProgSModRemove [fleetMember] [selectedVariant] [trigger] -- shows the built-in hull mods for 
  *  the module of [fleetMember] whose variant is [selectedVariant].
@@ -65,7 +65,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
                     plugin.setData(
                         xpLabel, 
                         selectorList, 
-                        SModUtils.getXP(fleetMember.getId()), 
+                        ProgSModUtils.getXP(fleetMember.getId()), 
                         panelCreator,
                         dialog.getInteractionTarget()
                     );
@@ -82,7 +82,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
                     for (SelectorData data : selectorList) {
                         if (data.button.isChecked()) {
                             selectedVariant.removePermaMod(data.hullModId);
-                            xpGained += data.hullModCost * SModUtils.Constants.XP_REFUND_FACTOR;
+                            xpGained += data.hullModCost * ProgSModUtils.Constants.XP_REFUND_FACTOR;
                             String hullModName = Global.getSettings().getHullModSpec(data.hullModId).getDisplayName();
                             dialog.getTextPanel().addPara("Removed " + hullModName).setHighlight(hullModName);
                             removedAtLeastOne = true;
@@ -90,7 +90,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
                     }
                     if (removedAtLeastOne) {
                         Global.getSoundPlayer().playUISound("ui_objective_constructed", 1f, 1f);
-                        SModUtils.giveXP(fleetMember.getId(), xpGained);
+                        ProgSModUtils.giveXP(fleetMember.getId(), xpGained);
                         dialog.getTextPanel()
                             .addPara(String.format("The %s gained %s XP", fleetMember.getShipName(), xpGained))
                             .setHighlight(fleetMember.getShipName(), "" + xpGained);

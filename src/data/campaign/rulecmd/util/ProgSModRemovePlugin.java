@@ -11,7 +11,7 @@ import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.PositionAPI;
 
 import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
-import util.SModUtils;
+import util.ProgSModUtils;
 public class ProgSModRemovePlugin implements CustomUIPanelPlugin {
 
     private LabelAPI xpLabel;
@@ -37,7 +37,7 @@ public class ProgSModRemovePlugin implements CustomUIPanelPlugin {
         while (itr.hasNext()) {
             SelectorData entry = itr.next();
             HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(entry.hullModId);
-            if (!SModUtils.canModifyHullMod(hullMod, interactionTarget)) {
+            if (!ProgSModUtils.canModifyHullMod(hullMod, interactionTarget)) {
                 panelCreator.disableRedAndChangeText(entry, "Requires docking at a spaceport or orbital station");
                 itr.remove();
             }
@@ -78,7 +78,7 @@ public class ProgSModRemovePlugin implements CustomUIPanelPlugin {
             // exist.
             if (event.isMouseMoveEvent()) {
                 int sum = tallyCheckedEntries(selectorList);
-                float xp = shipXP + sum * SModUtils.Constants.XP_REFUND_FACTOR;
+                float xp = shipXP + sum * ProgSModUtils.Constants.XP_REFUND_FACTOR;
 
                 // Update the xp remaining and number selected labels
                 panelCreator.setRemainingXPText(xpLabel, xp);
