@@ -71,11 +71,6 @@
         # All XP gained by ships in combat is multiplied by this amount
         "xpGainMultiplier": 36,
 
-        # If a ship deals any hull damage to an opponent, it counts as if
-        # it had done at least this fraction of the target's total HP
-        # as hull damage
-        "minContributionFraction": 0.15,
-
         # Enemy ships with d-mods give less XP than pristine ships;
         # however, regardless of the number of D-mods, they will always
         # give at least this fraction of a pristine ship's XP. 
@@ -83,7 +78,29 @@
 
         # Non-combat ships gain this fraction of the total XP
         # gained by all ships as additional XP
-        "nonCombatXPFraction": 0.1
+        "nonCombatXPFraction": 0.1,
+
+        # After each combat interval (in seconds), the contribution
+        # for each player ship is tallied and added to that ship's
+        # total contribution.
+        "combatUpdateInterval": 3,
+
+        # Fraction of enemy ships' total XP worth that goes toward
+        # each of the three roles. Does not have to add up to 1.
+        "xpFractionAttack": 0.4,
+        "xpFractionDefense": 0.3,
+        "xpFractionSupport": 0.3,
+
+        # If a ship deals any hull damage to an opponent, it counts as if
+        # it had done at least this fraction of the target's total HP
+        # as hull damage
+        # Only has an effect when using the legacy XP tracker
+        "minContributionFraction": 0.15,
+
+        # Use the legacy version of the XP tracker,
+        # which only considers hull damage dealt and for which
+        # there is a minimum contribution fraction.
+        "useLegacyXPTracker": false
     },
 
     # Set this to true in order to disable this mod's features

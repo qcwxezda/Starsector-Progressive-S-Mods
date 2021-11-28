@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
@@ -12,15 +13,20 @@ import com.fs.starfarer.api.campaign.CampaignUIAPI.CoreUITradeMode;
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
+import com.fs.starfarer.api.combat.ShipHullSpecAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.HullMods;
 import com.fs.starfarer.api.impl.campaign.ids.Industries;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
+import com.fs.starfarer.api.ui.LabelAPI;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import data.combat.ProgSModCombatPlugin.ContributionType;
+
 import org.json.JSONArray;
 
 public class SModUtils {
@@ -80,10 +86,20 @@ public class SModUtils {
         public static float TARGET_DMOD_LOWER_BOUND;
         /** XP gained by non-combat ships as a fraction of total XP gain */
         public static float NON_COMBAT_XP_FRACTION;
+        /** Fraction of enemy ships' total XP worth that goes toward the ATTACK role */
+        public static float XP_FRACTION_ATTACK;
+        /** Fraction of enemy ships' total XP worth that goes toward the DEFENSE role */
+        public static float XP_FRACTION_DEFENSE;
+        /** Fraction of enemy ships' total XP worth that goes toward the SUPPORT role */
+        public static float XP_FRACTION_SUPPORT;
         /** Ignore the 'no_build_in' tag */
         public static boolean IGNORE_NO_BUILD_IN;
         /** Allows increasing # of built-in hull mods with story points */
         public static boolean ALLOW_INCREASE_SMOD_LIMIT;
+        /** How often the combat tracker should update ship contribution. */
+        public static float COMBAT_UPDATE_INTERVAL;
+        /** Whether to use the version of XP tracking that only considers hull damage. */
+        public static boolean USE_LEGACY_XP_TRACKER;
         /** Set to true to disable this mod's features */
         public static boolean DISABLE_MOD;
 
@@ -126,6 +142,11 @@ public class SModUtils {
             MIN_CONTRIBUTION_FRACTION = (float) combat.getDouble("minContributionFraction");
             NON_COMBAT_XP_FRACTION = (float) combat.getDouble("nonCombatXPFraction");
             TARGET_DMOD_LOWER_BOUND = (float) combat.getDouble("targetDModLowerBound");
+            COMBAT_UPDATE_INTERVAL = (float) combat.getDouble("combatUpdateInterval");
+            XP_FRACTION_ATTACK = (float) combat.getDouble("xpFractionAttack");
+            XP_FRACTION_DEFENSE = (float) combat.getDouble("xpFractionDefense");
+            XP_FRACTION_SUPPORT = (float) combat.getDouble("xpFractionSupport");
+            USE_LEGACY_XP_TRACKER = combat.getBoolean("useLegacyXPTracker");
         }
 
         private static float[] loadCoeffsFromJSON(JSONObject json, String name) throws JSONException {
@@ -390,6 +411,7 @@ public class SModUtils {
         return false;
     }
 
+    /** Shows [fleetMember]'s XP as a paragraph in [dialog] */
     public static void displayXP(InteractionDialogAPI dialog, FleetMemberAPI fleetMember) {
         int xp = (int) SModUtils.getXP(fleetMember.getId());
         dialog.getTextPanel()
@@ -397,4 +419,92 @@ public class SModUtils {
             .setHighlight(fleetMember.getShipName(), "" + xp);
     }
     
+    /** Creates the text "The [fleetMember] gained [xp] xp." 
+     *  Adds the specified text as a paragraph on [dialog]
+     *  Adds [additionalText] to the end of the XP gain text. */
+    public static void addXPGainToDialog(InteractionDialogAPI dialog, FleetMemberAPI fleetMember, int xp, String additionalText) {
+        if (dialog == null || dialog.getTextPanel() == null) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("The ");
+        String shipName = fleetMember.getShipName();
+        sb.append(shipName + ", ");
+        ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
+        sb.append(hullSpec.getHullNameWithDashClass() + " gained " + xp + " XP");
+        dialog.getTextPanel().setFontSmallInsignia();
+        LabelAPI para = dialog.getTextPanel().addPara(sb.toString() + " " + (additionalText == null ? "" : additionalText));
+        para.setHighlight(hullSpec.getHullName(), "" + xp);
+        dialog.getTextPanel().setFontInsignia();
+    }
+
+    /** Creates the text "The [fleetMember] gained [xp] xp [additionalText]: ",
+     *  followed by a breakdown of ATTACK, DEFENSE, and SUPPORT XP gain amounts. */
+    public static void addTypedXPGainToDialog(InteractionDialogAPI dialog, FleetMemberAPI fleetMember, Map<ContributionType, Float> xp, String additionalText) {
+        if (dialog == null || dialog.getTextPanel() == null) {
+            return;
+        }
+        float totalXPFloat = 0f;
+        for (float partXP : xp.values()) {
+            totalXPFloat += partXP;
+        }
+        int totalXP = Math.round(totalXPFloat);
+        if (totalXP <= 0) {
+            return;
+        }
+        List<String> highlights = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        sb.append("The ");
+        String shipName = fleetMember.getShipName();
+        sb.append(shipName + ", ");
+        ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
+        sb.append(String.format("%s gained %s XP %s:", hullSpec.getHullNameWithDashClass(), totalXP, additionalText));
+        highlights.add(hullSpec.getHullName());
+        highlights.add("" + totalXP);
+        for (Map.Entry<ContributionType, Float> partXP : xp.entrySet()) {
+            sb.append("\n    - ");
+            int part = Math.round(partXP.getValue());
+            switch (partXP.getKey()) {
+                case ATTACK: 
+                    sb.append(part + " XP gained from offensive actions");
+                    break;
+                case DEFENSE: 
+                    sb.append(part + " XP gained from defensive actions");
+                    break;
+                case SUPPORT: 
+                    sb.append(part + " XP gained from supportive actions");
+                    break;
+                default: 
+                    break;
+            }
+            highlights.add("" + part);
+        }
+        dialog.getTextPanel().setFontSmallInsignia();
+        LabelAPI para = dialog.getTextPanel().addPara(sb.toString());
+        para.setHighlight(highlights.toArray(new String[0]));
+        dialog.getTextPanel().setFontInsignia();
+    }
+
+    /** Adds "the following ships gained [xp] XP [additionalText]:" followed by the list of ships in
+     *  [fleetMembers]. */
+    public static void addCoalescedXPGainToDialog(InteractionDialogAPI dialog, List<FleetMemberAPI> fleetMembers, int xp, String additionalText) {
+        if (dialog == null || dialog.getTextPanel() == null || fleetMembers.isEmpty()) {
+            return;
+        }
+        List<String> highlights = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        sb.append("The following ships gained " + xp + " xp " + additionalText + ":");
+        highlights.add("" + xp);
+        for (FleetMemberAPI fleetMember : fleetMembers) {
+            sb.append("\n    - ");
+            String shipName = fleetMember.getShipName();
+            ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
+            sb.append(shipName + ", " + hullSpec.getHullNameWithDashClass());
+            highlights.add(hullSpec.getHullName());
+        }
+        dialog.getTextPanel().setFontSmallInsignia();
+        LabelAPI text = dialog.getTextPanel().addPara(sb.toString());
+        text.setHighlight(highlights.toArray(new String[0]));
+        dialog.getTextPanel().setFontInsignia();
+    }
 }

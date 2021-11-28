@@ -4,6 +4,7 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.util.Misc;
 
 import data.campaign.ProgSModEngagementListener;
+import data.campaign.ProgSModEngagementListenerOld;
 import util.SModUtils;
 
 public class ProgSModBasePlugin extends com.fs.starfarer.api.BaseModPlugin {
@@ -17,7 +18,13 @@ public class ProgSModBasePlugin extends com.fs.starfarer.api.BaseModPlugin {
             SModUtils.loadShipData();
             Global.getSettings().getHullModSpec("progsmod_xptracker").setHiddenEverywhere(false);
             Global.getSector().getMemory().set("$progsmodEnabled", true);
-            Global.getSector().addTransientListener(new ProgSModEngagementListener(false));
+
+            if (SModUtils.Constants.USE_LEGACY_XP_TRACKER) {
+                Global.getSector().addTransientListener(new ProgSModEngagementListenerOld(false));
+            }
+            else {
+                Global.getSector().addTransientListener(new ProgSModEngagementListener(false));
+            }
             
             // Disallow building-in hullmods via story points
             Misc.MAX_PERMA_MODS = -1;

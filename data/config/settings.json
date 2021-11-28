@@ -1,5 +1,8 @@
 {
     "ruleCommandPackages":[
         "data.campaign.rulecmd"
-    ]
+    ],
+    "plugins": {
+        "ProgSModCombatPlugin": "data.combat.ProgSModCombatPlugin"
+    }
 }
