@@ -59,7 +59,7 @@ public class ProgSModSetStoryOption extends SetStoryOption {
             super.addActionCostSection(info);
             int xp = (int) SModUtils.getXP(fleetMember.getId());
             if (xp < reqShipXP) {
-                info.addPara("Ship only has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), "" + xp);
+                info.addPara("Ship has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), "" + xp);
             }
         }
     }
@@ -116,7 +116,7 @@ public class ProgSModSetStoryOption extends SetStoryOption {
                 tooltip.addStoryPointUseInfo(initPad, delegate.getCost(), delegate.getBonusXPFraction(), true);
                 int xp = (int) SModUtils.getXP(fleetMember.getId());
                 if (xp < xpCost) {
-                    tooltip.addPara("Ship only has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), "" + xp);
+                    tooltip.addPara("Ship has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), "" + xp);
                 }
                 int sp = Global.getSector().getPlayerStats().getStoryPoints();
                 String points = "points";

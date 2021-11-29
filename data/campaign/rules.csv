@@ -3,7 +3,7 @@ progsmod_Start,PopulateOptions,"$global.progsmodEnabled
 $menuState == main","SetShortcut progsmod_OptionManage ""H""",,16:progsmod_OptionManage:Manage built-in hull mods,,,
 progsmod_Manage,DialogOptionSelected,$option == progsmod_OptionManage,ProgSModPickFleetMember $selectedShip progsmod_SelectShip progsmodMain,,,,,
 progsmod_ShipSelected1,progsmod_SelectShip,"$menuState == progsmodMain
-$selectedShip != null",ProgSModHandleOptionsList $selectedShip $selectedVariant progsmod_OptionBuildIn progsmod_OptionRemove progsmod_OptionAugment progsmod_OptionBackMain,,,,,
+$selectedShip != null",ProgSModHandleOptionsList $selectedShip $selectedVariant progsmod_OptionBuildIn progsmod_OptionRemove progsmod_OptionSelectModule progsmod_OptionAugment progsmod_OptionBackMain,,,,,
 progsmod_BackToStart,DialogOptionSelected,$option == progsmod_OptionBackMain,"$menuState = main 0
 unset $selectedShip
 unset $selectedVariant
@@ -18,3 +18,6 @@ $selectedVariant != null",ProgSModBuildIn $selectedShip $selectedVariant progsmo
 progsmod_ShipRemove,DialogOptionSelected,"$option == progsmod_OptionRemove
 $selectedShip != null
 $selectedVariant != null",ProgSModRemove $selectedShip $selectedVariant progsmod_SelectShip,,,,,
+progsmod_SelectModule,DialogOptionSelected,"$option == progsmod_OptionSelectModule
+$selectedShip != null
+$selectedVariant != null",ProgSModSelectModule $selectedShip $selectedVariant progsmod_SelectShip,,,,,

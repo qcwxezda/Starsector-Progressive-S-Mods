@@ -20,26 +20,28 @@ import com.fs.starfarer.api.mission.FleetSide;
 import com.fs.starfarer.api.ui.ButtonAPI;
 import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.PositionAPI;
-import com.fs.starfarer.api.util.Pair;
 
 import org.lwjgl.util.vector.Vector2f;
 
-import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
+import data.campaign.rulecmd.util.ProgSModHullModSelector.SelectorData;
 import util.SModUtils;
 public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
 
     private LabelAPI nSelectedLabel, remainingXPLabel;
+    // Note: LinkedList for O(n) initialization,
+    // ArrayList for faster iteration but O(n^2) initialization
     private List<SelectorData> selectorList;
     private float shipXP, remainingXP;
-    private int numCanBuildIn, numChecked;
+    private int numCanBuildIn, numChecked, sumChecked;
     private ButtonAPI showAllButton;
-    private ProgSModSelectPanelCreator panelCreator;
+    private ProgSModHullModSelector panelCreator;
     private ShipVariantAPI variant;
     private String variantId;
     private FleetMemberAPI fleetMember;
-    private BitSet selectedHullModIds;
+    private BitSet checkedEntries;
     private boolean isShowingAll = false;
     private SectorEntityToken interactionTarget;
+    private float mouseY;
 
     public void setData(
             LabelAPI nSelected, 
@@ -48,7 +50,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
             FleetMemberAPI fleetMember,
             ShipVariantAPI variant, 
             ButtonAPI showAllButton, 
-            ProgSModSelectPanelCreator panelCreator,
+            ProgSModHullModSelector panelCreator,
             SectorEntityToken interactionTarget) {
         nSelectedLabel = nSelected;
         remainingXPLabel = remainingXP;
@@ -57,12 +59,11 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
         shipXP = SModUtils.getXP(fleetMember.getId());
         this.remainingXP = shipXP;
         numCanBuildIn = SModUtils.getMaxSMods(fleetMember) - variant.getSMods().size();
-        numChecked = 0;
+        numChecked = sumChecked = 0;
         this.variant = variant;
         this.showAllButton = showAllButton;
         this.panelCreator = panelCreator;
         this.interactionTarget = interactionTarget;
-
         // Get the variant id for [variant]
         // If it doesnt exist, find one from the settings.
         // If that doesn't exist, just disable the show all button
@@ -76,7 +77,6 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
                 showAllButton.setEnabled(false);
             }
         }
-
         pruneHullMods();
     }
 
@@ -108,38 +108,41 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
         }
     }
 
-    /** Populates the pair (number of checked buttons, sum of checked buttons' XP costs). 
-     * Returns [true] iff the checked entries are the same as [selectedHullModIds].
+    /** Returns [true] iff the checked entries are the same as [selectedHullModIds].
+     * If not [checkAll], only checks the two entries closest to the cursor's y-coordinate.
+     * Changes [numChecked] and [sumChecked].
      * Changes [selectedHullModIds] to match current checked ids. */ 
-    public boolean tallyCheckedEntries(List<SelectorData> selectorList, Pair<Integer, Integer> numAndSum) {
-        int numChecked = 0, sumChecked = 0;
+    public boolean tallyCheckedEntries(boolean checkAll) {
         boolean noChange = true;
-        if (selectedHullModIds == null) {
+        if (checkedEntries == null) {
             noChange = false;
-            selectedHullModIds = new BitSet(selectorList.size());
+            checkAll = true;
+            checkedEntries = new BitSet(selectorList.size());
         }
-        Iterator<SelectorData> itr = selectorList.iterator();
-        int i = 0;
+
+        int i = checkAll ? 0 : getLastEntryBeforeMouseY();
+        int j = 0;
+        Iterator<SelectorData> itr = selectorList.listIterator(i);
         while (itr.hasNext()) {
             SelectorData entry = itr.next();
-            if (entry.button.isChecked()) {
+            if (entry.button.isChecked() && !checkedEntries.get(i)) {
                 numChecked++;
                 sumChecked += entry.hullModCost;
-                if (!selectedHullModIds.get(i)) {
-                    noChange = false;
-                    selectedHullModIds.set(i);
-                }
+                noChange = false;
+                checkedEntries.set(i);
             }
-            else {
-                if (selectedHullModIds.get(i)) {
-                    noChange = false;
-                    selectedHullModIds.clear(i);
-                }
+            else if (!entry.button.isChecked() && checkedEntries.get(i)) {
+                numChecked--;
+                sumChecked -= entry.hullModCost;
+                noChange = false;
+                checkedEntries.clear(i);
             }
-            i++;
+            if (!checkAll && j >= 1) {
+                break;
+            }
+            i++; 
+            j++;
         }
-        numAndSum.one = numChecked;
-        numAndSum.two = sumChecked;
         return noChange;
     }
 
@@ -165,6 +168,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
             // get consumed by the button click and the second doesn't seem to
             // exist.
             if (event.isMouseMoveEvent()) {
+                mouseY = event.getY();
 
                 // If the show all button was checked, disable it
                 // and show the list of all hull mods
@@ -180,20 +184,17 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
                     panelCreator.showAdditionalHullMods(filterHullMods(allHullMods), variant.getHullSize(), fleetMember.getDeploymentPointsCost(), selectorList);
                     pruneHullMods();
 
-                    // Also, set the selected hull mods to null to force an update
-                    selectedHullModIds = null;
+                    // Set selectedHullModIds to null to force an update
+                    checkedEntries = null;
                     isShowingAll = true;
                 }
 
-                Pair<Integer, Integer> numAndSum = new Pair<>();
-
                 // If nothing was changed, return early to avoid unnecessary computation
-                if (tallyCheckedEntries(selectorList, numAndSum)) {
-                    continue;
+                if (tallyCheckedEntries(false)) {
+                    return;
                 }
 
-                numChecked = numAndSum.one;
-                remainingXP = shipXP - numAndSum.two;
+                remainingXP = shipXP - sumChecked;
 
                 // Disable or enable buttons depending on the remaining XP
                 // and hull mod build-in slots
@@ -225,6 +226,9 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
                 // Update the xp remaining and number selected labels
                 panelCreator.setNSelectedModsText(nSelectedLabel, numChecked, numCanBuildIn);
                 panelCreator.setRemainingXPText(remainingXPLabel, remainingXP);
+                // Only care about the first event since this function is the same
+                // regardless of what the event is
+                return;
             }
         }
     }
@@ -280,6 +284,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
             // (# of loops is bounded by # of checked entries as well as
             // longest hull mod dependency chain)
             checkedEntriesChanged = false;
+            int i = 0;
             for (SelectorData entry : selectorList) {
                 HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(entry.hullModId);
                 if (!hullMod.getEffect().isApplicableToShip(tempShip)) {
@@ -287,6 +292,8 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
                         entry.button.setChecked(false);
                         checkedEntriesChanged = true;
                         numChecked--;
+                        sumChecked -= entry.hullModCost;
+                        checkedEntries.clear(i);
                         remainingXP += entry.hullModCost;
                     }
                     String unapplicableReason = panelCreator.shortenText(hullMod.getEffect().getUnapplicableReason(tempShip), entry.costLabel);
@@ -301,6 +308,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
                         panelCreator.enableEntry(entry);
                     }
                 }
+                i++;
             }
         }
 
@@ -343,5 +351,48 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
             removeCantBuildIn();
         }
         removeIfStationRequired();
+    }
+
+    // /** Finds the index of the first visible entry in the selector list, i.e.
+    //  *  the top-most button that isn't hidden due to the scroll bar location.
+    //  *  Has a fairly generous slack of [50f]. */
+    // private int getFirstVisibleEntry() {
+    //     if (selectorList.size() <= 1) {
+    //         return 0;
+    //     }
+    //     int left = 0, right = selectorList.size() - 1;
+    //     while (left < right) {
+    //         int mid = (left + right) / 2;
+    //         float yPos = selectorList.get(mid).nameLabel.getPosition().getY();
+    //         if (yPos > positionYMax + 50f) {
+    //             left = mid + 1;
+    //         } else {
+    //             right = mid;
+    //         }
+    //     }
+    //     return left;
+    // }
+
+    /** Finds the index of the last selector list entry whose y-coordinate is 
+     *  greater than the y-coordinate of the mouse.
+     *  (The list is descending in y-coordinate)
+     *  The selected entry, if any,
+     *  must be either this one or the next one. */ 
+    private int getLastEntryBeforeMouseY() {
+        if (selectorList.size() <= 1) {
+            return 0;
+        }
+        int left = 0, right = selectorList.size() - 1;
+        while (left < right) {
+            int mid = (left + right + 1) / 2;
+            float yPos = selectorList.get(mid).nameLabel.getPosition().getY();
+            if (yPos > mouseY) {
+                left = mid;
+            } 
+            else {
+                right = mid - 1;
+            }
+        }
+        return left;
     }
 }

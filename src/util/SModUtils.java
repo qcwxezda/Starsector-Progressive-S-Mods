@@ -14,6 +14,7 @@ import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.ShipHullSpecAPI;
+import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.HullMods;
@@ -506,5 +507,21 @@ public class SModUtils {
         LabelAPI text = dialog.getTextPanel().addPara(sb.toString());
         text.setHighlight(highlights.toArray(new String[0]));
         dialog.getTextPanel().setFontInsignia();
+    }
+
+    /** Returns a list of the module variants of a base variant that have positive OP. */
+    public static List<ShipVariantAPI> getModuleVariantsWithOP(ShipVariantAPI base) {
+        if (base.getModuleSlots() == null) {
+            return null;
+        }
+        List<ShipVariantAPI> withOP = new ArrayList<>();
+        for (int i = 0; i < base.getModuleSlots().size(); i++) {
+            ShipVariantAPI moduleVariant = base.getModuleVariant(base.getModuleSlots().get(i));
+            if (moduleVariant.getHullSpec().getOrdnancePoints(null) <= 0) {
+                continue;
+            }
+            withOP.add(moduleVariant);
+        }
+        return withOP;
     }
 }

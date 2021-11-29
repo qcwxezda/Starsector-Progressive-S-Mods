@@ -166,9 +166,11 @@ public class ProgSModEngagementListener extends BaseCampaignEventListener {
             if (totalContribution <= 0f) {
                 continue;
             }
-            float damagedFrac = 1 - enemyFleetMember.getStatus().getHullFraction();
-            float totalXP = SModUtils.Constants.XP_GAIN_MULTIPLIER * getXPFractionForType(type) * damagedFrac *
-                Math.max(
+            float totalXP = 
+                SModUtils.Constants.XP_GAIN_MULTIPLIER 
+                * getXPFractionForType(type) 
+                * enemyFleetMember.getStatus().getHullDamageTaken() 
+                * Math.max(
                      enemyFleetMember.getDeploymentCostSupplies(), 
                      SModUtils.Constants.TARGET_DMOD_LOWER_BOUND * enemyFleetMember.getDeploymentPointsCost()
                 );

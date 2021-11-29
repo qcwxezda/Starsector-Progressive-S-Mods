@@ -10,17 +10,17 @@ import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.PositionAPI;
 
-import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
+import data.campaign.rulecmd.util.ProgSModHullModSelector.SelectorData;
 import util.SModUtils;
 public class ProgSModRemovePlugin implements CustomUIPanelPlugin {
 
     private LabelAPI xpLabel;
     private List<SelectorData> selectorList;
     private float shipXP;
-    private ProgSModSelectPanelCreator panelCreator;
+    private ProgSModHullModSelector panelCreator;
     private SectorEntityToken interactionTarget;
 
-    public void setData(LabelAPI xpLabel, List<SelectorData> list, float shipXP, ProgSModSelectPanelCreator panelCreator, SectorEntityToken interactionTarget) {
+    public void setData(LabelAPI xpLabel, List<SelectorData> list, float shipXP, ProgSModHullModSelector panelCreator, SectorEntityToken interactionTarget) {
         this.xpLabel = xpLabel;
         selectorList = list;
         this.shipXP = shipXP;

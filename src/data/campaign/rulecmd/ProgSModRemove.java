@@ -21,8 +21,8 @@ import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.util.Misc.Token;
 
 import data.campaign.rulecmd.util.ProgSModRemovePlugin;
-import data.campaign.rulecmd.util.ProgSModSelectPanelCreator;
-import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
+import data.campaign.rulecmd.util.ProgSModHullModSelector;
+import data.campaign.rulecmd.util.ProgSModHullModSelector.SelectorData;
 import util.SModUtils;
 
 /** ProgSModRemove [fleetMember] [selectedVariant] [trigger] -- shows the built-in hull mods for 
@@ -53,7 +53,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
             new CustomDialogDelegate() {
                 @Override
                 public void createCustomDialog(CustomPanelAPI panel) {
-                    ProgSModSelectPanelCreator panelCreator = new ProgSModSelectPanelCreator(panel, true);
+                    ProgSModHullModSelector panelCreator = new ProgSModHullModSelector(panel, true);
                     panelCreator.createHullModSelectionPanel(
                         titleString, 
                         builtInMods, 

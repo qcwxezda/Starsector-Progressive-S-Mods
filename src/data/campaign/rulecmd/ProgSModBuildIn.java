@@ -2,7 +2,6 @@ package data.campaign.rulecmd;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +23,8 @@ import com.fs.starfarer.api.util.Pair;
 import com.fs.starfarer.api.util.Misc.Token;
 
 import data.campaign.rulecmd.util.ProgSModBuildInPlugin;
-import data.campaign.rulecmd.util.ProgSModSelectPanelCreator;
-import data.campaign.rulecmd.util.ProgSModSelectPanelCreator.SelectorData;
+import data.campaign.rulecmd.util.ProgSModHullModSelector;
+import data.campaign.rulecmd.util.ProgSModHullModSelector.SelectorData;
 import util.SModUtils;
 
 /** ProgSModBuildIn [fleetMember] [selectedVariant] [trigger] -- shows the build-in interface for
@@ -44,7 +43,7 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
         final List<HullModSpecAPI> nonBuiltInMods = new ArrayList<>();
         final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
         final ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(1).string);
-        final List<SelectorData> selectorList = new LinkedList<>();
+        final List<SelectorData> selectorList = new ArrayList<>();
         final ProgSModBuildInPlugin plugin = new ProgSModBuildInPlugin();
         
         Collection<String> nonBuiltInIds = selectedVariant.getNonBuiltInHullmods();
@@ -59,7 +58,7 @@ public class ProgSModBuildIn extends BaseCommandPlugin {
             new CustomDialogDelegate() {
                 @Override
                 public void createCustomDialog(CustomPanelAPI panel) {
-                    ProgSModSelectPanelCreator panelCreator = new ProgSModSelectPanelCreator(panel, false);
+                    ProgSModHullModSelector panelCreator = new ProgSModHullModSelector(panel, false);
                     ButtonAPI showAllButton = 
                         panelCreator.createHullModSelectionPanel(
                             titleString, 

@@ -3,7 +3,6 @@ package data.campaign.rulecmd.util;
 import java.util.List;
 
 import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.Alignment;
@@ -18,7 +17,7 @@ import util.SModUtils;
 
 import java.awt.Color;
 
-public class ProgSModSelectPanelCreator {
+public class ProgSModHullModSelector {
 
     static final float BUTTON_HEIGHT = 50f;
     static final float TITLE_HEIGHT = 50f;
@@ -29,22 +28,13 @@ public class ProgSModSelectPanelCreator {
     static final Color RED = Misc.getNegativeHighlightColor();
     static final Color YELLOW = Global.getSettings().getColor("progressBarWarningColor");
 
-    private static final Color BASE_COLOR, DARK_COLOR, BRIGHT_COLOR;
-
-    static {
-        FactionAPI playerFaction = Global.getSector().getPlayerFaction();
-        BASE_COLOR = playerFaction.getBaseUIColor();
-        DARK_COLOR = playerFaction.getDarkUIColor();
-        BRIGHT_COLOR = playerFaction.getBrightUIColor();
-    }
-
     private TooltipMakerAPI buttonsList, title;
     private final CustomPanelAPI panel;
     private float width, height;
     private float buttonWidth, buttonListHorizontalPadding;
     private boolean removeMode;
 
-    public ProgSModSelectPanelCreator(CustomPanelAPI panel, boolean removeMode) {
+    public ProgSModHullModSelector(CustomPanelAPI panel, boolean removeMode) {
         this.panel = panel;
         this.removeMode = removeMode;
 
@@ -88,9 +78,9 @@ public class ProgSModSelectPanelCreator {
             tooltip.addAreaCheckbox(
                 "", 
                 "BUTTON_" + hullMod.getId(), 
-                removeMode ? Misc.getStoryOptionColor() : BASE_COLOR, 
-                removeMode ? Misc.getStoryDarkColor() : DARK_COLOR,
-                BRIGHT_COLOR, 
+                removeMode ? Misc.getStoryOptionColor() : Misc.getBasePlayerColor(), 
+                removeMode ? Misc.getStoryDarkColor() : Misc.getDarkPlayerColor(),
+                Misc.getBrightPlayerColor(), 
                 width, 
                 height, 
                 pad
@@ -212,8 +202,6 @@ public class ProgSModSelectPanelCreator {
             HullSize hullSize,
             float dpCost,
             List<SelectorData> selectorList) {
-        
-
         // TITLE
         title = panel.createUIElement(width - 10f, TITLE_HEIGHT, false);
         title.setTitleOrbitronLarge();
@@ -247,9 +235,9 @@ public class ProgSModSelectPanelCreator {
                 showAllElement.addAreaCheckbox(
                     "Show all", 
                     "SHOWALLBUTTON", 
-                    BASE_COLOR, 
-                    DARK_COLOR,
-                    BRIGHT_COLOR, 
+                    Misc.getBasePlayerColor(), 
+                    Misc.getDarkPlayerColor(),
+                    Misc.getBrightPlayerColor(), 
                     showAllWidth, 
                     25f, 
                     showAllHeight
