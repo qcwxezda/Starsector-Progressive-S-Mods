@@ -1,4 +1,4 @@
-package data.campaign;
+package progsmod.data.campaign;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,11 +24,11 @@ import com.fs.starfarer.api.loading.VariantSource;
 import util.SModUtils;
 import util.SModUtils.Constants;
 
-public class ProgSModEngagementListenerOld extends BaseCampaignEventListener {
+public class EngagementListenerOld extends BaseCampaignEventListener {
 
     private InteractionDialogAPI lastDialog;
 
-    public ProgSModEngagementListenerOld(boolean permaRegister) {
+    public EngagementListenerOld(boolean permaRegister) {
         super(permaRegister);
     }
 

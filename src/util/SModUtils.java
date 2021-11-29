@@ -26,7 +26,7 @@ import com.fs.starfarer.api.ui.LabelAPI;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import data.combat.ProgSModCombatPlugin.ContributionType;
+import progsmod.data.combat.ContributionTracker.ContributionType;
 
 import org.json.JSONArray;
 

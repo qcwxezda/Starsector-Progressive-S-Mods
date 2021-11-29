@@ -1,4 +1,4 @@
-package data.campaign.rulecmd.util;
+package progsmod.data.campaign.rulecmd.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,7 @@ import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 
-public class ProgSModGenericSelector {
+public class GenericSelector {
     public static List<ButtonAPI> createSelector(
             CustomPanelAPI panel,
             String titleString, 

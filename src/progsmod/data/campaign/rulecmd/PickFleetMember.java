@@ -1,4 +1,4 @@
-package data.campaign.rulecmd;
+package progsmod.data.campaign.rulecmd;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,7 @@ import com.fs.starfarer.api.util.Misc.Token;
  * -- afterwards sets [selected ship key] to the picked ship
  * -- fires [trigger] and changes $menuState to [menuId] 
  *    upon successful selection of a ship */
-public class ProgSModPickFleetMember extends BaseCommandPlugin {
+public class PickFleetMember extends BaseCommandPlugin {
 
     @Override
     public boolean execute(final String ruleId, final InteractionDialogAPI dialog, final List<Token> params, final Map<String, MemoryAPI> memoryMap)  {

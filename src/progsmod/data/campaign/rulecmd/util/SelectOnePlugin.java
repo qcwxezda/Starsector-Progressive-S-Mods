@@ -1,4 +1,4 @@
-package data.campaign.rulecmd.util;
+package progsmod.data.campaign.rulecmd.util;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import com.fs.starfarer.api.ui.ButtonAPI;
 import com.fs.starfarer.api.ui.PositionAPI;
 
 /** Plugin that allows only selecting one button from a list of buttons. */
-public class ProgSModSelectOnePlugin implements CustomUIPanelPlugin {
+public class SelectOnePlugin implements CustomUIPanelPlugin {
 
     private ButtonAPI[] buttonList;
     private int checkedIndex = -1;
@@ -35,7 +35,7 @@ public class ProgSModSelectOnePlugin implements CustomUIPanelPlugin {
         // Check every frame if a button has been pressed.
         // Just loop through every button;
         // if your ship has so many modules that doing a binary search
-        // for visible buttons (as in the build-in plugin) 
+        // for the selected button (as in the build-in plugin) 
         // would improve performance, your ship has issues
         for (InputEventAPI event : events) {
             if (event.isConsumed()) {

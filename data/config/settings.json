@@ -1,8 +1,8 @@
 {
     "ruleCommandPackages":[
-        "data.campaign.rulecmd"
+        "progsmod.data.campaign.rulecmd"
     ],
     "plugins": {
-        "ProgSModCombatPlugin": "data.combat.ProgSModCombatPlugin"
+        "ProgSModCombatPlugin": "progsmod.data.combat.ContributionTracker"
     }
 }

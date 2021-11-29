@@ -1,4 +1,4 @@
-package data.campaign.rulecmd;
+package progsmod.data.campaign.rulecmd;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import util.SModUtils;
  *  [option3] is the option to select one of the ship's modules
  *  [option4] is the option to increase S-Mod limit. 
  *  [option5] is to go back to main menu. */
-public class ProgSModHandleOptionsList extends BaseCommandPlugin {
+public class CreateOptionsList extends BaseCommandPlugin {
 
     private static final String BUILD_IN_TEXT = "Build up to %s hull mods into ";
     private static final String REMOVE_TEXT = "Select built-in hull mods to remove from ";
@@ -87,7 +87,7 @@ public class ProgSModHandleOptionsList extends BaseCommandPlugin {
             storyParams.add(new Token("" + nextSPCost, TokenType.LITERAL));
             storyParams.add(new Token("" + spRefundFraction, TokenType.LITERAL));
             storyParams.add(new Token("" + nextXPCost, TokenType.LITERAL));
-            new ProgSModSetStoryOption().execute(ruleId, dialog, storyParams, memoryMap);
+            new SetStoryOptionExt().execute(ruleId, dialog, storyParams, memoryMap);
         }
 
         // Add in the back to main menu option 

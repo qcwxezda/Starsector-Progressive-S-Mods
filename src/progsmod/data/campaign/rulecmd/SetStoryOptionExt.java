@@ -1,4 +1,4 @@
-package data.campaign.rulecmd;
+package progsmod.data.campaign.rulecmd;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +20,7 @@ import util.SModUtils;
 /** ProgSModSetStoryOption [fleetMember] [n] [r] [x] makes a story option costing n story points and x ship XP,
  *   and giving m% bonus character XP.
  *  Uses default sound. Modified from SetStoryOption in the base game. */
-public class ProgSModSetStoryOption extends SetStoryOption {
+public class SetStoryOptionExt extends SetStoryOption {
 
     private class ProgSModStoryPointActionDelegate extends BaseOptionStoryPointActionDelegate {
 

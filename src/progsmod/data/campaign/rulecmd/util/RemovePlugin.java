@@ -1,4 +1,4 @@
-package data.campaign.rulecmd.util;
+package progsmod.data.campaign.rulecmd.util;
 
 import java.util.Iterator;
 import java.util.List;
@@ -10,17 +10,17 @@ import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.PositionAPI;
 
-import data.campaign.rulecmd.util.ProgSModHullModSelector.SelectorData;
+import progsmod.data.campaign.rulecmd.util.HullModSelector.SelectorData;
 import util.SModUtils;
-public class ProgSModRemovePlugin implements CustomUIPanelPlugin {
+public class RemovePlugin implements CustomUIPanelPlugin {
 
     private LabelAPI xpLabel;
     private List<SelectorData> selectorList;
     private float shipXP;
-    private ProgSModHullModSelector panelCreator;
+    private HullModSelector panelCreator;
     private SectorEntityToken interactionTarget;
 
-    public void setData(LabelAPI xpLabel, List<SelectorData> list, float shipXP, ProgSModHullModSelector panelCreator, SectorEntityToken interactionTarget) {
+    public void setData(LabelAPI xpLabel, List<SelectorData> list, float shipXP, HullModSelector panelCreator, SectorEntityToken interactionTarget) {
         this.xpLabel = xpLabel;
         selectorList = list;
         this.shipXP = shipXP;

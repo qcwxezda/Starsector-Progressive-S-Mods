@@ -1,4 +1,4 @@
-package data.campaign.rulecmd.util;
+package progsmod.data.campaign.rulecmd.util;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -23,9 +23,9 @@ import com.fs.starfarer.api.ui.PositionAPI;
 
 import org.lwjgl.util.vector.Vector2f;
 
-import data.campaign.rulecmd.util.ProgSModHullModSelector.SelectorData;
+import progsmod.data.campaign.rulecmd.util.HullModSelector.SelectorData;
 import util.SModUtils;
-public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
+public class BuildInPlugin implements CustomUIPanelPlugin {
 
     private LabelAPI nSelectedLabel, remainingXPLabel;
     // Note: LinkedList for O(n) initialization,
@@ -34,7 +34,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
     private float shipXP, remainingXP;
     private int numCanBuildIn, numChecked, sumChecked;
     private ButtonAPI showAllButton;
-    private ProgSModHullModSelector panelCreator;
+    private HullModSelector panelCreator;
     private ShipVariantAPI variant;
     private String variantId;
     private FleetMemberAPI fleetMember;
@@ -50,7 +50,7 @@ public class ProgSModBuildInPlugin implements CustomUIPanelPlugin {
             FleetMemberAPI fleetMember,
             ShipVariantAPI variant, 
             ButtonAPI showAllButton, 
-            ProgSModHullModSelector panelCreator,
+            HullModSelector panelCreator,
             SectorEntityToken interactionTarget) {
         nSelectedLabel = nSelected;
         remainingXPLabel = remainingXP;

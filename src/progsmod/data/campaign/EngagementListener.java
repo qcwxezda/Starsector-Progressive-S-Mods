@@ -1,4 +1,4 @@
-package data.campaign;
+package progsmod.data.campaign;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -17,11 +17,11 @@ import com.fs.starfarer.api.combat.EngagementResultAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.VariantSource;
 
-import data.combat.ProgSModCombatPlugin;
-import data.combat.ProgSModCombatPlugin.ContributionType;
+import progsmod.data.combat.ContributionTracker;
+import progsmod.data.combat.ContributionTracker.ContributionType;
 import util.SModUtils;
 
-public class ProgSModEngagementListener extends BaseCampaignEventListener {
+public class EngagementListener extends BaseCampaignEventListener {
 
     /** Maps ship id to the corresponding fleetMember id. */
     private Map<String, String> shipToFleetMemberMap;
@@ -38,7 +38,7 @@ public class ProgSModEngagementListener extends BaseCampaignEventListener {
     /** Keep track of the last dialog opened in order to add text to it. */
     private InteractionDialogAPI lastDialog;
 
-    public ProgSModEngagementListener(boolean permaRegister) {
+    public EngagementListener(boolean permaRegister) {
         super(permaRegister);
     }
 
@@ -46,13 +46,12 @@ public class ProgSModEngagementListener extends BaseCampaignEventListener {
     public void reportShownInteractionDialog(InteractionDialogAPI dialog) {
         lastDialog = dialog;
     }
-    
 
     @Override
     public void reportPlayerEngagement(EngagementResultAPI result) {
         // Populate the required utility mappings
-        shipToFleetMemberMap = ProgSModCombatPlugin.getShipToFleetMemberMap();
-        totalContributionMap = ProgSModCombatPlugin.getContributionTable();
+        shipToFleetMemberMap = ContributionTracker.getShipToFleetMemberMap();
+        totalContributionMap = ContributionTracker.getContributionTable();
         idToFleetMemberMap = new HashMap<>();
         xpGainMap = new HashMap<>();
         playerFilter = new HashSet<>();

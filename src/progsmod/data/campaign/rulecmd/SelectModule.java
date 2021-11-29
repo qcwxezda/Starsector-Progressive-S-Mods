@@ -1,4 +1,4 @@
-package data.campaign.rulecmd;
+package progsmod.data.campaign.rulecmd;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,15 +17,15 @@ import com.fs.starfarer.api.ui.ButtonAPI;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.util.Misc.Token;
 
-import data.campaign.rulecmd.util.ProgSModGenericSelector;
-import data.campaign.rulecmd.util.ProgSModSelectOnePlugin;
+import progsmod.data.campaign.rulecmd.util.GenericSelector;
+import progsmod.data.campaign.rulecmd.util.SelectOnePlugin;
 import util.SModUtils;
 
 /** ProgSModSelectModule [fleetMember] [selectedVariant] [trigger] --
  *  opens up the module selection screen for [fleetMember],
  *  [variant] is the currently selected variant.
  *  then fires [trigger] once an option is selected. */
-public class ProgSModSelectModule extends BaseCommandPlugin {
+public class SelectModule extends BaseCommandPlugin {
 
     private int currentVariantIndex;
 
@@ -53,13 +53,13 @@ public class ProgSModSelectModule extends BaseCommandPlugin {
             moduleNameStrings.add("Module: " + moduleVariant.getHullSpec().getHullName());
         }
 
-        final ProgSModSelectOnePlugin plugin = new ProgSModSelectOnePlugin();
+        final SelectOnePlugin plugin = new SelectOnePlugin();
         dialog.showCustomDialog(500f, 500f, 
             new CustomDialogDelegate() {
                 @Override
                 public void createCustomDialog(CustomPanelAPI panel) {
                     List<ButtonAPI> buttons = 
-                        ProgSModGenericSelector.createSelector(
+                        GenericSelector.createSelector(
                             panel,
                             "Select a module",
                             25f,

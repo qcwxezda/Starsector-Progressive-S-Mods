@@ -1,4 +1,4 @@
-package data.campaign.rulecmd;
+package progsmod.data.campaign.rulecmd;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,16 +20,16 @@ import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.util.Misc.Token;
 
-import data.campaign.rulecmd.util.ProgSModRemovePlugin;
-import data.campaign.rulecmd.util.ProgSModHullModSelector;
-import data.campaign.rulecmd.util.ProgSModHullModSelector.SelectorData;
+import progsmod.data.campaign.rulecmd.util.RemovePlugin;
+import progsmod.data.campaign.rulecmd.util.HullModSelector;
+import progsmod.data.campaign.rulecmd.util.HullModSelector.SelectorData;
 import util.SModUtils;
 
 /** ProgSModRemove [fleetMember] [selectedVariant] [trigger] -- shows the built-in hull mods for 
  *  the module of [fleetMember] whose variant is [selectedVariant].
  *  Remove the selected built-in hull mods. 
  *  Fire [trigger] upon confirmation. */
-public class ProgSModRemove extends BaseCommandPlugin {
+public class RemoveSMod extends BaseCommandPlugin {
 
     @Override
     public boolean execute(final String ruleId, final InteractionDialogAPI dialog, final List<Token> params, final Map<String, MemoryAPI> memoryMap) {
@@ -42,7 +42,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
         final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
         final ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(1).string);
         final List<SelectorData> selectorList = new ArrayList<>();
-        final ProgSModRemovePlugin plugin = new ProgSModRemovePlugin();
+        final RemovePlugin plugin = new RemovePlugin();
         
         Collection<String> builtInIds = selectedVariant.getSMods();
         for (String id : builtInIds) {
@@ -53,7 +53,7 @@ public class ProgSModRemove extends BaseCommandPlugin {
             new CustomDialogDelegate() {
                 @Override
                 public void createCustomDialog(CustomPanelAPI panel) {
-                    ProgSModHullModSelector panelCreator = new ProgSModHullModSelector(panel, true);
+                    HullModSelector panelCreator = new HullModSelector(panel, true);
                     panelCreator.createHullModSelectionPanel(
                         titleString, 
                         builtInMods, 

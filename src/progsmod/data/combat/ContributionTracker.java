@@ -1,4 +1,4 @@
-package data.combat;
+package progsmod.data.combat;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import com.fs.starfarer.api.input.InputEventAPI;
 import com.fs.starfarer.api.mission.FleetSide;
 
 import util.SModUtils;
-public class ProgSModCombatPlugin extends BaseEveryFrameCombatPlugin {
+public class ContributionTracker extends BaseEveryFrameCombatPlugin {
 
     HullAndArmorCombiner hullAndArmor = new HullAndArmorCombiner();
     HullArmorShieldCombiner hullArmorShield = new HullArmorShieldCombiner();
@@ -345,9 +345,9 @@ public class ProgSModCombatPlugin extends BaseEveryFrameCombatPlugin {
      *  combat plugin. */
     public class ProgSModDamageListener implements DamageListener {
 
-        private ProgSModCombatPlugin handler;
+        private ContributionTracker handler;
     
-        public ProgSModDamageListener(ProgSModCombatPlugin handler) {
+        public ProgSModDamageListener(ContributionTracker handler) {
             this.handler = handler;
         }
     

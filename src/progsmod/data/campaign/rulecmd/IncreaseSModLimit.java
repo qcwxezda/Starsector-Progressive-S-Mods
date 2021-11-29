@@ -1,4 +1,4 @@
-package data.campaign.rulecmd;
+package progsmod.data.campaign.rulecmd;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +13,7 @@ import com.fs.starfarer.api.util.Misc.Token;
 import util.SModUtils;
 
 /** ProgSModIncreaseLimit [fleetMember] -- increases [fleetMember]'s built-in hull mod limit by one */
-public class ProgSModIncreaseLimit extends BaseCommandPlugin {
+public class IncreaseSModLimit extends BaseCommandPlugin {
 
     @Override
     public boolean execute(String ruleId, InteractionDialogAPI dialog, List<Token> params, Map<String, MemoryAPI> memoryMap) {

@@ -1,4 +1,4 @@
-package data.campaign.rulecmd.util;
+package progsmod.data.campaign.rulecmd.util;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import util.SModUtils;
 
 import java.awt.Color;
 
-public class ProgSModHullModSelector {
+public class HullModSelector {
 
     static final float BUTTON_HEIGHT = 50f;
     static final float TITLE_HEIGHT = 50f;
@@ -34,7 +34,7 @@ public class ProgSModHullModSelector {
     private float buttonWidth, buttonListHorizontalPadding;
     private boolean removeMode;
 
-    public ProgSModHullModSelector(CustomPanelAPI panel, boolean removeMode) {
+    public HullModSelector(CustomPanelAPI panel, boolean removeMode) {
         this.panel = panel;
         this.removeMode = removeMode;
 
