@@ -14,7 +14,7 @@ $selectedShip != null","IncreaseSModLimit $selectedShip
 FireAll progsmod_SelectShip",,,,,
 progsmod_ShipBuildIn,DialogOptionSelected,"$option == progsmod_OptionBuildIn
 $selectedShip != null
-$selectedVariant != null",BuildInSMod $selectedShip $selectedVariant progsmod_SelectShip,,,,,
+$selectedVariant != null",BuildInHullMod $selectedShip $selectedVariant progsmod_SelectShip,,,,,
 progsmod_ShipRemove,DialogOptionSelected,"$option == progsmod_OptionRemove
 $selectedShip != null
 $selectedVariant != null",RemoveSMod $selectedShip $selectedVariant progsmod_SelectShip,,,,,

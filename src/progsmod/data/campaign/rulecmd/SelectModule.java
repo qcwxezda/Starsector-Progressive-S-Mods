@@ -13,12 +13,12 @@ import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.impl.campaign.rulecmd.FireAll;
-import com.fs.starfarer.api.ui.ButtonAPI;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.util.Misc.Token;
 
-import progsmod.data.campaign.rulecmd.util.GenericSelector;
-import progsmod.data.campaign.rulecmd.util.SelectOnePlugin;
+import progsmod.data.campaign.rulecmd.ui.Button;
+import progsmod.data.campaign.rulecmd.ui.PanelCreator;
+import progsmod.data.campaign.rulecmd.ui.plugins.SelectOne;
 import util.SModUtils;
 
 /** ProgSModSelectModule [fleetMember] [selectedVariant] [trigger] --
@@ -49,26 +49,23 @@ public class SelectModule extends BaseCommandPlugin {
             currentVariantIndex = 0;
         }
 
-        for (ShipVariantAPI moduleVariant : modulesWithOP) {
+        for (int i = 0; i < modulesWithOP.size(); i++) {
+            ShipVariantAPI moduleVariant = modulesWithOP.get(i);
             moduleNameStrings.add("Module: " + moduleVariant.getHullSpec().getHullName());
+            if (selectedVariant.equals(moduleVariant)) {
+                currentVariantIndex = i + 1;
+            }
         }
 
-        final SelectOnePlugin plugin = new SelectOnePlugin();
+        final SelectOne<Button> plugin = new SelectOne<>();
         dialog.showCustomDialog(500f, 500f, 
             new CustomDialogDelegate() {
                 @Override
                 public void createCustomDialog(CustomPanelAPI panel) {
-                    List<ButtonAPI> buttons = 
-                        GenericSelector.createSelector(
-                            panel,
-                            "Select a module",
-                            25f,
-                            moduleNameStrings,
-                            50f,
-                            10f
-                        );
-                    plugin.setData(buttons);
-                    plugin.disableButton(currentVariantIndex);
+                    float titleHeight = 25f;
+                    PanelCreator.createTitle(panel, "Select a module", titleHeight);
+                    plugin.init(PanelCreator.createButtonList(panel, moduleNameStrings, 45f, 10f, titleHeight).created);
+                    plugin.disableItem(currentVariantIndex);
                 }
 
                 @Override
@@ -76,7 +73,7 @@ public class SelectModule extends BaseCommandPlugin {
 
                 @Override
                 public void customDialogConfirm() {
-                    int index = plugin.getCheckedIndex();
+                    int index = plugin.getSelectedIndex();
                     if (index == -1) {
                         return;
                     }

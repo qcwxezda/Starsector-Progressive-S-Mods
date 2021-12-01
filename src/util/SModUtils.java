@@ -396,6 +396,10 @@ public class SModUtils {
         boolean reqSpaceport = spec.hasTag(HullMods.TAG_REQ_SPACEPORT);
         if (!reqSpaceport) return true;
         
+        return isAtStationOrSpacePort(interactionTarget);
+    }
+
+    public static boolean isAtStationOrSpacePort(SectorEntityToken interactionTarget) {
         MarketAPI market = interactionTarget.getMarket();
         if (market == null) return false;
 
@@ -403,7 +407,7 @@ public class SModUtils {
         if (tradeMode == null || tradeMode == CoreUITradeMode.NONE) {
             return false;
         }
-        
+
         for (Industry ind : market.getIndustries()) {
             if (ind.getSpec().hasTag(Industries.TAG_STATION)) return true;
             if (ind.getSpec().hasTag(Industries.TAG_SPACEPORT)) return true;
@@ -523,5 +527,29 @@ public class SModUtils {
             withOP.add(moduleVariant);
         }
         return withOP;
+    }
+
+    public static String shortenText(String text, LabelAPI label) {
+        if (text == null) {
+            return null;
+        }
+        float ellipsesWidth = label.computeTextWidth("...");
+        float maxWidth = label.getPosition().getWidth() * 0.95f - ellipsesWidth;
+        if (label.computeTextWidth(text) <= maxWidth) {
+            return text;
+        }
+        int left = 0, right = text.length();
+
+        String newText = text;
+        while (right > left) {
+            int mid = (left + right) / 2;
+            newText = text.substring(0, mid);
+            if (label.computeTextWidth(newText) > maxWidth) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return newText + "...";
     }
 }
