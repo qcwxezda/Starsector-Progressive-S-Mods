@@ -16,7 +16,7 @@ import com.fs.starfarer.api.util.Misc.TokenType;
 
 import util.SModUtils;
 
-/** ProgSModFilterOptionsList [$fleetMember] [$selectedVariant] [option1] [option2] [option3] [option4] [option5] [option6]
+/** ProgSModFilterOptionsList [$fleetMember] [$selectedVariant] [$firstTimeOpened] [option1] [option2] [option3] [option4] [option5] [option6] 
  *  [option1] is the option to build in hull mods 
  *  [option2] is the option to remove them
  *  [option3] is the option to select one of the ship's modules
@@ -41,24 +41,21 @@ public class CreateOptionsList extends BaseCommandPlugin {
         int nSModsLimit = SModUtils.getMaxSMods(fleetMember);
         int nRemaining = nSModsLimit - nSMods;
         String selectedVariantKey = params.get(1).string;
-        String buildInOption = params.get(2).getString(memoryMap);
-        String removeOption = params.get(3).getString(memoryMap);
-        String moduleOption = params.get(4).getString(memoryMap);
-        String augmentOption = params.get(5).getString(memoryMap);
-        String differentShipOption = params.get(6).getString(memoryMap);
-        String goBackOption = params.get(7).getString(memoryMap);
+        String firstTimeOpenedKey = params.get(2).string;
+        boolean firstTimeOpened = params.get(2).getBoolean(memoryMap);
+        String buildInOption = params.get(3).getString(memoryMap);
+        String removeOption = params.get(4).getString(memoryMap);
+        String moduleOption = params.get(5).getString(memoryMap);
+        String augmentOption = params.get(6).getString(memoryMap);
+        String differentShipOption = params.get(7).getString(memoryMap);
+        String goBackOption = params.get(8).getString(memoryMap);
         float spRefundFraction = 0f;
 
         dialog.getOptionPanel().clearOptions();
 
-        boolean firstTimeOpened = false;
         String shipText = THIS_SHIP_TEXT;
         ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(selectedVariantKey);
-        if (selectedVariant == null) {
-            firstTimeOpened = true;
-            memoryMap.get(MemKeys.LOCAL).set(selectedVariantKey, fleetMember.getVariant(), 0f);
-        }
-        else if (!selectedVariant.equals(fleetMember.getVariant())) {
+        if (!selectedVariant.equals(fleetMember.getVariant())) {
             shipText = "module: " + selectedVariant.getHullSpec().getHullName();
         }
 
@@ -85,7 +82,7 @@ public class CreateOptionsList extends BaseCommandPlugin {
             int nextXPCost = SModUtils.getAugmentXPCost(fleetMember);
             List<Token> storyParams = new ArrayList<>();
             storyParams.add(params.get(0));
-            storyParams.add(params.get(5));
+            storyParams.add(params.get(6));
             storyParams.add(new Token("" + nextSPCost, TokenType.LITERAL));
             storyParams.add(new Token("" + spRefundFraction, TokenType.LITERAL));
             storyParams.add(new Token("" + nextXPCost, TokenType.LITERAL));
@@ -123,6 +120,7 @@ public class CreateOptionsList extends BaseCommandPlugin {
                     .setHighlight("" + numOverLimit);
             }
             SModUtils.displayXP(dialog, fleetMember);
+            memoryMap.get(MemKeys.LOCAL).set(firstTimeOpenedKey, false, 0f);
         }
 
 		return true;
