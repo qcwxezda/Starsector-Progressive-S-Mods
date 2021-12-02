@@ -62,6 +62,7 @@ public class EngagementListener extends BaseCampaignEventListener {
         }
 
         EngagementResultForFleetAPI playerResult = result.getLoserResult(), enemyResult = result.getWinnerResult();
+        List<FleetMemberAPI> playerFleet = Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy();
         if (result.didPlayerWin()) {
             playerResult = result.getWinnerResult();
             enemyResult = result.getLoserResult();
@@ -79,11 +80,10 @@ public class EngagementListener extends BaseCampaignEventListener {
             idToFleetMemberMap.put(dfm.getMember().getId(), dfm.getMember());
         }
         // List of ships that are eligible to gain XP
-        playerFilter.addAll(SModUtils.getFleetMemberIds(playerResult.getDeployed()));
-        playerFilter.addAll(SModUtils.getFleetMemberIds(playerResult.getRetreated()));
-        if (SModUtils.Constants.GIVE_XP_TO_DISABLED_SHIPS) {
-            playerFilter.addAll(SModUtils.getFleetMemberIds(playerResult.getDestroyed()));
-            playerFilter.addAll(SModUtils.getFleetMemberIds(playerResult.getDisabled()));
+        playerFilter.addAll(SModUtils.getFleetMemberIds(playerFleet));
+        if (!SModUtils.Constants.GIVE_XP_TO_DISABLED_SHIPS) {
+            playerFilter.removeAll(SModUtils.getFleetMemberIds(playerResult.getDestroyed()));
+            playerFilter.removeAll(SModUtils.getFleetMemberIds(playerResult.getDisabled()));
         }
         // List of ships that can give XP when damaged
         enemyFilter.addAll(SModUtils.getFleetMemberIds(enemyResult.getDestroyed()));
@@ -110,7 +110,6 @@ public class EngagementListener extends BaseCampaignEventListener {
 
         // Give additional XP to non-combat ships in the player's fleet
         // Also add XP tracking hullmod to any ship that has XP
-        List<FleetMemberAPI> playerFleet = Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy();
         List<FleetMemberAPI> civilianShips = new ArrayList<>();
         for (FleetMemberAPI member : playerFleet) {
             // Show the XP gain in the dialog

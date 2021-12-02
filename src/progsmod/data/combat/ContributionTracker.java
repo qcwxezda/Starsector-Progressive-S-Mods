@@ -136,6 +136,10 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
      *  If the argument is a wing, returns the wing's source ship.
      *  If the argument is a module, returns the module's base ship/station. */
     private ShipAPI getBaseShip(ShipAPI shipWingOrModule) {
+        // Can happen with omega wings whose sourceShip is null
+        if (shipWingOrModule == null) {
+            return null;
+        }
         ShipAPI memo = baseShipTable.get(shipWingOrModule.getId());
         if (memo != null) {
             return memo;
