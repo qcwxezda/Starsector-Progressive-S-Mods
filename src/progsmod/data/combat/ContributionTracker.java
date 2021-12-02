@@ -123,7 +123,7 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
             if (!list.contains(shipId)) {
                 list.add(shipId);
                 ShipAPI baseShip = getBaseShip(ship);
-                if (baseShip.getFleetMember() != null) {
+                if (baseShip != null && baseShip.getFleetMember() != null) {
                     shipToFleetMemberMap.put(shipId, baseShip.getFleetMemberId());
                 }
                 // Note: DamageListener listens for damage taken only
