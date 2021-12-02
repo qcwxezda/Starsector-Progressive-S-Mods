@@ -87,9 +87,9 @@
 
         # Fraction of enemy ships' total XP worth that goes toward
         # each of the three roles. Does not have to add up to 1.
-        "xpFractionAttack": 0.4,
-        "xpFractionDefense": 0.3,
-        "xpFractionSupport": 0.3,
+        "xpFractionAttack": 0.34,
+        "xpFractionDefense": 0.33,
+        "xpFractionSupport": 0.33,
 
         # If a ship deals any hull damage to an opponent, it counts as if
         # it had done at least this fraction of the target's total HP

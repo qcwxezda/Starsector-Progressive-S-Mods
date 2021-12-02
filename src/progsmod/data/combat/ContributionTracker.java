@@ -243,7 +243,7 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
             // but exclude the ship that already received the ATTACK contribution.
             Map<String, float[]> damageReceivedByPlayer = damageDealtByEnemy.get(enemyId);
             String defenseWinner = addContributionToMostDamage(
-                enemyId, damageReceivedByPlayer, hullArmorShield, ContributionType.DEFENSE, attackWinner);
+                enemyId, damageReceivedByPlayer, hullArmorShield, ContributionType.DEFENSE);
             // SUPPORT contribution only counts if the ship in question took hull or armor damage
             if (attackWinner == null) {
                 continue;
@@ -275,13 +275,6 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
     /** Find the ship id with the highest damage in [damageMap]; then, use that damage
      *  to add contribution of [type] to that ship id for [enemyShip]. */
     private String addContributionToMostDamage(String enemyShip, Map<String, float[]> damageMap, DamageCombiner combiner, ContributionType type) {
-        return addContributionToMostDamage(enemyShip, damageMap, combiner, type, null);
-    }
-
-    /** Find the ship id with the highest damage in [damageMap]; then, use that damage
-     *  to add contribution of [type] to that ship id for [enemyShip].
-     *  The ship with id [ineligibleId], if not null, is not considered. */
-    private String addContributionToMostDamage(String enemyShip, Map<String, float[]> damageMap, DamageCombiner combiner, ContributionType type, String ineligibleId) {
         if (damageMap == null) {
             return null;
         }
@@ -289,9 +282,6 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
         float winnerDamage = 0f;
         for (Map.Entry<String, float[]> entry : damageMap.entrySet()) {
             String shipId = entry.getKey();
-            if (shipId.equals(ineligibleId)) {
-                continue;
-            }
             float damage = combiner.combine(entry.getValue());
             if (damage > winnerDamage) {
                 winner = shipId;
