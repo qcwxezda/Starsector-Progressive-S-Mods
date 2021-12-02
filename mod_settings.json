@@ -69,7 +69,7 @@
         "onlyGiveXPForKills": false, # Whether enemy ships that get away shouldn't give XP
 
         # All XP gained by ships in combat is multiplied by this amount
-        "xpGainMultiplier": 36,
+        "xpGainMultiplier": 54,
 
         # Enemy ships with d-mods give less XP than pristine ships;
         # however, regardless of the number of D-mods, they will always

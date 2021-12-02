@@ -27,7 +27,7 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
             }
             
             // Disallow building-in hullmods via story points
-            Misc.MAX_PERMA_MODS = -1;
+            Misc.MAX_PERMA_MODS = -999;
         }
         else {
             Global.getSettings().getHullModSpec("progsmod_xptracker").setHiddenEverywhere(true);

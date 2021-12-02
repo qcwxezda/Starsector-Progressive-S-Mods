@@ -160,7 +160,8 @@ public class BuildInSelector extends Selector<HullModButton> {
             // (# of loops is bounded by # of checked entries as well as
             // longest hull mod dependency chain)
             checkedEntriesChanged = false;
-            for (int i = 0; i < items.size(); i++) {
+            // Hull mods already on the ship should always be able to be built in
+            for (int i = variant.getHullMods().size(); i < items.size(); i++) {
                 HullModButton button = items.get(i);
                 HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(button.data.id);
                 if (!hullMod.getEffect().isApplicableToShip(tempShip)) {

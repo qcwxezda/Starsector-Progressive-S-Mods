@@ -16,12 +16,13 @@ import com.fs.starfarer.api.util.Misc.TokenType;
 
 import util.SModUtils;
 
-/** ProgSModFilterOptionsList [$fleetMember] [$selectedVariant] [option1] [option2] [option3] [option4] [option5]
+/** ProgSModFilterOptionsList [$fleetMember] [$selectedVariant] [option1] [option2] [option3] [option4] [option5] [option6]
  *  [option1] is the option to build in hull mods 
  *  [option2] is the option to remove them
  *  [option3] is the option to select one of the ship's modules
- *  [option4] is the option to increase S-Mod limit. 
- *  [option5] is to go back to main menu. */
+ *  [option4] is the option to increase S-Mod limit.
+ *  [option5] is the option to select a different ship. 
+ *  [option6] is to go back to main menu. */
 public class CreateOptionsList extends BaseCommandPlugin {
 
     private static final String BUILD_IN_TEXT = "Build up to %s hull mods into ";
@@ -44,7 +45,8 @@ public class CreateOptionsList extends BaseCommandPlugin {
         String removeOption = params.get(3).getString(memoryMap);
         String moduleOption = params.get(4).getString(memoryMap);
         String augmentOption = params.get(5).getString(memoryMap);
-        String goBackOption = params.get(6).getString(memoryMap);
+        String differentShipOption = params.get(6).getString(memoryMap);
+        String goBackOption = params.get(7).getString(memoryMap);
         float spRefundFraction = 0f;
 
         dialog.getOptionPanel().clearOptions();
@@ -89,6 +91,10 @@ public class CreateOptionsList extends BaseCommandPlugin {
             storyParams.add(new Token("" + nextXPCost, TokenType.LITERAL));
             new SetStoryOptionExt().execute(ruleId, dialog, storyParams, memoryMap);
         }
+
+        // Add in the select a different ship option
+        dialog.getOptionPanel().addOption("Manage a different ship", differentShipOption);
+        dialog.getOptionPanel().setShortcut(differentShipOption, Global.getSettings().getCodeFor("H"), false, false, false, true);
 
         // Add in the back to main menu option 
         dialog.getOptionPanel().addOption("Go back", goBackOption);
