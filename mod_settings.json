@@ -5,8 +5,8 @@
     "baseExtraSModSPCost": {
         "frigate": 1,
         "destroyer": 1,
-        "cruiser": 1,
-        "capital": 1
+        "cruiser": 2,
+        "capital": 2
     },
 
     # How much XP (in addition to the SP) it costs to
@@ -25,7 +25,7 @@
     
     "extraSModSPCostGrowthType": 1, # 0 for linear, 1 for exponential
     # story point cost is base * fac^n OR base + n*fac
-    "extraSModSPCostGrowthFactor": 2,
+    "extraSModSPCostGrowthFactor": 1,
     # XP cost is base * fac^n OR base + base*n*fac 
     "extraSModXPCostGrowthType": 1,
     "extraSModXPCostGrowthFactor": 2,
