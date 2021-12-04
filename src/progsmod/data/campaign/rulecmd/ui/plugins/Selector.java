@@ -105,12 +105,18 @@ public abstract class Selector<T extends Selectable> implements CustomUIPanelPlu
         if (item.isSelected() && !isSelectedArray.get(index)) {
             // Item wasn't selected and just got selected
             onSelected(index);
-            isSelectedArray.set(index);
+            // onSelected could clear the selection
+            if (item.isSelected()) {
+                isSelectedArray.set(index);
+            }
         }
         if (!item.isSelected() && isSelectedArray.get(index)) {
             // It was selected and just got deselected
             onDeselected(index);
-            isSelectedArray.clear(index);
+            // onDeselected could select the entry
+            if (!item.isSelected()) {
+                isSelectedArray.clear(index);
+            }
         }
     }
 

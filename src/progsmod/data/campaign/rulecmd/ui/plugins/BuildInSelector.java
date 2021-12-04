@@ -135,6 +135,7 @@ public class BuildInSelector extends Selector<HullModButton> {
         while (checkedEntriesChanged) {
             ShipAPI tempShip = Global.getCombatEngine().getFleetManager(FleetSide.PLAYER).spawnShipOrWing(variantId, new Vector2f(), 0f);
             ShipVariantAPI checkerVariant = tempShip.getVariant().clone();
+            tempShip.setVariantForHullmodCheckOnly(checkerVariant);
             checkerVariant.getHullMods().clear();
             
             // Add all the mods that are currently checked
