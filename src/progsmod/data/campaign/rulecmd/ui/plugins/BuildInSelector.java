@@ -167,7 +167,6 @@ public class BuildInSelector extends Selector<HullModButton> {
                 HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(button.data.id);
                 if (!hullMod.getEffect().isApplicableToShip(tempShip)) {
                     if (button.isSelected()) {
-                        System.out.println("Forcing deselection of " + button.data.name);
                         forceDeselect(i);
                         checkedEntriesChanged = true;
                     }
