@@ -115,7 +115,7 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
         Set<String> list = side == FleetSide.PLAYER ? playerShips : enemyShips;
         for (DeployedFleetMemberAPI dfm : engine.getFleetManager(side).getDeployedCopyDFM()) {
             // We don't care about damage that fighters take
-            if (dfm.isFighterWing()) {
+            if (dfm.isFighterWing() || dfm.getShip() == null) {
                 continue;
             }
             ShipAPI ship = dfm.getShip();

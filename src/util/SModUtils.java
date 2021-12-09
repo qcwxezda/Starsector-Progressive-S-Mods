@@ -21,7 +21,9 @@ import com.fs.starfarer.api.impl.campaign.ids.HullMods;
 import com.fs.starfarer.api.impl.campaign.ids.Industries;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
+import com.fs.starfarer.api.loading.VariantSource;
 import com.fs.starfarer.api.ui.LabelAPI;
+import com.fs.starfarer.api.util.Misc;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +39,10 @@ public class SModUtils {
     /** Lookup key into the sector-persistent data that stores ship data */
     public static final String SHIP_DATA_KEY = "progsmod_ShipData";
     public static ShipDataTable SHIP_DATA_TABLE = new ShipDataTable();
+
+    /** Lookup key into the sector-persistent data that stores reserve XP from losses */
+    public static final String RESERVE_XP_KEY = "progsmod_ReserveXP";
+    public static ReserveXPTable RESERVE_XP_TABLE = new ReserveXPTable();
 
     public static class Constants {
         /** How many story points it costs to unlock the first extra SMod slot. */
@@ -78,6 +84,9 @@ public class SModUtils {
         public static boolean ONLY_GIVE_XP_FOR_KILLS;
         /** XP gain multiplier */
         public static float XP_GAIN_MULTIPLIER;
+        /** When the player loses a ship with XP, this fraction of XP lost is added to
+         a reserve pool that can be used by any ship with the same hull type.*/
+        public static float RESERVE_XP_FRACTION;
         /** Minimum contribution percentage -- ships that deal any hull damage gain XP as if
          *  they did this fraction of total hull damage. */
         public static float MIN_CONTRIBUTION_FRACTION;
@@ -133,6 +142,7 @@ public class SModUtils {
             BASE_DP_CRUISER = (float) json.getDouble("baseDPCruiser");
             BASE_DP_CAPITAL = (float) json.getDouble("baseDPCapital");
             XP_REFUND_FACTOR = (float) json.getDouble("xpRefundFactor");
+            RESERVE_XP_FRACTION = (float) json.getDouble("reserveXPFraction");
             IGNORE_NO_BUILD_IN = json.getBoolean("ignoreNoBuildIn");
             ALLOW_INCREASE_SMOD_LIMIT = json.getBoolean("allowIncreaseSModLimit");
             DISABLE_MOD = json.getBoolean("disableMod");
@@ -175,6 +185,9 @@ public class SModUtils {
     /** Wrapper class that maps ships to their ship data. */
     public static class ShipDataTable extends HashMap<String, ShipData> {}
 
+    /** Wrapper class that maps hull id to reserve XP */
+    public static class ReserveXPTable extends HashMap<String, Float> {} 
+
     // /** Wrapper class for ShipAPI for use as hash keys. */
     // public static class HashableShipAPI {
     //     public ShipAPI ship;
@@ -204,7 +217,7 @@ public class SModUtils {
     }
 
     /** Retrieve the persistent data for this mod, if it exists. Else create it. */
-    public static void loadShipData() {
+    public static void loadData() {
         if (!Global.getSector().getPersistentData().containsKey(SHIP_DATA_KEY)) {
             SHIP_DATA_TABLE = new ShipDataTable();
             Global.getSector().getPersistentData().put(SHIP_DATA_KEY, SHIP_DATA_TABLE); 
@@ -212,6 +225,37 @@ public class SModUtils {
         else {
             SHIP_DATA_TABLE = (ShipDataTable) Global.getSector().getPersistentData().get(SHIP_DATA_KEY);
         }
+
+        if (!Global.getSector().getPersistentData().containsKey(RESERVE_XP_KEY)) {
+            RESERVE_XP_TABLE = new ReserveXPTable();
+            Global.getSector().getPersistentData().put(RESERVE_XP_KEY, RESERVE_XP_TABLE);
+        }
+        else {
+            RESERVE_XP_TABLE = (ReserveXPTable) Global.getSector().getPersistentData().get(RESERVE_XP_KEY);
+        }
+    }
+
+    /** Add [amount] of reserve XP to [hullId] (shared by all ships with hull [hullId]) */
+    public static void addReserveXP(String hullId, float amount) {
+        Float cur = RESERVE_XP_TABLE.get(hullId);
+        RESERVE_XP_TABLE.put(hullId, cur == null ? amount : cur + amount);
+    }
+
+    public static float getReserveXP(String hullId) {
+        Float reserveXP = RESERVE_XP_TABLE.get(hullId);
+        return reserveXP == null ? 0f : reserveXP;
+    }
+
+    /** Decreases RESERVE_XP_TABLE[hullId] by [amount]. Increases SHIP_DATA_TABLE[fm.getId()].xp by [amount].
+     *  Returns whether the operation was successful. */
+    public static boolean useReserveXP(String hullId, FleetMemberAPI fm, float amount) {
+        Float available = RESERVE_XP_TABLE.get(hullId);
+        if (available == null || available < amount) {
+            return false;
+        }
+        RESERVE_XP_TABLE.put(hullId, available - amount);
+        giveXP(fm, amount);
+        return true;
     }
 
     /** Add [xp] XP to [fmId]'s entry in the ship data table,
@@ -226,6 +270,27 @@ public class SModUtils {
         else {
             data.xp += xp;
             return false;
+        }
+    }
+
+    /** Same as giveXP(fmId, xp) except also adds a tracker hull mod if [fm]
+     *  doesn't have one. */
+    public static boolean giveXP(FleetMemberAPI fm, float xp) {
+        String fmId = fm.getId();
+        boolean createdEntry = giveXP(fmId, xp);
+        addTrackerHullMod(fm);
+        return createdEntry;
+    }
+
+    /** Adds an XP tracking hull mod to the ship in question if it has positive XP and 
+     *  does not have the tracking hull mod already. */
+    public static void addTrackerHullMod(FleetMemberAPI fm) {
+        if (getXP(fm.getId()) > 0 && !fm.getVariant().hasHullMod("progsmod_xptracker")) {
+            if (fm.getVariant().isStockVariant()) {
+                fm.setVariant(fm.getVariant().clone(), false, false);
+                fm.getVariant().setSource(VariantSource.REFIT);
+            }
+            fm.getVariant().addPermaMod("progsmod_xptracker", false);
         }
     }
 
@@ -287,10 +352,16 @@ public class SModUtils {
     }
 
     /** Gets the XP cost of increasing the number of built-in hullmods of [ship] by 1. */
-    public static int getAugmentXPCost(FleetMemberAPI ship) {
+    public static int getAugmentXPCost(FleetMemberAPI fleetMember) {
+        return getAugmentXPCost(fleetMember, getNumOverLimit(fleetMember.getId()));
+    }
+
+    /** Gets the XP cost of increasing the number of buit-in hullmods by 1,
+     *  when this option has already been used [nOverLimit] times. */
+    public static int getAugmentXPCost(FleetMemberAPI fleetMember, int nOverLimit) {
         float baseCost;
-        float deploymentCost = ship.getDeploymentPointsCost();
-        switch (ship.getVariant().getHullSize()) {
+        float deploymentCost = fleetMember.getDeploymentPointsCost();
+        switch (fleetMember.getVariant().getHullSize()) {
             case FRIGATE: baseCost = Constants.BASE_EXTRA_SMOD_XP_COST_FRIGATE * deploymentCost / Constants.BASE_DP_FRIGATE; break;
             case DESTROYER: baseCost = Constants.BASE_EXTRA_SMOD_XP_COST_DESTROYER * deploymentCost / Constants.BASE_DP_DESTROYER; break;
             case CRUISER: baseCost = Constants.BASE_EXTRA_SMOD_XP_COST_CRUISER * deploymentCost / Constants.BASE_DP_CRUISER; break;
@@ -298,11 +369,9 @@ public class SModUtils {
             default: baseCost = 0;
         }
 
-        int modsOverLimit = getNumOverLimit(ship.getId());
-
         return Constants.EXTRA_SMOD_XP_COST_GROWTHTYPE == GrowthType.EXPONENTIAL ? 
-            (int) (baseCost * Math.pow(Constants.EXTRA_SMOD_XP_COST_GROWTHFACTOR, modsOverLimit)) : 
-            (int) (baseCost + modsOverLimit * baseCost * Constants.EXTRA_SMOD_XP_COST_GROWTHFACTOR);
+            (int) (baseCost * Math.pow(Constants.EXTRA_SMOD_XP_COST_GROWTHFACTOR, nOverLimit)) : 
+            (int) (baseCost + nOverLimit * baseCost * Constants.EXTRA_SMOD_XP_COST_GROWTHFACTOR);
     }
 
     /** Gets the XP cost of building in a certain hullmod */
@@ -419,9 +488,10 @@ public class SModUtils {
     /** Shows [fleetMember]'s XP as a paragraph in [dialog] */
     public static void displayXP(InteractionDialogAPI dialog, FleetMemberAPI fleetMember) {
         int xp = (int) SModUtils.getXP(fleetMember.getId());
+        String xpFmt = Misc.getFormat().format(xp);
         dialog.getTextPanel()
-            .addPara(String.format("The %s has %s XP.", fleetMember.getShipName(), xp))
-            .setHighlight(fleetMember.getShipName(), "" + xp);
+            .addPara(String.format("The %s has %s XP.", fleetMember.getShipName(), xpFmt))
+            .setHighlight(fleetMember.getShipName(), xpFmt);
     }
     
     /** Creates the text "The [fleetMember] gained [xp] xp." 
@@ -436,10 +506,11 @@ public class SModUtils {
         String shipName = fleetMember.getShipName();
         sb.append(shipName + ", ");
         ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
-        sb.append(hullSpec.getHullNameWithDashClass() + " gained " + xp + " XP");
+        String xpFmt = Misc.getFormat().format(xp);
+        sb.append(hullSpec.getHullNameWithDashClass() + " gained " + xpFmt + " XP");
         dialog.getTextPanel().setFontSmallInsignia();
         LabelAPI para = dialog.getTextPanel().addPara(sb.toString() + " " + (additionalText == null ? "" : additionalText));
-        para.setHighlight(hullSpec.getHullName(), "" + xp);
+        para.setHighlight(hullSpec.getHullName(), xpFmt);
         dialog.getTextPanel().setFontInsignia();
     }
 
@@ -463,26 +534,28 @@ public class SModUtils {
         String shipName = fleetMember.getShipName();
         sb.append(shipName + ", ");
         ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
-        sb.append(String.format("%s gained %s XP %s:", hullSpec.getHullNameWithDashClass(), totalXP, additionalText));
+        String totalXPFmt = Misc.getFormat().format(totalXP);
+        sb.append(String.format("%s gained %s XP %s:", hullSpec.getHullNameWithDashClass(), totalXPFmt, additionalText));
         highlights.add(hullSpec.getHullName());
-        highlights.add("" + totalXP);
+        highlights.add(totalXPFmt);
         for (Map.Entry<ContributionType, Float> partXP : xp.entrySet()) {
             sb.append("\n    - ");
             int part = Math.round(partXP.getValue());
+            String partFmt = Misc.getFormat().format(part);
             switch (partXP.getKey()) {
                 case ATTACK: 
-                    sb.append(part + " XP gained from offensive actions");
+                    sb.append(partFmt + " XP gained from offensive actions");
                     break;
                 case DEFENSE: 
-                    sb.append(part + " XP gained from defensive actions");
+                    sb.append(partFmt + " XP gained from defensive actions");
                     break;
                 case SUPPORT: 
-                    sb.append(part + " XP gained from supportive actions");
+                    sb.append(partFmt + " XP gained from supportive actions");
                     break;
                 default: 
                     break;
             }
-            highlights.add("" + part);
+            highlights.add(partFmt);
         }
         dialog.getTextPanel().setFontSmallInsignia();
         LabelAPI para = dialog.getTextPanel().addPara(sb.toString());
@@ -498,8 +571,9 @@ public class SModUtils {
         }
         List<String> highlights = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
-        sb.append("The following ships gained " + xp + " xp " + additionalText + ":");
-        highlights.add("" + xp);
+        String xpFmt = Misc.getFormat().format(xp);
+        sb.append("The following ships gained " + xpFmt + " xp " + additionalText + ":");
+        highlights.add("" + xpFmt);
         for (FleetMemberAPI fleetMember : fleetMembers) {
             sb.append("\n    - ");
             String shipName = fleetMember.getShipName();

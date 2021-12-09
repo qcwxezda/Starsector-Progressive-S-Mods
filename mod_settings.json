@@ -60,6 +60,10 @@
     # If less than 0, removing built-in hull mods is disabled
     "xpRefundFactor": 0.8,
 
+    # When the player loses a ship with XP, this fraction of XP lost is added to
+    # a reserve pool that can be used by any ship with the same hull type.
+    "reserveXPFraction": 0.8,
+
     # Ignore the "no_build_in" tag, allowing building in
     # normally prohibited hull mods (specifically Safety Overrides)
     "ignoreNoBuildIn": true,

@@ -36,7 +36,7 @@ import util.SModUtils;
  *  the module of [fleetMember] whose variant is [selectedVariant].
  *  Build in the selected hull mods.
  *  Fire [trigger] upon confirmation. */
-public class BuildInHullMod extends BaseCommandPlugin {
+public class PSM_BuildInHullMod extends BaseCommandPlugin {
 
     @Override
     public boolean execute(final String ruleId, final InteractionDialogAPI dialog, final List<Token> params, final Map<String, MemoryAPI> memoryMap) {

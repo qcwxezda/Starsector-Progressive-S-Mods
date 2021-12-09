@@ -20,7 +20,7 @@ import util.SModUtils;
 /** ProgSModSetStoryOption [fleetMember] [n] [r] [x] makes a story option costing n story points and x ship XP,
  *   and giving m% bonus character XP.
  *  Uses default sound. Modified from SetStoryOption in the base game. */
-public class SetStoryOptionExt extends SetStoryOption {
+public class PSM_SetStoryOption extends SetStoryOption {
 
     private class ProgSModStoryPointActionDelegate extends BaseOptionStoryPointActionDelegate {
 
@@ -59,7 +59,7 @@ public class SetStoryOptionExt extends SetStoryOption {
             super.addActionCostSection(info);
             int xp = (int) SModUtils.getXP(fleetMember.getId());
             if (xp < reqShipXP) {
-                info.addPara("Ship has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), "" + xp);
+                info.addPara("Ship has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), Misc.getFormat().format(xp));
             }
         }
     }
@@ -94,11 +94,11 @@ public class SetStoryOptionExt extends SetStoryOption {
         dialog.makeStoryOption(optionId, cost, bonusXPFraction, delegate.getSoundId());
         int nSModsLimit = SModUtils.getMaxSMods(fleetMember);
         dialog.getOptionPanel().setOptionText(
-            String.format("Increase this ship's built-in hull mod limit from %s to %s [%s SP, %s ship XP, %s%% bonus character XP]",
+            String.format("Increase this ship's built-in hull mod limit from %s to %s [%s SP; %s ship XP; %s%% bonus character XP]",
                 nSModsLimit,
                 nSModsLimit + 1,
                 cost,
-                xpCost,
+                Misc.getFormat().format(xpCost),
                 (int) (100 * bonusXPFraction)
             ), 
         optionId);
@@ -116,7 +116,7 @@ public class SetStoryOptionExt extends SetStoryOption {
                 tooltip.addStoryPointUseInfo(initPad, delegate.getCost(), delegate.getBonusXPFraction(), true);
                 int xp = (int) SModUtils.getXP(fleetMember.getId());
                 if (xp < xpCost) {
-                    tooltip.addPara("Ship has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), "" + xp);
+                    tooltip.addPara("Ship has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), Misc.getFormat().format(xp));
                 }
                 int sp = Global.getSector().getPlayerStats().getStoryPoints();
                 String points = "points";

@@ -10,12 +10,16 @@ import java.util.Set;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BaseCampaignEventListener;
+import com.fs.starfarer.api.campaign.BattleAPI;
+import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.EngagementResultForFleetAPI;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.EngagementResultAPI;
+import com.fs.starfarer.api.combat.ShipHullSpecAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import com.fs.starfarer.api.loading.VariantSource;
+import com.fs.starfarer.api.loading.HullModSpecAPI;
+import com.fs.starfarer.api.util.Misc;
 
 import progsmod.data.combat.ContributionTracker;
 import progsmod.data.combat.ContributionTracker.ContributionType;
@@ -45,6 +49,58 @@ public class EngagementListener extends BaseCampaignEventListener {
     @Override
     public void reportShownInteractionDialog(InteractionDialogAPI dialog) {
         lastDialog = dialog;
+    }
+
+    @Override
+    public void reportBattleFinished(CampaignFleetAPI primaryWinner, BattleAPI battle) {
+        if (!battle.isPlayerInvolved()) {
+            return;
+        }
+        Map<String, Float> totalReserveXP = new HashMap<>();
+        for (CampaignFleetAPI fleet : battle.getPlayerSideSnapshot()) {
+            if (!fleet.isPlayerFleet()) {
+                continue;
+            }
+            for (FleetMemberAPI fm : Misc.getSnapshotMembersLost(fleet)) {
+                // For player losses, add any lost XP to a reserve XP pool for that
+                // hull type.
+                float reserveXP = SModUtils.Constants.RESERVE_XP_FRACTION * SModUtils.getXP(fm.getId());
+                // Add XP for S-mods, equivalent to the XP that would be obtained by refunding the mods
+                if (SModUtils.Constants.XP_REFUND_FACTOR > 0f) {
+                    for (String modId : fm.getVariant().getSMods()) {
+                        HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(modId);
+                        reserveXP += SModUtils.Constants.RESERVE_XP_FRACTION * 
+                                    SModUtils.Constants.XP_REFUND_FACTOR * 
+                                    SModUtils.getBuildInCost(hullMod, fm.getHullSpec().getHullSize(), fm.getDeploymentPointsCost());
+                    }
+                }
+                // Add XP for increasing S-mod limits
+                for (int i = 0; i < SModUtils.getNumOverLimit(fm.getId()); i++) {
+                    reserveXP += SModUtils.Constants.RESERVE_XP_FRACTION * SModUtils.getAugmentXPCost(fm, i);
+                }
+                if (reserveXP >= 1f) {
+                    String hullId = fm.getHullId();
+                    Float existingReserveXP = totalReserveXP.get(hullId);
+                    totalReserveXP.put(hullId, existingReserveXP == null ? reserveXP : reserveXP + existingReserveXP);
+                }
+            }
+        } 
+        for (Map.Entry<String, Float> reserveXPEntry : totalReserveXP.entrySet()) {
+            String hullId = reserveXPEntry.getKey();
+            ShipHullSpecAPI spec = Global.getSettings().getHullSpec(hullId);
+            String hullName = spec == null ? "<unknown>" : spec.getHullName();
+            float amount = reserveXPEntry.getValue();
+            String amtFmt = Misc.getFormat().format((int) amount);
+            SModUtils.addReserveXP(hullId, amount);
+            Global.getSector().getCampaignUI().addMessage(
+                String.format("Added %s XP to reserve XP pool for %s due to combat losses", amtFmt, hullName),
+                Misc.getBasePlayerColor(),
+                amtFmt,
+                hullName,
+                Misc.getHighlightColor(),
+                Misc.getHighlightColor()
+            );
+        } 
     }
 
     @Override
@@ -109,7 +165,6 @@ public class EngagementListener extends BaseCampaignEventListener {
         }
 
         // Give additional XP to non-combat ships in the player's fleet
-        // Also add XP tracking hullmod to any ship that has XP
         List<FleetMemberAPI> civilianShips = new ArrayList<>();
         for (FleetMemberAPI member : playerFleet) {
             // Show the XP gain in the dialog
@@ -120,17 +175,12 @@ public class EngagementListener extends BaseCampaignEventListener {
                     xpGainMap.get(member.getId()), 
                     "from combat");
             }
-            if (member.isCivilian()) {
-                SModUtils.giveXP(member.getId(), totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
+            if (member.isCivilian() && playerFilter.contains(member.getId())) {
+                SModUtils.giveXP(member, totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
                 civilianShips.add(member);
             }
-            if (SModUtils.getXP(member.getId()) > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {
-                if (member.getVariant().isStockVariant()) {
-                    member.setVariant(member.getVariant().clone(), false, false);
-                    member.getVariant().setSource(VariantSource.REFIT);
-                }
-                member.getVariant().addPermaMod("progsmod_xptracker", false);
-            }
+            // Need to check to add hull mod since used giveXP(String, Float) version above
+            SModUtils.addTrackerHullMod(member);
         }
         if (totalXPGain > 0f && !civilianShips.isEmpty()) {
             SModUtils.addCoalescedXPGainToDialog(

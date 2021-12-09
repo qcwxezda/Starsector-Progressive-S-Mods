@@ -15,7 +15,7 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
         SModUtils.loadConstants("mod_settings.json");
 
         if (!SModUtils.Constants.DISABLE_MOD) {
-            SModUtils.loadShipData();
+            SModUtils.loadData();
             Global.getSettings().getHullModSpec("progsmod_xptracker").setHiddenEverywhere(false);
             Global.getSector().getMemory().set("$progsmodEnabled", true);
 

@@ -132,7 +132,7 @@ public class EngagementListenerOld extends BaseCampaignEventListener {
                     "from combat.");
             }
             if (member.isCivilian()) {
-                SModUtils.giveXP(member.getId(), totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
+                SModUtils.giveXP(member, totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
                 civilianShips.add(member);
             }
             if (SModUtils.getXP(member.getId()) > 0 && !member.getVariant().hasHullMod("progsmod_xptracker")) {

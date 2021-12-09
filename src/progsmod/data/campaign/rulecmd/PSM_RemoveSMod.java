@@ -32,7 +32,7 @@ import util.SModUtils;
  *  the module of [fleetMember] whose variant is [selectedVariant].
  *  Remove the selected built-in hull mods. 
  *  Fire [trigger] upon confirmation. */
-public class RemoveSMod extends BaseCommandPlugin {
+public class PSM_RemoveSMod extends BaseCommandPlugin {
 
     @Override
     public boolean execute(final String ruleId, final InteractionDialogAPI dialog, final List<Token> params, final Map<String, MemoryAPI> memoryMap) {
@@ -99,7 +99,7 @@ public class RemoveSMod extends BaseCommandPlugin {
 
                     if (removedAtLeastOne) {
                         Global.getSoundPlayer().playUISound("ui_objective_constructed", 1f, 1f);
-                        SModUtils.giveXP(fleetMember.getId(), xpGained);
+                        SModUtils.giveXP(fleetMember, xpGained);
                         SModUtils.displayXP(dialog, fleetMember);
                         FireAll.fire(ruleId, dialog, memoryMap, params.get(2).getString(memoryMap));
                     }

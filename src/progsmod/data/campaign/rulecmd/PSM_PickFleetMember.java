@@ -19,7 +19,7 @@ import com.fs.starfarer.api.util.Misc.Token;
  * -- sets [first time opened] to true
  * -- fires [trigger] and changes $menuState to [menuId] 
  *    upon successful selection of a ship */
-public class PickFleetMember extends BaseCommandPlugin {
+public class PSM_PickFleetMember extends BaseCommandPlugin {
 
     @Override
     public boolean execute(final String ruleId, final InteractionDialogAPI dialog, final List<Token> params, final Map<String, MemoryAPI> memoryMap)  {
