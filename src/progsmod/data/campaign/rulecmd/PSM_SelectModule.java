@@ -45,14 +45,14 @@ public class PSM_SelectModule extends BaseCommandPlugin {
 
         final List<String> moduleNameStrings = new ArrayList<>();
         moduleNameStrings.add("Base ship");
-        if (fleetMember.getVariant().equals(selectedVariant)) {
+        if (fleetMember.getVariant() == selectedVariant) {
             currentVariantIndex = 0;
         }
 
         for (int i = 0; i < modulesWithOP.size(); i++) {
             ShipVariantAPI moduleVariant = modulesWithOP.get(i);
             moduleNameStrings.add("Module: " + moduleVariant.getHullSpec().getHullName());
-            if (selectedVariant.equals(moduleVariant)) {
+            if (selectedVariant == moduleVariant) {
                 currentVariantIndex = i + 1;
             }
         }

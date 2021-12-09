@@ -59,7 +59,7 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
 
         String shipText = THIS_SHIP_TEXT;
         ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(selectedVariantKey);
-        if (!selectedVariant.equals(fleetMember.getVariant())) {
+        if (selectedVariant != fleetMember.getVariant()) {
             shipText = "module: " + selectedVariant.getHullSpec().getHullName();
         }
 
