@@ -81,8 +81,8 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
         float reserveXP = SModUtils.getReserveXP(fleetMember.getHullId());
         if (reserveXP >= 1f) {
             dialog.getOptionPanel().addOption("Transfer XP to this ship from XP lost by similar ships during battle", reserveXPOption);
-            dialog.getOptionPanel().addSelector("XP to transfer from reserves: ", reserveXPOption, Misc.getBasePlayerColor(), 500f, 120f, 1f, reserveXP, ValueDisplayMode.X_OVER_Y, null);
-            dialog.getOptionPanel().setSelectorValue(reserveXPOption, Math.max(reserveXP / 2f, 1f));
+            dialog.getOptionPanel().addSelector("XP to transfer from reserves: ", reserveXPOption, Misc.getBasePlayerColor(), 700f, 120f, 1f, reserveXP, ValueDisplayMode.X_OVER_Y, null);
+            dialog.getOptionPanel().setSelectorValue(reserveXPOption, Math.max(reserveXP / 10f, 1f));
         }
 
         // Add in the +extra S-Mods option if that was allowed

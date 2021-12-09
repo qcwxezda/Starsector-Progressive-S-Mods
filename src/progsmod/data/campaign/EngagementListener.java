@@ -17,6 +17,7 @@ import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.EngagementResultAPI;
 import com.fs.starfarer.api.combat.ShipHullSpecAPI;
+import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.util.Misc;
@@ -72,6 +73,19 @@ public class EngagementListener extends BaseCampaignEventListener {
                         reserveXP += SModUtils.Constants.RESERVE_XP_FRACTION * 
                                     SModUtils.Constants.XP_REFUND_FACTOR * 
                                     SModUtils.getBuildInCost(hullMod, fm.getHullSpec().getHullSize(), fm.getDeploymentPointsCost());
+                    }
+                    // If the ship has modules, add XP for any S-mods built into modules
+                    List<String> moduleSlotIds = fm.getVariant().getModuleSlots();
+                    if (moduleSlotIds.size() > 0) {
+                        for (String id : moduleSlotIds) {
+                            ShipVariantAPI moduleVariant = fm.getVariant().getModuleVariant(id);
+                            for (String modId : moduleVariant.getSMods()) {
+                                HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(modId);
+                                reserveXP += SModUtils.Constants.RESERVE_XP_FRACTION * 
+                                    SModUtils.Constants.XP_REFUND_FACTOR * 
+                                    SModUtils.getBuildInCost(hullMod, moduleVariant.getHullSize(), fm.getDeploymentPointsCost());
+                            }
+                        }
                     }
                 }
                 // Add XP for increasing S-mod limits
