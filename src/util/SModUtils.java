@@ -480,7 +480,7 @@ public class SModUtils {
         if (market == null) return false;
 
         Object tradeMode = interactionTarget.getMemory().get("$tradeMode");
-        if (tradeMode == null || tradeMode == CoreUITradeMode.NONE) {
+        if (tradeMode == null || tradeMode.equals(CoreUITradeMode.NONE) || tradeMode.equals("NONE")) {
             return false;
         }
 
