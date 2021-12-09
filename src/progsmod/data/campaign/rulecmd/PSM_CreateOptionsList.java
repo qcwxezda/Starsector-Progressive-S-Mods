@@ -40,9 +40,6 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
         }
 
         FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
-        int nSMods = fleetMember.getVariant().getSMods().size();
-        int nSModsLimit = SModUtils.getMaxSMods(fleetMember);
-        int nRemaining = nSModsLimit - nSMods;
         String selectedVariantKey = params.get(1).string;
         String firstTimeOpenedKey = params.get(2).string;
         boolean firstTimeOpened = params.get(2).getBoolean(memoryMap);
@@ -59,6 +56,10 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
 
         String shipText = THIS_SHIP_TEXT;
         ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(selectedVariantKey);
+        int nSMods = selectedVariant.getSMods().size();
+        int nSModsLimit = SModUtils.getMaxSMods(fleetMember);
+        int nRemaining = nSModsLimit - nSMods;
+
         if (selectedVariant != fleetMember.getVariant()) {
             shipText = "module: " + selectedVariant.getHullSpec().getHullName();
         }
@@ -81,7 +82,7 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
         float reserveXP = SModUtils.getReserveXP(fleetMember.getHullId());
         if (reserveXP >= 1f) {
             dialog.getOptionPanel().addOption("Transfer XP to this ship from XP lost by similar ships during battle", reserveXPOption);
-            dialog.getOptionPanel().addSelector("XP to transfer from reserves: ", reserveXPOption, Misc.getBasePlayerColor(), 700f, 120f, 1f, reserveXP, ValueDisplayMode.X_OVER_Y, null);
+            dialog.getOptionPanel().addSelector("XP to transfer from reserves: ", reserveXPOption, Misc.getBasePlayerColor(), 600f, 120f, 1f, reserveXP, ValueDisplayMode.X_OVER_Y, null);
             dialog.getOptionPanel().setSelectorValue(reserveXPOption, Math.max(reserveXP / 10f, 1f));
         }
 
