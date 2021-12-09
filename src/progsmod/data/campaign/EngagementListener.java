@@ -97,6 +97,8 @@ public class EngagementListener extends BaseCampaignEventListener {
                     Float existingReserveXP = totalReserveXP.get(hullId);
                     totalReserveXP.put(hullId, existingReserveXP == null ? reserveXP : reserveXP + existingReserveXP);
                 }
+                // Remove this fleet member from the XP table
+                SModUtils.deleteXPData(fm.getId());
             }
         } 
         for (Map.Entry<String, Float> reserveXPEntry : totalReserveXP.entrySet()) {

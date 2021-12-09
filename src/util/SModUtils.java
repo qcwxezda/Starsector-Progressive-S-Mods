@@ -309,6 +309,13 @@ public class SModUtils {
         return true;
     }
 
+    /** Removes [fmId] from the ship data table. */
+    public static void deleteXPData(String fmId) {
+        if (SHIP_DATA_TABLE.containsKey(fmId)) {
+            SHIP_DATA_TABLE.remove(fmId);
+        }
+    }
+
     /** Increases [fleetMember]'s limit of built in hull mods by 1.
      *  Spends the required XP. */
     public static void incrementSModLimit(FleetMemberAPI fleetMember) {
