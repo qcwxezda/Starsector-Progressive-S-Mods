@@ -6,10 +6,8 @@ import java.util.Map;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
-import com.fs.starfarer.api.campaign.InteractionDialogPlugin;
 import com.fs.starfarer.api.campaign.rules.MemKeys;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
-import com.fs.starfarer.api.combat.EngagementResultAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
@@ -28,26 +26,18 @@ import util.SModUtils;
  *  [option5] is the option to increase S-Mod limit.
  *  [option6] is the option to select a different ship. 
  *  [option7] is to go back to main menu. */
-public class PSM_CreateOptionsList extends BaseCommandPlugin implements InteractionDialogPlugin {
+public class PSM_CreateOptionsList extends BaseCommandPlugin {
 
     private static final String BUILD_IN_TEXT = "Build up to %s hull mods into ";
     private static final String REMOVE_TEXT = "Select built-in hull mods to remove from ";
     private static final String THIS_SHIP_TEXT = "this ship";
     private static final boolean CAN_REFUND_SMODS = SModUtils.Constants.XP_REFUND_FACTOR >= 0f;
 
-    private Map<String, MemoryAPI> memoryMap;
-    private InteractionDialogAPI dialog;
-    private String reserveXPOption = "";
-    private InteractionDialogPlugin originalPlugin;
-
 	@Override
 	public boolean execute(String ruleId, final InteractionDialogAPI dialog, List<Token> params, Map<String, MemoryAPI> memoryMap) {
 		if (dialog == null || params.isEmpty()) {
             return false;
         }
-
-        this.memoryMap = memoryMap;
-        this.dialog = dialog;
 
         FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
         int nSMods = fleetMember.getVariant().getSMods().size();
@@ -59,7 +49,7 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin implements Interact
         String buildInOption = params.get(3).getString(memoryMap);
         String removeOption = params.get(4).getString(memoryMap);
         String moduleOption = params.get(5).getString(memoryMap);
-        reserveXPOption = params.get(6).getString(memoryMap);
+        String reserveXPOption = params.get(6).getString(memoryMap);
         String augmentOption = params.get(7).getString(memoryMap);
         String differentShipOption = params.get(8).getString(memoryMap);
         String goBackOption = params.get(9).getString(memoryMap);
@@ -91,7 +81,8 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin implements Interact
         float reserveXP = SModUtils.getReserveXP(fleetMember.getHullId());
         if (reserveXP >= 1f) {
             dialog.getOptionPanel().addOption("Transfer XP to this ship from XP lost by similar ships during battle", reserveXPOption);
-            dialog.getOptionPanel().addSelector("XP to transfer from reserves: ", reserveXPOption, Misc.getBasePlayerColor(), 500f, 120f, 0f, reserveXP, ValueDisplayMode.X_OVER_Y, null);
+            dialog.getOptionPanel().addSelector("XP to transfer from reserves: ", reserveXPOption, Misc.getBasePlayerColor(), 500f, 120f, 1f, reserveXP, ValueDisplayMode.X_OVER_Y, null);
+            dialog.getOptionPanel().setSelectorValue(reserveXPOption, Math.max(reserveXP / 2f, 1f));
         }
 
         // Add in the +extra S-Mods option if that was allowed
@@ -142,55 +133,8 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin implements Interact
             }
             SModUtils.displayXP(dialog, fleetMember);
             memoryMap.get(MemKeys.LOCAL).set(firstTimeOpenedKey, false, 0f);
-
-            originalPlugin = dialog.getPlugin();
-            dialog.setPlugin(this);
         }
 
 		return true;
 	}
-
-    @Override
-    public void advance(float amount) {
-        // Disable or enable XP transferring from reserves depending on selector value 
-        if (dialog == null || !dialog.getOptionPanel().hasSelector(reserveXPOption)) {
-            return;
-        }
-        if (dialog.getOptionPanel().getSelectorValue(reserveXPOption) < 1f) {
-            dialog.getOptionPanel().setEnabled(reserveXPOption, false);
-        }
-        else {
-            dialog.getOptionPanel().setEnabled(reserveXPOption, true);
-        }
-    }
-
-    @Override
-    public void backFromEngagement(EngagementResultAPI battleResult) {}
-
-    @Override
-    public Object getContext() {
-        return null;
-    }
-
-    @Override
-    public Map<String, MemoryAPI> getMemoryMap() {
-        return memoryMap;
-    }
-
-    @Override
-    public void init(InteractionDialogAPI dialog) {}
-
-    @Override
-    public void optionMousedOver(String optionText, Object optionData) {
-        if (originalPlugin != null) {
-            originalPlugin.optionMousedOver(optionText, optionData);
-        }
-    }
-
-    @Override
-    public void optionSelected(String optionText, Object optionData) {
-        if (originalPlugin != null) {
-            originalPlugin.optionSelected(optionText, optionData);
-        }
-    }
 }
