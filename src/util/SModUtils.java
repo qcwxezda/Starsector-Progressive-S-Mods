@@ -236,6 +236,7 @@ public class SModUtils {
         }
 
         // Convert reserve XP for specialized hull types to the base hull type
+        // (for backwards compatibility)
         List<String> toRemove = new ArrayList<>();
         List<Pair<String, Float>> toAdd = new ArrayList<>();
         for (Map.Entry<String, Float> entry : RESERVE_XP_TABLE.entrySet()) {
