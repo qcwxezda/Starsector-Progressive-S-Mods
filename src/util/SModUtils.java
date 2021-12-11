@@ -24,6 +24,7 @@ import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.loading.VariantSource;
 import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.util.Misc;
+import com.fs.starfarer.api.util.Pair;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -232,6 +233,28 @@ public class SModUtils {
         }
         else {
             RESERVE_XP_TABLE = (ReserveXPTable) Global.getSector().getPersistentData().get(RESERVE_XP_KEY);
+        }
+
+        // Convert reserve XP for specialized hull types to the base hull type
+        List<String> toRemove = new ArrayList<>();
+        List<Pair<String, Float>> toAdd = new ArrayList<>();
+        for (Map.Entry<String, Float> entry : RESERVE_XP_TABLE.entrySet()) {
+            String hullId = entry.getKey();
+            ShipHullSpecAPI spec = Global.getSettings().getHullSpec(hullId);
+            float amount = entry.getValue();
+            if (spec != null) {
+                String baseHullId = spec.getBaseHullId();
+                if (!hullId.equals(baseHullId)) {
+                    toAdd.add(new Pair<>(baseHullId, amount));
+                    toRemove.add(hullId);
+                }
+            }
+        }
+        for (String id : toRemove) {
+            RESERVE_XP_TABLE.remove(id);
+        }
+        for (Pair<String, Float> entry : toAdd) {
+            addReserveXP(entry.one, entry.two);
         }
     }
 
