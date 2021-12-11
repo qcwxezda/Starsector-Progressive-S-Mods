@@ -28,7 +28,7 @@ public class PSM_UseReserveXP extends BaseCommandPlugin {
             return false;
         }
 
-        SModUtils.useReserveXP(fleetMember.getHullId(), fleetMember, dialog.getOptionPanel().getSelectorValue(option));
+        SModUtils.useReserveXP(fleetMember.getHullSpec().getBaseHullId(), fleetMember, dialog.getOptionPanel().getSelectorValue(option));
         SModUtils.displayXP(dialog, fleetMember);
 
         return true;

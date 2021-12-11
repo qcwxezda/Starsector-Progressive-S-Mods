@@ -93,7 +93,7 @@ public class EngagementListener extends BaseCampaignEventListener {
                     reserveXP += SModUtils.Constants.RESERVE_XP_FRACTION * SModUtils.getAugmentXPCost(fm, i);
                 }
                 if (reserveXP >= 1f) {
-                    String hullId = fm.getHullId();
+                    String hullId = fm.getHullSpec().getBaseHullId();
                     Float existingReserveXP = totalReserveXP.get(hullId);
                     totalReserveXP.put(hullId, existingReserveXP == null ? reserveXP : reserveXP + existingReserveXP);
                 }
@@ -104,7 +104,7 @@ public class EngagementListener extends BaseCampaignEventListener {
         for (Map.Entry<String, Float> reserveXPEntry : totalReserveXP.entrySet()) {
             String hullId = reserveXPEntry.getKey();
             ShipHullSpecAPI spec = Global.getSettings().getHullSpec(hullId);
-            String hullName = spec == null ? "<unknown>" : spec.getHullName();
+            String hullName = spec == null ? "<unknown>" : spec.getBaseHull().getHullName();
             float amount = reserveXPEntry.getValue();
             String amtFmt = Misc.getFormat().format((int) amount);
             SModUtils.addReserveXP(hullId, amount);

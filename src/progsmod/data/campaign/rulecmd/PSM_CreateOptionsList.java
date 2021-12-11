@@ -79,7 +79,7 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
         }
 
         // Add option to spend reserve XP if the fleet member's hull id has reserve XP
-        float reserveXP = SModUtils.getReserveXP(fleetMember.getHullId());
+        float reserveXP = SModUtils.getReserveXP(fleetMember.getHullSpec().getBaseHullId());
         if (reserveXP >= 1f) {
             dialog.getOptionPanel().addOption("Transfer XP to this ship from XP lost by similar ships during battle", reserveXPOption);
             dialog.getOptionPanel().addSelector("XP to transfer from reserves: ", reserveXPOption, Misc.getBasePlayerColor(), 600f, 120f, 1f, reserveXP, ValueDisplayMode.X_OVER_Y, null);

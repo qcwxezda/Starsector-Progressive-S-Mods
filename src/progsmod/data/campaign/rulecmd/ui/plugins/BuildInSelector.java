@@ -57,7 +57,7 @@ public class BuildInSelector extends Selector<HullModButton> {
         // If that doesn't exist, just disable the show all button
         variantId = variant.getHullVariantId();
         if (!Global.getSettings().doesVariantExist(variantId)) {
-            List<String> possibleIds = Global.getSettings().getHullIdToVariantListMap().get(variant.getHullSpec().getHullId());
+            List<String> possibleIds = Global.getSettings().getHullIdToVariantListMap().get(variant.getHullSpec().getBaseHullId());
             if (!possibleIds.isEmpty()) {
                 variantId = possibleIds.get(0);
             } 
