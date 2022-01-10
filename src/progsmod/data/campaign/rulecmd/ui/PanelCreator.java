@@ -6,6 +6,8 @@ import java.util.List;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
+import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipCreator;
+import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipLocation;
 import com.fs.starfarer.api.util.Misc;
 
 import progsmod.data.campaign.rulecmd.util.HullModButtonData;
@@ -120,10 +122,10 @@ public class PanelCreator {
             boolean useStoryColor) {
         initVars(panel, distanceFromTop);
         List<HullModButton> buttons = new ArrayList<>();
-        for (int i = 0; i < buttonData.size(); i++) {
+        for (final HullModButtonData data : buttonData) {
             HullModButton button =
                 new HullModButton(
-                    buttonData.get(i),
+                    data,
                     useStoryColor ? Misc.getStoryOptionColor() : Misc.getBasePlayerColor(), 
                     useStoryColor ? Misc.getStoryDarkColor() : Misc.getDarkPlayerColor(), 
                     Misc.getBrightPlayerColor(), 
@@ -133,6 +135,39 @@ public class PanelCreator {
                     buttonPadding 
                 );
             button.init(tooltipMaker);
+            // Add the hull mod's effect description to a tooltip on mouse hover
+            tooltipMaker.addTooltipToPrevious(
+                new TooltipCreator() {
+                    @Override
+                    public void createTooltip(TooltipMakerAPI tooltip, boolean expanded, Object tooltipParam) {
+                        if (data.hullModEffect.shouldAddDescriptionToTooltip(data.hullSize, null, true)) {
+                            List<String> highlights = new ArrayList<>();
+                            int i = 0;
+                            String descParam = data.hullModEffect.getDescriptionParam(i, data.hullSize, null);
+                            // hard cap at 100 just in case getDescriptionParam for some reason
+                            // doesn't default to null
+                            while (descParam != null && i < 100) {
+                                highlights.add(descParam);
+                                i++;
+                                descParam = data.hullModEffect.getDescriptionParam(i, data.hullSize, null);
+                            }
+                            tooltip.addPara(data.tooltipDescription.replaceAll("\\%", "%%"), 0f, Misc.getHighlightColor(), highlights.toArray(new String[0]));
+                        }
+                        data.hullModEffect.addPostDescriptionSection(tooltip, data.hullSize, null, getTooltipWidth(tooltipParam), true);
+                    }
+
+                    @Override
+                    public float getTooltipWidth(Object tooltipParam) {
+                        return 500f;
+                    }
+
+                    @Override
+                    public boolean isTooltipExpandable(Object tooltipParam) {
+                        return false;
+                    }
+                    
+                }, 
+                TooltipLocation.RIGHT);
             buttons.add(button);
         }
         panel.addUIElement(tooltipMaker).inTL(buttonListHorizontalPadding, distanceFromTop);

@@ -54,7 +54,17 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
             HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
             if (!hullMod.isHidden() && !hullMod.isHiddenEverywhere()) {
                 int cost = SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getDeploymentPointsCost());
-                buttonData.add(new HullModButtonData(id, hullMod.getDisplayName(), hullMod.getSpriteName(), cost + " XP", cost));
+                buttonData.add(
+                    new HullModButtonData(
+                        id, 
+                        hullMod.getDisplayName(), 
+                        hullMod.getSpriteName(), 
+                        cost + " XP", 
+                        hullMod.getDescription(selectedVariant.getHullSize()),
+                        hullMod.getEffect(), 
+                        selectedVariant.getHullSize(), 
+                        cost
+                    ));
             }
         }
 
@@ -140,7 +150,17 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
                         }
                         HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
                         int cost = SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getDeploymentPointsCost());
-                        newButtonData.add(new HullModButtonData(id, hullMod.getDisplayName(), hullMod.getSpriteName(), cost + " XP", cost));
+                        newButtonData.add(
+                            new HullModButtonData(
+                                id, 
+                                hullMod.getDisplayName(), 
+                                hullMod.getSpriteName(), 
+                                cost + " XP",
+                                hullMod.getDescription(selectedVariant.getHullSize()),
+                                hullMod.getEffect(), 
+                                selectedVariant.getHullSize(), 
+                                cost)
+                            );
                     }
                     Collections.sort(newButtonData, new Comparator<HullModButtonData>() {
                         @Override

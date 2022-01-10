@@ -57,7 +57,11 @@ public class PSM_RemoveSMod extends BaseCommandPlugin {
                     hullMod.getId(), 
                     hullMod.getDisplayName(), 
                     hullMod.getSpriteName(),
-                    String.format("Refunds %s XP", amt), amt)
+                    String.format("Refunds %s XP", amt), 
+                    hullMod.getDescription(selectedVariant.getHullSize()),
+                    hullMod.getEffect(),
+                    selectedVariant.getHullSize(),
+                    amt)
                 );
         }
 
