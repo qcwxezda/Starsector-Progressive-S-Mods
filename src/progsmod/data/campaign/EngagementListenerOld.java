@@ -147,7 +147,7 @@ public class EngagementListenerOld extends BaseCampaignEventListener {
             lastDialog, 
             civilianShips, 
             (int) (totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION), 
-            "due to being civilian ships or having no weapons equipped");
+            "due to being civilian ships, or having no weapons or fighters equipped");
     }
 
     /** Populates the [carrierTable] map with mapping from wing -> leader ship. Modifies carrierTable. */

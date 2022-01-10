@@ -203,7 +203,7 @@ public class EngagementListener extends BaseCampaignEventListener {
                 lastDialog, 
                 civilianShips, 
                 (int) (totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION), 
-                "due to being civilian ships or having no weapons equipped");
+                "due to being civilian ships, or having no weapons or fighters equipped");
         }
     }
 
