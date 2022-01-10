@@ -82,7 +82,7 @@
 
         # Non-combat ships gain this fraction of the total XP
         # gained by all ships as additional XP
-        "nonCombatXPFraction": 0.06,
+        "nonCombatXPFraction": 0.05,
 
         # After each combat interval (in seconds), the contribution
         # for each player ship is tallied and added to that ship's
