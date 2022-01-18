@@ -80,9 +80,17 @@
         # give at least this fraction of a pristine ship's XP. 
         "targetDModLowerBound": 0.6, 
 
-        # Non-combat ships gain this fraction of the total XP
-        # gained by all ships as additional XP
-        "nonCombatXPFraction": 0.05,
+        # All ships gain this fraction of the total XP
+        # gain as additional XP per combat
+        "postBattleXPFraction": 0.025,
+
+        # Civilian ships gain increased post-battle XP,
+        # by this much.
+        "postBattleCivilianMultiplier": 2,
+
+        # Combat ships gain increased post-battle XP for auto-resolve
+        # pursuits, by this much.
+        "postBattleAutoPursuitMultiplier": 4,
 
         # After each combat interval (in seconds), the contribution
         # for each player ship is tallied and added to that ship's
@@ -94,17 +102,6 @@
         "xpFractionAttack": 0.34,
         "xpFractionDefense": 0.33,
         "xpFractionSupport": 0.33,
-
-        # If a ship deals any hull damage to an opponent, it counts as if
-        # it had done at least this fraction of the target's total HP
-        # as hull damage
-        # Only has an effect when using the legacy XP tracker
-        "minContributionFraction": 0.15,
-
-        # Use the legacy version of the XP tracker,
-        # which only considers hull damage dealt and for which
-        # there is a minimum contribution fraction.
-        "useLegacyXPTracker": false
     },
 
     # Set this to true in order to disable this mod's features

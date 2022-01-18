@@ -88,15 +88,16 @@ public class SModUtils {
         /** When the player loses a ship with XP, this fraction of XP lost is added to
          a reserve pool that can be used by any ship with the same hull type.*/
         public static float RESERVE_XP_FRACTION;
-        /** Minimum contribution percentage -- ships that deal any hull damage gain XP as if
-         *  they did this fraction of total hull damage. */
-        public static float MIN_CONTRIBUTION_FRACTION;
         /** Enemy ships with d-mods give less XP than pristine ships;
          *  however, regardless of the number of D-mods, they will always
          *  give at least this fraction of a pristine ship's XP. */
         public static float TARGET_DMOD_LOWER_BOUND;
-        /** XP gained by non-combat ships as a fraction of total XP gain */
-        public static float NON_COMBAT_XP_FRACTION;
+        /** XP gained by ships as a fraction of total XP gain */
+        public static float POST_BATTLE_XP_FRACTION;
+        /** Multiplier of the above for civilian ships */
+        public static float POST_BATTLE_CIVILIAN_MULTIPLIER;
+        /** Multiplier for auto-resolve pursuits */
+        public static float POST_BATTLE_AUTO_PURSUIT_MULTIPLIER;
         /** Fraction of enemy ships' total XP worth that goes toward the ATTACK role */
         public static float XP_FRACTION_ATTACK;
         /** Fraction of enemy ships' total XP worth that goes toward the DEFENSE role */
@@ -109,8 +110,6 @@ public class SModUtils {
         public static boolean ALLOW_INCREASE_SMOD_LIMIT;
         /** How often the combat tracker should update ship contribution. */
         public static float COMBAT_UPDATE_INTERVAL;
-        /** Whether to use the version of XP tracking that only considers hull damage. */
-        public static boolean USE_LEGACY_XP_TRACKER;
         /** Set to true to disable this mod's features */
         public static boolean DISABLE_MOD;
 
@@ -151,14 +150,14 @@ public class SModUtils {
             GIVE_XP_TO_DISABLED_SHIPS = combat.getBoolean("giveXPToDisabledShips");
             ONLY_GIVE_XP_FOR_KILLS = combat.getBoolean("onlyGiveXPForKills");
             XP_GAIN_MULTIPLIER = (float) combat.getDouble("xpGainMultiplier");
-            MIN_CONTRIBUTION_FRACTION = (float) combat.getDouble("minContributionFraction");
-            NON_COMBAT_XP_FRACTION = (float) combat.getDouble("nonCombatXPFraction");
+            POST_BATTLE_XP_FRACTION = (float) combat.getDouble("postBattleXPFraction");
+            POST_BATTLE_CIVILIAN_MULTIPLIER = (float) combat.getDouble("postBattleCivilianMultiplier");
+            POST_BATTLE_AUTO_PURSUIT_MULTIPLIER = (float) combat.getDouble("postBattleAutoPursuitMultiplier");
             TARGET_DMOD_LOWER_BOUND = (float) combat.getDouble("targetDModLowerBound");
             COMBAT_UPDATE_INTERVAL = (float) combat.getDouble("combatUpdateInterval");
             XP_FRACTION_ATTACK = (float) combat.getDouble("xpFractionAttack");
             XP_FRACTION_DEFENSE = (float) combat.getDouble("xpFractionDefense");
             XP_FRACTION_SUPPORT = (float) combat.getDouble("xpFractionSupport");
-            USE_LEGACY_XP_TRACKER = combat.getBoolean("useLegacyXPTracker");
         }
 
         private static float[] loadCoeffsFromJSON(JSONObject json, String name) throws JSONException {
@@ -594,17 +593,20 @@ public class SModUtils {
         dialog.getTextPanel().setFontInsignia();
     }
 
-    /** Adds "the following ships gained [xp] XP [additionalText]:" followed by the list of ships in
+    /** Adds "All ships in fleet gained [xp] additional XP [additionalText]:" followed by the list of ships in
      *  [fleetMembers]. */
-    public static void addCoalescedXPGainToDialog(InteractionDialogAPI dialog, List<FleetMemberAPI> fleetMembers, int xp, String additionalText) {
+    public static void addPostBattleXPGainToDialog(InteractionDialogAPI dialog, List<FleetMemberAPI> fleetMembers, int xp, int civilianXP) {
         if (dialog == null || dialog.getTextPanel() == null || fleetMembers.isEmpty()) {
             return;
         }
         List<String> highlights = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         String xpFmt = Misc.getFormat().format(xp);
-        sb.append("The following ships gained " + xpFmt + " xp " + additionalText + ":");
+        String civilianXPFmt = Misc.getFormat().format(civilianXP);
+        sb.append("All combat ships in fleet gained " + xpFmt + " additional XP.\n");
+        sb.append("The following ships gained " + civilianXPFmt + " XP due to being civilian ships, or having no weapons or fighters equipped:" );
         highlights.add("" + xpFmt);
+        highlights.add("" + civilianXPFmt);
         for (FleetMemberAPI fleetMember : fleetMembers) {
             sb.append("\n    - ");
             String shipName = fleetMember.getShipName();

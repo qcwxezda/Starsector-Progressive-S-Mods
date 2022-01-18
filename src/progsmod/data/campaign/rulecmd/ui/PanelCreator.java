@@ -142,14 +142,11 @@ public class PanelCreator {
                     public void createTooltip(TooltipMakerAPI tooltip, boolean expanded, Object tooltipParam) {
                         if (data.hullModEffect.shouldAddDescriptionToTooltip(data.hullSize, null, true)) {
                             List<String> highlights = new ArrayList<>();
-                            int i = 0;
-                            String descParam = data.hullModEffect.getDescriptionParam(i, data.hullSize, null);
+                            String descParam;
                             // hard cap at 100 just in case getDescriptionParam for some reason
                             // doesn't default to null
-                            while (descParam != null && i < 100) {
+                            for (int i = 0; i < 100 && (descParam = data.hullModEffect.getDescriptionParam(i, data.hullSize, null)) != null; i++) {
                                 highlights.add(descParam);
-                                i++;
-                                descParam = data.hullModEffect.getDescriptionParam(i, data.hullSize, null);
                             }
                             tooltip.addPara(data.tooltipDescription.replaceAll("\\%", "%%"), 0f, Misc.getHighlightColor(), highlights.toArray(new String[0]));
                         }

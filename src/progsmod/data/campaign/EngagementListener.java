@@ -1,6 +1,7 @@
 package progsmod.data.campaign;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -140,17 +141,6 @@ public class EngagementListener extends BaseCampaignEventListener {
             enemyResult = result.getLoserResult();
         }
 
-        // If nobody was deployed (second-in-command handles pursuit) no damage data
-        if (playerResult.getAllEverDeployedCopy() == null) {
-            return;
-        }
-
-        for (DeployedFleetMemberAPI dfm : playerResult.getAllEverDeployedCopy()) {
-            idToFleetMemberMap.put(dfm.getMember().getId(), dfm.getMember());
-        }
-        for (DeployedFleetMemberAPI dfm : enemyResult.getAllEverDeployedCopy()) {
-            idToFleetMemberMap.put(dfm.getMember().getId(), dfm.getMember());
-        }
         // List of ships that are eligible to gain XP
         playerFilter.addAll(SModUtils.getFleetMemberIds(playerFleet));
         if (!SModUtils.Constants.GIVE_XP_TO_DISABLED_SHIPS) {
@@ -165,6 +155,19 @@ public class EngagementListener extends BaseCampaignEventListener {
             enemyFilter.addAll(SModUtils.getFleetMemberIds(enemyResult.getDeployed()));
         }
 
+        // If nobody was deployed (second-in-command handles pursuit) no individual damage data
+        if (playerResult.getAllEverDeployedCopy() == null) {
+            giveXPForPursuit(playerFleet, enemyResult.getFleet().getFleetData().getMembersListCopy(), enemyFilter);
+            return;
+        }
+
+        for (DeployedFleetMemberAPI dfm : playerResult.getAllEverDeployedCopy()) {
+            idToFleetMemberMap.put(dfm.getMember().getId(), dfm.getMember());
+        }
+        for (DeployedFleetMemberAPI dfm : enemyResult.getAllEverDeployedCopy()) {
+            idToFleetMemberMap.put(dfm.getMember().getId(), dfm.getMember());
+        }
+
         // Convert player ships' contributions into XP gains
         for (ContributionType type : totalContributionMap.keySet()) {
             processContributions(type, totalContributionMap.get(type));
@@ -173,37 +176,66 @@ public class EngagementListener extends BaseCampaignEventListener {
         // Give XP to the ships that earned XP.
         float totalXPGain = 0f;
         for (Map.Entry<String, Map<ContributionType, Float>> xpGainEntry : xpGainMap.entrySet()) {
+            String id = xpGainEntry.getKey();
             for (Map.Entry<ContributionType, Float> xpByType : xpGainEntry.getValue().entrySet()) {
                 float xpGain = xpByType.getValue();
-                SModUtils.giveXP(xpGainEntry.getKey(), xpGain);
+                SModUtils.giveXP(id, xpGain);
                 totalXPGain += xpGain;
+            }
+            // Show the XP gain in the dialog
+            if (idToFleetMemberMap.containsKey(id)) {
+                SModUtils.addTypedXPGainToDialog(
+                    lastDialog, 
+                    idToFleetMemberMap.get(id), 
+                    xpGainMap.get(id), 
+                    "from combat");
             }
         }
 
-        // Give additional XP to non-combat ships in the player's fleet
+
+        givePostBattleXP(playerFleet, totalXPGain, false);
+    }
+
+    /** Give only the post battle XP for pursuits. */
+    private void giveXPForPursuit(List<FleetMemberAPI> playerFleet, List<FleetMemberAPI> enemyFleet, Collection<String> enemyFilter) {
+        float fakeXPGain = 0f;
+        for (FleetMemberAPI enemy : enemyFleet) {
+            if (!enemyFilter.contains(enemy.getId())) {
+                continue;
+            }
+            fakeXPGain += 
+                SModUtils.Constants.XP_GAIN_MULTIPLIER 
+                * enemy.getStatus().getHullDamageTaken() 
+                * Math.max(
+                    enemy.getDeploymentCostSupplies(), 
+                    SModUtils.Constants.TARGET_DMOD_LOWER_BOUND * enemy.getDeploymentPointsCost()
+            );
+        }
+        givePostBattleXP(playerFleet, fakeXPGain, true);
+    }
+
+    /** Give a fraction of the total XP gained in an engagement to all ships currently in the player's fleet. */
+    private void givePostBattleXP(List<FleetMemberAPI> playerFleet, float totalXPGain, boolean isAutoResolve) {
         List<FleetMemberAPI> civilianShips = new ArrayList<>();
         for (FleetMemberAPI member : playerFleet) {
-            // Show the XP gain in the dialog
-            if (xpGainMap.containsKey(member.getId())) {
-                SModUtils.addTypedXPGainToDialog(
-                    lastDialog, 
-                    member, 
-                    xpGainMap.get(member.getId()), 
-                    "from combat");
+            if (playerFilter.contains(member.getId())) {
+                float xpFraction = SModUtils.Constants.POST_BATTLE_XP_FRACTION;
+                if (member.isCivilian() || (member.getVariant().hasHullMod("civgrade") && !member.getVariant().hasHullMod("militarized_subsystems"))) {
+                    xpFraction *= SModUtils.Constants.POST_BATTLE_CIVILIAN_MULTIPLIER;
+                    civilianShips.add(member);
+                }
+                else if (isAutoResolve) {
+                    xpFraction *= SModUtils.Constants.POST_BATTLE_AUTO_PURSUIT_MULTIPLIER;
+                }
+                SModUtils.giveXP(member, totalXPGain * xpFraction);
             }
-            if (member.isCivilian() && playerFilter.contains(member.getId())) {
-                SModUtils.giveXP(member, totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION);
-                civilianShips.add(member);
-            }
-            // Need to check to add hull mod since used giveXP(String, Float) version above
-            SModUtils.addTrackerHullMod(member);
         }
         if (totalXPGain > 0f && !civilianShips.isEmpty()) {
-            SModUtils.addCoalescedXPGainToDialog(
+            SModUtils.addPostBattleXPGainToDialog(
                 lastDialog, 
                 civilianShips, 
-                (int) (totalXPGain * SModUtils.Constants.NON_COMBAT_XP_FRACTION), 
-                "due to being civilian ships, or having no weapons or fighters equipped");
+                (int) (totalXPGain * SModUtils.Constants.POST_BATTLE_XP_FRACTION * (isAutoResolve ? SModUtils.Constants.POST_BATTLE_AUTO_PURSUIT_MULTIPLIER : 1.0f)), 
+                (int) (totalXPGain * SModUtils.Constants.POST_BATTLE_XP_FRACTION * SModUtils.Constants.POST_BATTLE_CIVILIAN_MULTIPLIER));
         }
     }
 
