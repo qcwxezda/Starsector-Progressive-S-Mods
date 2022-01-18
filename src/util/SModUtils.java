@@ -595,24 +595,26 @@ public class SModUtils {
 
     /** Adds "All ships in fleet gained [xp] additional XP [additionalText]:" followed by the list of ships in
      *  [fleetMembers]. */
-    public static void addPostBattleXPGainToDialog(InteractionDialogAPI dialog, List<FleetMemberAPI> fleetMembers, int xp, int civilianXP) {
-        if (dialog == null || dialog.getTextPanel() == null || fleetMembers.isEmpty()) {
+    public static void addPostBattleXPGainToDialog(InteractionDialogAPI dialog, List<FleetMemberAPI> civilianShips, int xp, int civilianXP) {
+        if (dialog == null || dialog.getTextPanel() == null) {
             return;
         }
         List<String> highlights = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         String xpFmt = Misc.getFormat().format(xp);
         String civilianXPFmt = Misc.getFormat().format(civilianXP);
-        sb.append("All combat ships in fleet gained " + xpFmt + " additional XP.\n");
-        sb.append("The following ships gained " + civilianXPFmt + " XP due to being civilian ships, or having no weapons or fighters equipped:" );
+        sb.append("All combat ships in fleet gained " + xpFmt + " additional XP.");
         highlights.add("" + xpFmt);
-        highlights.add("" + civilianXPFmt);
-        for (FleetMemberAPI fleetMember : fleetMembers) {
-            sb.append("\n    - ");
-            String shipName = fleetMember.getShipName();
-            ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
-            sb.append(shipName + ", " + hullSpec.getHullNameWithDashClass());
-            highlights.add(hullSpec.getHullName());
+        if (!civilianShips.isEmpty()) {
+            sb.append("\nThe following ships gained " + civilianXPFmt + " XP due to being civilian ships, or having no weapons or fighters equipped:" );
+            highlights.add("" + civilianXPFmt);
+            for (FleetMemberAPI fleetMember : civilianShips) {
+                sb.append("\n    - ");
+                String shipName = fleetMember.getShipName();
+                ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
+                sb.append(shipName + ", " + hullSpec.getHullNameWithDashClass());
+                highlights.add(hullSpec.getHullName());
+            }
         }
         dialog.getTextPanel().setFontSmallInsignia();
         LabelAPI text = dialog.getTextPanel().addPara(sb.toString());

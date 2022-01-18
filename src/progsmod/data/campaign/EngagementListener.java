@@ -217,6 +217,7 @@ public class EngagementListener extends BaseCampaignEventListener {
     /** Give a fraction of the total XP gained in an engagement to all ships currently in the player's fleet. */
     private void givePostBattleXP(List<FleetMemberAPI> playerFleet, float totalXPGain, boolean isAutoResolve) {
         List<FleetMemberAPI> civilianShips = new ArrayList<>();
+        boolean shouldShow = false;
         for (FleetMemberAPI member : playerFleet) {
             if (playerFilter.contains(member.getId())) {
                 float xpFraction = SModUtils.Constants.POST_BATTLE_XP_FRACTION;
@@ -228,9 +229,12 @@ public class EngagementListener extends BaseCampaignEventListener {
                     xpFraction *= SModUtils.Constants.POST_BATTLE_AUTO_PURSUIT_MULTIPLIER;
                 }
                 SModUtils.giveXP(member, totalXPGain * xpFraction);
+                if ((int) (totalXPGain * xpFraction) > 0) {
+                    shouldShow = true;
+                }
             }
         }
-        if (totalXPGain > 0f && !civilianShips.isEmpty()) {
+        if (shouldShow) {
             SModUtils.addPostBattleXPGainToDialog(
                 lastDialog, 
                 civilianShips, 
