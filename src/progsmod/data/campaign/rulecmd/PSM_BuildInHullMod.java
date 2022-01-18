@@ -81,20 +81,7 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
                     LabelWithVariables<Integer> xpLabel = 
                         PanelCreator.createLabelWithVariables(panel, "XP: %s", Color.WHITE, 30f, Alignment.RMID, (int) SModUtils.getXP(fleetMember.getId())).created;
                     Button showAllButton = PanelCreator.createButton(panel, "Show all", 100f, 25f, 10f, panel.getPosition().getHeight() + 6f).created;
-                    plugin.init(this, createdButtonsData, xpLabel, countLabel, showAllButton, selectedVariant);
-                    permaDisableIneligibleMods(createdButtonsData.created);
-                }
-
-                private void permaDisableIneligibleMods(List<HullModButton> buttons) {
-                    for (int i = 0; i < buttons.size(); i++) {
-                        HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(buttons.get(i).data.id);
-                        if (hullMod.hasTag("no_build_in") && !SModUtils.Constants.IGNORE_NO_BUILD_IN) {
-                            plugin.permaDisable(i, "Cannot be built in", true);
-                        }
-                        else if (!SModUtils.canModifyHullMod(hullMod, dialog.getInteractionTarget())) {
-                            plugin.permaDisable(i, "Requires docking at a spaceport or orbital station", true);
-                        }
-                    }
+                    plugin.init(this, createdButtonsData, xpLabel, countLabel, showAllButton, fleetMember, selectedVariant);
                 }
 
                 @Override
@@ -171,7 +158,6 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
                     PanelCreatorData<List<HullModButton>> newButtons = 
                         PanelCreator.addToHullModButtonList(panel, tooltipMaker, newButtonData, 45f, 10f, titleHeight, false);
                     plugin.addNewItems(newButtons.created);
-                    permaDisableIneligibleMods(plugin.getItems());
                 }
             }
         );

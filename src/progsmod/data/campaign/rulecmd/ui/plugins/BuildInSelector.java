@@ -4,21 +4,22 @@ import java.util.BitSet;
 import java.util.List;
 
 import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.combat.HullModEffect;
+import com.fs.starfarer.api.campaign.InteractionDialogAPI;
+import com.fs.starfarer.api.campaign.SectorEntityToken;
+import com.fs.starfarer.api.campaign.CampaignUIAPI.CoreUITradeMode;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
-import com.fs.starfarer.api.mission.FleetSide;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
-
-import org.lwjgl.util.vector.Vector2f;
 
 import progsmod.data.campaign.rulecmd.delegates.BuildInSModDelegate;
 import progsmod.data.campaign.rulecmd.ui.Button;
 import progsmod.data.campaign.rulecmd.ui.HullModButton;
 import progsmod.data.campaign.rulecmd.ui.LabelWithVariables;
 import progsmod.data.campaign.rulecmd.ui.PanelCreator.PanelCreatorData;
+import progsmod.data.campaign.rulecmd.util.TempShipMaker;
 import util.SModUtils;
 
 public class BuildInSelector extends Selector<HullModButton> {
@@ -27,10 +28,10 @@ public class BuildInSelector extends Selector<HullModButton> {
     private LabelWithVariables<Integer> xpLabel;
     // 2 variables: # selected, max allowed
     private LabelWithVariables<Integer> countLabel;
-    private BitSet permanentlyDisabled;
     private Button showAllButton;
-    private ShipVariantAPI variant;
-    private String variantId;
+    private FleetMemberAPI fleetMember;
+    private ShipVariantAPI checkerVariant;
+    private ShipVariantAPI originalVariant;
     
     private BuildInSModDelegate delegate;
     private TooltipMakerAPI tooltipMaker;
@@ -42,6 +43,7 @@ public class BuildInSelector extends Selector<HullModButton> {
             LabelWithVariables<Integer> xpLabel, 
             LabelWithVariables<Integer> countLabel,
             Button showAllButton, 
+            FleetMemberAPI fleetMember,
             ShipVariantAPI variant) {
         super.init(data.created);
         this.delegate = delegate;
@@ -50,21 +52,9 @@ public class BuildInSelector extends Selector<HullModButton> {
         this.xpLabel = xpLabel;
         this.countLabel = countLabel;
         this.showAllButton = showAllButton;
-        this.variant = variant;
-        permanentlyDisabled = new BitSet();
-        // Get the variant id for [variant]
-        // If it doesnt exist, find one from the settings.
-        // If that doesn't exist, just disable the show all button
-        variantId = variant.getHullVariantId();
-        if (!Global.getSettings().doesVariantExist(variantId)) {
-            List<String> possibleIds = Global.getSettings().getHullIdToVariantListMap().get(variant.getHullSpec().getBaseHullId());
-            if (!possibleIds.isEmpty()) {
-                variantId = possibleIds.get(0);
-            } 
-            else {
-                showAllButton.disable();
-            }
-        }
+        this.originalVariant = variant;
+        checkerVariant = variant.clone();
+        this.fleetMember = fleetMember;
         updateItems();
     }
 
@@ -74,11 +64,11 @@ public class BuildInSelector extends Selector<HullModButton> {
     }
 
     private void updateItems() {
+        // Disable all of the unapplicable entries
+        BitSet unapplicable = disableUnapplicable();
         int xp = xpLabel.getVar(0);
         int count = countLabel.getVar(0);
         int maxCount = countLabel.getVar(1);
-        // Disable all of the unapplicable entries
-        BitSet unapplicable = disableUnapplicable();
         for (int i = 0; i < items.size(); i++) {
             HullModButton button = items.get(i);
             if (unapplicable.get(i)) {
@@ -99,14 +89,9 @@ public class BuildInSelector extends Selector<HullModButton> {
         }
     }
 
-    /** Disable an item, but only if it isn't already selected and it hasn't 
-     *  already been permanently disabled with a different message. */
+    /** Disable an item, but only if it isn't already selected. */
     private void disable(int index, String reason, boolean highlight) {
         HullModButton item = items.get(index);
-        // Ignore already disabled items
-        if (permanentlyDisabled.get(index)) {
-            return;
-        }
         // Ignore already selected items
         if (item.isSelected()) {
             return;
@@ -114,17 +99,9 @@ public class BuildInSelector extends Selector<HullModButton> {
         item.disable(reason, highlight);
     }
 
-    /** Enable an item, but only if it hasn't already been permanently disabled. */
+    /** Enable an item. */
     private void enable(int index, String reason) {
-        if (permanentlyDisabled.get(index)) {
-            return;
-        }
         items.get(index).enable(reason);
-    }
-
-    public void permaDisable(int index, String reason, boolean highlight) {
-        permanentlyDisabled.set(index);
-        items.get(index).disable(reason, highlight);
     }
 
     /** Returns a set of indices of buttons that were disabled by this
@@ -132,60 +109,48 @@ public class BuildInSelector extends Selector<HullModButton> {
     private BitSet disableUnapplicable() {
         boolean checkedEntriesChanged = true;
         BitSet disabledIndices = new BitSet();
+        InteractionDialogAPI dialog = Global.getSector().getCampaignUI().getCurrentInteractionDialog();
+        SectorEntityToken interactionTarget = dialog == null ? null : dialog.getInteractionTarget();
         while (checkedEntriesChanged) {
-            ShipAPI tempShip = Global.getCombatEngine().getFleetManager(FleetSide.PLAYER).spawnShipOrWing(variantId, new Vector2f(), 0f);
-            ShipVariantAPI checkerVariant = tempShip.getVariant().clone();
-            tempShip.setVariantForHullmodCheckOnly(checkerVariant);
-            checkerVariant.getHullMods().clear();
-            
-            // Add all the mods that are currently checked
-            for (int i = 0; i < items.size(); i++) {
-                HullModButton button = items.get(i);
-                if (button.isSelected()) {
-                    checkerVariant.addPermaMod(button.data.id);
-                    applyHullModEffectsToShip(tempShip, Global.getSettings().getHullModSpec(button.data.id));
-                }
-            }
-
-            for (String id : variant.getHullMods()) {
-                if (!checkerVariant.hasHullMod(id)) {
-                    checkerVariant.addPermaMod(id);
-                    applyHullModEffectsToShip(tempShip, Global.getSettings().getHullModSpec(id));
-                }
-            }
-
-            // Now check which mods are no longer applicable
+            ShipAPI checkerShip = TempShipMaker.makeShip(checkerVariant, fleetMember);
             // Since hull mods may have dependencies, some checked entries may
             // need to be unchecked.
             // Since dependencies can be chained, we need to do this in a loop.
             // (# of loops is bounded by # of checked entries as well as
             // longest hull mod dependency chain)
             checkedEntriesChanged = false;
-            // Hull mods already on the ship should always be able to be built in
-            for (int i = variant.getNonBuiltInHullmods().size(); i < items.size(); i++) {
+            for (int i = 0; i < items.size(); i++) {
                 HullModButton button = items.get(i);
                 HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(button.data.id);
-                if (!hullMod.getEffect().isApplicableToShip(tempShip)) {
+                boolean shouldDisable = false;
+                String disableText = null;
+                if (!hullMod.getEffect().isApplicableToShip(checkerShip)) {
+                    shouldDisable = true;
+                    disableText = SModUtils.shortenText(hullMod.getEffect().getUnapplicableReason(checkerShip), button.description);
+                }
+                if (interactionTarget != null && interactionTarget.getMarket() != null) {
+                    CoreUITradeMode tradeMode = CoreUITradeMode.valueOf(interactionTarget.getMemory().getString("$tradeMode"));
+                    if (!hullMod.getEffect().canBeAddedOrRemovedNow(checkerShip, interactionTarget.getMarket(), tradeMode)) {
+                        shouldDisable = true;
+                        disableText = SModUtils.shortenText(
+                            hullMod.getEffect().getCanNotBeInstalledNowReason(checkerShip, interactionTarget.getMarket(), tradeMode),
+                            button.description);
+                    }
+                }
+                if (shouldDisable) {
                     if (button.isSelected()) {
                         forceDeselect(i);
                         checkedEntriesChanged = true;
                     }
-                    String unapplicableReason = SModUtils.shortenText(hullMod.getEffect().getUnapplicableReason(tempShip), button.description);
-                    if (unapplicableReason == null) {
-                        unapplicableReason = "Can't build in (no reason given, default message)";
+                    if (disableText == null) {
+                        disableText = "Can't build in (no reason given, default message)";
                     }
-                    disable(i, unapplicableReason, true);
+                    disable(i, disableText, true);
                     disabledIndices.set(i);
                 }
             }
         }
         return disabledIndices;
-    }
-
-    private void applyHullModEffectsToShip(ShipAPI ship, HullModSpecAPI hullMod) {
-        HullModEffect effect = hullMod.getEffect();
-        effect.applyEffectsBeforeShipCreation(ship.getHullSize(), ship.getMutableStats(), hullMod.getId());
-        effect.applyEffectsAfterShipCreation(ship, hullMod.getId());
     }
 
     @Override
@@ -194,7 +159,6 @@ public class BuildInSelector extends Selector<HullModButton> {
         if (showAllButton.isSelected()) {
             showAllButton.deselect();
             showAllButton.disable();
-
             delegate.showAllPressed(panel, tooltipMaker);
         }
     }
@@ -203,6 +167,7 @@ public class BuildInSelector extends Selector<HullModButton> {
     protected void onSelected(int index) {
         xpLabel.changeVar(0, xpLabel.getVar(0) - items.get(index).data.cost);
         countLabel.changeVar(0, countLabel.getVar(0) + 1);
+        checkerVariant.addMod(items.get(index).data.id);
         updateItems();
     }
 
@@ -210,6 +175,9 @@ public class BuildInSelector extends Selector<HullModButton> {
     protected void onDeselected(int index) {
         xpLabel.changeVar(0, xpLabel.getVar(0) + items.get(index).data.cost);
         countLabel.changeVar(0, countLabel.getVar(0) - 1);
+        // Don't remove mods that are already on the ship
+        if (!originalVariant.hasHullMod(items.get(index).data.id))
+            checkerVariant.removeMod(items.get(index).data.id);
         updateItems();
     }
     
@@ -218,5 +186,8 @@ public class BuildInSelector extends Selector<HullModButton> {
         super.forceDeselect(index);
         xpLabel.changeVar(0, xpLabel.getVar(0) + items.get(index).data.cost);
         countLabel.changeVar(0, countLabel.getVar(0) - 1);
+        // Don't remove mods that are already on the ship
+        if (!originalVariant.hasHullMod(items.get(index).data.id))
+            checkerVariant.removeMod(items.get(index).data.id);
     }
 }
