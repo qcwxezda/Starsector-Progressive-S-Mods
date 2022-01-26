@@ -11,7 +11,7 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
     @Override
     public void onGameLoad(boolean newGame) {
 
-        SModUtils.loadConstants("mod_settings.json");
+        SModUtils.loadConstants("progsmod_settings.json");
 
         if (!SModUtils.Constants.DISABLE_MOD) {
             SModUtils.loadData();
