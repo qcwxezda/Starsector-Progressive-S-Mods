@@ -13,6 +13,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
+import com.fs.starfarer.api.util.Misc;
 
 import progsmod.data.campaign.rulecmd.delegates.BuildInSModDelegate;
 import progsmod.data.campaign.rulecmd.ui.Button;
@@ -137,6 +138,10 @@ public class BuildInSelector extends Selector<HullModButton> {
                             button.description);
                     }
                 }
+                if (hullMod.hasTag("progsmod_no_build_in") && !SModUtils.Constants.IGNORE_NO_BUILD_IN) {
+                    shouldDisable = true;
+                    disableText = hullMod.getDisplayName() + " can't be built in";
+                }
                 if (shouldDisable) {
                     if (button.isSelected()) {
                         forceDeselect(i);
@@ -167,17 +172,43 @@ public class BuildInSelector extends Selector<HullModButton> {
     protected void onSelected(int index) {
         xpLabel.changeVar(0, xpLabel.getVar(0) - items.get(index).data.cost);
         countLabel.changeVar(0, countLabel.getVar(0) + 1);
-        checkerVariant.addMod(items.get(index).data.id);
-        updateItems();
+        String hullModId = items.get(index).data.id;
+        checkerVariant.addMod(hullModId);
+        if (testForDesync()) {
+            forceDeselect(index);
+            Global.getSector().getCampaignUI().getMessageDisplay().addMessage("Can't build in due to custom hull mod incompatibility", Misc.getNegativeHighlightColor());
+        }
+        else {
+            updateItems();
+        }
+    }
+
+    /** Tests if a ship made from checkerVariant still has all the hull mods that checkerVariant does.
+     *  If not, this likely means that a mod forcibly removed some other hull mod(s) due to mod incompatibilities,
+     *  so adding this hull mod would not be safe. */
+    private boolean testForDesync() {
+        ShipVariantAPI cloneVariant = checkerVariant.clone();
+        TempShipMaker.makeShip(cloneVariant, fleetMember);
+        if (cloneVariant.hasHullMod("ML_incompatibleHullmodWarning")) {
+            return true;
+        }
+        for (String id : checkerVariant.getHullMods()) {
+            if (!cloneVariant.hasHullMod(id)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     protected void onDeselected(int index) {
         xpLabel.changeVar(0, xpLabel.getVar(0) + items.get(index).data.cost);
         countLabel.changeVar(0, countLabel.getVar(0) - 1);
-        // Don't remove mods that are already on the ship
-        if (!originalVariant.hasHullMod(items.get(index).data.id))
-            checkerVariant.removeMod(items.get(index).data.id);
+        String hullModId = items.get(index).data.id;
+        // Don't remove hull mods that were already on the ship
+        if (!originalVariant.hasHullMod(hullModId)) {
+            checkerVariant.removeMod(hullModId);
+        }
         updateItems();
     }
     
@@ -186,8 +217,10 @@ public class BuildInSelector extends Selector<HullModButton> {
         super.forceDeselect(index);
         xpLabel.changeVar(0, xpLabel.getVar(0) + items.get(index).data.cost);
         countLabel.changeVar(0, countLabel.getVar(0) - 1);
-        // Don't remove mods that are already on the ship
-        if (!originalVariant.hasHullMod(items.get(index).data.id))
-            checkerVariant.removeMod(items.get(index).data.id);
+        String hullModId = items.get(index).data.id;
+        // Don't remove hull mods that were already on the ship
+        if (!originalVariant.hasHullMod(hullModId)) {
+            checkerVariant.removeMod(hullModId);
+        }
     }
 }
