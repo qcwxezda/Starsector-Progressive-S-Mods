@@ -136,6 +136,9 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
                             continue;
                         }
                         HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
+                        if (hullMod.isHidden() || hullMod.isHiddenEverywhere()) {
+                            continue;
+                        }
                         int cost = SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getDeploymentPointsCost());
                         newButtonData.add(
                             new HullModButtonData(
