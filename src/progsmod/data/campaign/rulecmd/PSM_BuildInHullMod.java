@@ -142,7 +142,7 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
                         int cost = SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getDeploymentPointsCost());
                         newButtonData.add(
                             new HullModButtonData(
-                                id, 
+                                hullMod.getId(), 
                                 hullMod.getDisplayName(), 
                                 hullMod.getSpriteName(), 
                                 cost + " XP",
