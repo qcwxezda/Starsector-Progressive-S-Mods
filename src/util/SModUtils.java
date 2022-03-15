@@ -285,6 +285,9 @@ public class SModUtils {
      *  creating the entry if it doesn't exist yet.
      *  Returns whether a new entry was created. */
     public static boolean giveXP(String fmId, float xp) {
+        if (Float.isNaN(xp)) {
+            return false;
+        }
         ShipData data = SHIP_DATA_TABLE.get(fmId);
         if (data == null) { 
             SHIP_DATA_TABLE.put(fmId, new ShipData(xp, 0));
@@ -320,6 +323,9 @@ public class SModUtils {
     /** Remove [xp] XP from [fmId]'s entry in the ship data table.
      *  Returns [true] if and only if the operation succeeded. */
     public static boolean spendXP(String fmId, float xp) {
+        if (Float.isNaN(xp)) {
+            return false;
+        }
         ShipData data = SHIP_DATA_TABLE.get(fmId);
         // Edge case: no ship data (technically 0 XP)
         // should still be able to build in hull mods

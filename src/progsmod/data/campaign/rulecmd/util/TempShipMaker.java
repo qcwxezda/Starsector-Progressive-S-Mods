@@ -16,6 +16,7 @@ public class TempShipMaker {
     public static ShipAPI makeShip(ShipVariantAPI variant, FleetMemberAPI fleetMember) {
         // Create a temporary fleet member
         FleetMember tempFleetMember = new FleetMember(0, (HullVariantSpec) variant, FleetMemberType.SHIP);
+        tempFleetMember.setId(fleetMember.getId());
         return tempFleetMember.instantiateForCombat(null, 0, (CombatFleetManager) Global.getCombatEngine().getFleetManager(FleetSide.PLAYER));
     }
 }
