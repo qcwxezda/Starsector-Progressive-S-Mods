@@ -33,6 +33,13 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
         else {
             Global.getSettings().getHullModSpec("progsmod_xptracker").setHiddenEverywhere(true);
             Global.getSector().getMemory().set("$progsmodEnabled", false);
+            // Reallow building-in hullmods via story points
+            for (HullModSpecAPI spec : Global.getSettings().getAllHullModSpecs()) {
+                if (!spec.hasTag("progsmod_no_build_in")) {
+                    spec.getTags().remove("no_build_in");
+                }
+                spec.getTags().remove("progsmod_no_build_in");
+            }
         }
     }
 }
