@@ -61,7 +61,7 @@ public class PSM_SelectModule extends BaseCommandPlugin {
         dialog.showCustomDialog(500f, 500f, 
             new CustomDialogDelegate() {
                 @Override
-                public void createCustomDialog(CustomPanelAPI panel) {
+                public void createCustomDialog(CustomPanelAPI panel, CustomDialogCallback callback) {
                     float titleHeight = 25f;
                     PanelCreator.createTitle(panel, "Select a module", titleHeight);
                     plugin.init(PanelCreator.createButtonList(panel, moduleNameStrings, 45f, 10f, titleHeight).created);

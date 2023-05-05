@@ -70,7 +70,7 @@ public class PSM_RemoveSMod extends BaseCommandPlugin {
             new CustomDialogDelegate() {
 
                 @Override
-                public void createCustomDialog(CustomPanelAPI panel) {
+                public void createCustomDialog(CustomPanelAPI panel, CustomDialogCallback callback) {
                     PanelCreator.createTitle(panel, titleString, titleHeight);
                     List<HullModButton> buttons = 
                         PanelCreator.createHullModButtonList(panel, buttonData, 45f, 10f, titleHeight, true).created;

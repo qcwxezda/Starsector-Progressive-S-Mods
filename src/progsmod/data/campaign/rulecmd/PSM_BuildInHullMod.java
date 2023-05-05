@@ -72,7 +72,7 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
         dialog.showCustomDialog(500f, 500f, 
             new BuildInSModDelegate() {
                 @Override
-                public void createCustomDialog(CustomPanelAPI panel) {
+                public void createCustomDialog(CustomPanelAPI panel, CustomDialogCallback callback) {
                     PanelCreator.createTitle(panel, titleString, titleHeight);
                     PanelCreatorData<List<HullModButton>> createdButtonsData = 
                         PanelCreator.createHullModButtonList(panel, buttonData, 45f, 10f, titleHeight, false);

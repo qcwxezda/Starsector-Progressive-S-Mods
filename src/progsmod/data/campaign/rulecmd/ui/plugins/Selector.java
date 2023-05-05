@@ -17,8 +17,8 @@ import progsmod.data.campaign.rulecmd.ui.Selectable;
 public abstract class Selector<T extends Selectable> implements CustomUIPanelPlugin {
     
     protected List<T> items = new ArrayList<>();
-    
-    private BitSet isSelectedArray = new BitSet();
+
+    private final BitSet isSelectedArray = new BitSet();
     private float mouseY;
 
     protected abstract void onSelected(int index);
@@ -68,34 +68,41 @@ public abstract class Selector<T extends Selectable> implements CustomUIPanelPlu
     }
 
     @Override
+    public void buttonPressed(Object o) {
+        for (int i = 0; i < items.size(); i++) {
+            checkIfModified(i);
+        }
+    }
+
+    @Override
     public void processInput(List<InputEventAPI> events) {
-        if (items.isEmpty()) {
-            return;
-        }
-
-        for (InputEventAPI event : events) {
-            if (event.isConsumed()) {
-                continue;
-            }
-
-            // Ideally this would be a mouse down event, or even better,
-            // a callback from a button being clicked, but the first
-            // get consumed by the button click and the second doesn't seem to
-            // exist.
-            if (event.isMouseMoveEvent()) {
-                mouseY = event.getY();
-
-                // Need to check two possible entries that the mouse
-                // could be hovering over
-                int toCheck = getLastEntryBeforeMouseY();
-                checkIfModified(toCheck);
-                if (toCheck + 1 < items.size()) {
-                    checkIfModified(toCheck + 1);
-                }
-                
-                return;
-            }
-        }
+//        if (items.isEmpty()) {
+//            return;
+//        }
+//
+//        for (InputEventAPI event : events) {
+//            if (event.isConsumed()) {
+//                continue;
+//            }
+//
+//            // Ideally this would be a mouse down event, or even better,
+//            // a callback from a button being clicked, but the first
+//            // get consumed by the button click and the second doesn't seem to
+//            // exist.
+//            if (event.isMouseMoveEvent()) {
+//                mouseY = event.getY();
+//
+//                // Need to check two possible entries that the mouse
+//                // could be hovering over
+//                int toCheck = getLastEntryBeforeMouseY();
+//                checkIfModified(toCheck);
+//                if (toCheck + 1 < items.size()) {
+//                    checkIfModified(toCheck + 1);
+//                }
+//
+//                return;
+//            }
+//        }
     }
 
     /** Checks if the item at [index] has had its selection status
