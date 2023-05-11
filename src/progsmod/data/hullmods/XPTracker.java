@@ -22,6 +22,8 @@ public class XPTracker extends BaseHullMod {
 
     @Override
     public void applyEffectsBeforeShipCreation(HullSize hullSize, MutableShipStatsAPI stats, String id) {
+        if (SModUtils.Constants.DISABLE_MOD) return;
+
         int sModsOverLimit = getSModsOverLimit(stats);
 
         if (sModsOverLimit > 0) {
