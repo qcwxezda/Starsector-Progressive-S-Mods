@@ -14,6 +14,7 @@ import util.SModUtils;
 
 /** ProgSModUseReserveXP [fleetMember] -- spends reserve XP to increase [fleetMember]'s XP
  *  by the amount specified in the selector whose id is the same as the "option" variable */
+@SuppressWarnings("unused")
 public class PSM_UseReserveXP extends BaseCommandPlugin {
 
     @Override
@@ -23,7 +24,7 @@ public class PSM_UseReserveXP extends BaseCommandPlugin {
         }
 
         FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
-        String option = (String) memoryMap.get(MemKeys.LOCAL).getString("$option");
+        String option = memoryMap.get(MemKeys.LOCAL).getString("$option");
         if (!dialog.getOptionPanel().hasSelector(option)) {
             return false;
         }

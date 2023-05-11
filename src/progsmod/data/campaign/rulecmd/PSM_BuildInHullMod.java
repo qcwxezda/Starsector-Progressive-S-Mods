@@ -1,10 +1,6 @@
 package progsmod.data.campaign.rulecmd;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
@@ -12,6 +8,7 @@ import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.rules.MemKeys;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.combat.HullModEffect;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
@@ -30,12 +27,14 @@ import progsmod.data.campaign.rulecmd.ui.PanelCreator;
 import progsmod.data.campaign.rulecmd.ui.PanelCreator.PanelCreatorData;
 import progsmod.data.campaign.rulecmd.ui.plugins.BuildInSelector;
 import progsmod.data.campaign.rulecmd.util.HullModButtonData;
+import util.RecentBuildInTracker;
 import util.SModUtils;
 
 /** ProgSModBuildIn [fleetMember] [selectedVariant] [trigger] -- shows the build-in interface for
  *  the module of [fleetMember] whose variant is [selectedVariant].
  *  Build in the selected hull mods.
  *  Fire [trigger] upon confirmation. */
+@SuppressWarnings("unused")
 public class PSM_BuildInHullMod extends BaseCommandPlugin {
 
     @Override
@@ -49,39 +48,63 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
         final List<HullModButtonData> buttonData = new ArrayList<>();
         final FleetMemberAPI fleetMember = (FleetMemberAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(0).string);
         final ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(1).string);
-        
-        for (String id : selectedVariant.getNonBuiltInHullmods()) {
-            HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
-            if (!hullMod.isHidden() && !hullMod.isHiddenEverywhere()) {
-                int cost = SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getDeploymentPointsCost());
-                buttonData.add(
-                    new HullModButtonData(
-                        id, 
-                        hullMod.getDisplayName(), 
-                        hullMod.getSpriteName(), 
-                        cost + " XP", 
-                        hullMod.getDescription(selectedVariant.getHullSize()),
-                        hullMod.getEffect(), 
-                        selectedVariant.getHullSize(), 
-                        cost
-                    ));
+
+
+        Collection<String> enhancedAlready = selectedVariant.getSModdedBuiltIns();
+
+        List<String> toAdd = new ArrayList<>();
+        if (selectedVariant.getHullSpec() != null) {
+            for (String id : selectedVariant.getHullSpec().getBuiltInMods()) {
+                HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
+                HullModEffect effect = hullMod.getEffect();
+                if (effect.hasSModEffect() && !effect.isSModEffectAPenalty() && !enhancedAlready.contains(id)) {
+                    toAdd.add(id);
+                }
             }
         }
 
+        final int firstIndexToBeCounted = toAdd.size();
+
+        for (String id : selectedVariant.getNonBuiltInHullmods()) {
+            HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
+            if (!hullMod.isHidden() && !hullMod.isHiddenEverywhere()) {
+                toAdd.add(id);
+            }
+        }
+
+        for (int i = 0; i < toAdd.size(); i++) {
+            String id = toAdd.get(i);
+            HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
+            int cost = SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getUnmodifiedDeploymentPointsCost());
+            boolean isEnhanceOnly = i < firstIndexToBeCounted;
+            buttonData.add(
+                    new HullModButtonData(
+                            id,
+                            hullMod.getDisplayName() + (isEnhanceOnly ? "*" : ""),
+                            hullMod.getSpriteName(),
+                            cost + " XP",
+                            hullMod.getDescription(selectedVariant.getHullSize()),
+                            hullMod.getEffect(),
+                            selectedVariant.getHullSize(),
+                            cost,
+                            isEnhanceOnly
+                    ));
+        }
+
         final BuildInSelector plugin = new BuildInSelector();
-        dialog.showCustomDialog(500f, 500f, 
+        dialog.showCustomDialog(500f, 500f,
             new BuildInSModDelegate() {
                 @Override
                 public void createCustomDialog(CustomPanelAPI panel, CustomDialogCallback callback) {
                     PanelCreator.createTitle(panel, titleString, titleHeight);
-                    PanelCreatorData<List<HullModButton>> createdButtonsData = 
+                    PanelCreatorData<List<HullModButton>> createdButtonsData =
                         PanelCreator.createHullModButtonList(panel, buttonData, 45f, 10f, titleHeight, false);
                     LabelWithVariables<Integer> countLabel =
                         PanelCreator.createLabelWithVariables(panel, "Selected: %s/%s", Color.WHITE, 30f, Alignment.LMID, 0, SModUtils.getMaxSMods(fleetMember) - selectedVariant.getSMods().size()).created;
-                    LabelWithVariables<Integer> xpLabel = 
+                    LabelWithVariables<Integer> xpLabel =
                         PanelCreator.createLabelWithVariables(panel, "XP: %s", Color.WHITE, 30f, Alignment.RMID, (int) SModUtils.getXP(fleetMember.getId())).created;
-                    Button showAllButton = PanelCreator.createButton(panel, "Show all", 100f, 25f, 10f, panel.getPosition().getHeight() + 6f).created;
-                    plugin.init(this, createdButtonsData, xpLabel, countLabel, showAllButton, fleetMember, selectedVariant);
+                    Button showAllButton = PanelCreator.createButton(panel, "Show recent", 100f, 25f, 10f, panel.getPosition().getHeight() + 6f).created;
+                    plugin.init(this, createdButtonsData, xpLabel, countLabel, showAllButton, fleetMember, selectedVariant, firstIndexToBeCounted);
                 }
 
                 @Override
@@ -91,16 +114,33 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
                 public void customDialogConfirm() {
                     boolean addedAtLeastOne = false;
                     String fmId = fleetMember.getId();
-                    
+
+                    List<String> addToRecent = new ArrayList<>();
                     for (HullModButton button: plugin.getSelected()) {
                         if (SModUtils.spendXP(fmId, button.data.cost)) {
-                            selectedVariant.addPermaMod(button.data.id, true);
                             String hullModName = Global.getSettings().getHullModSpec(button.data.id).getDisplayName();
-                            dialog.getTextPanel().addPara("Built in " + hullModName)
-                                .setHighlight(hullModName);
+
+                            if (button.data.isEnhanceOnly) {
+                                selectedVariant.getSModdedBuiltIns().add(button.data.id);
+                                dialog.getTextPanel().addPara("Enhanced " + hullModName)
+                                        .setHighlight(hullModName);
+                            }
+                            else {
+                                selectedVariant.addPermaMod(button.data.id, true);
+                                dialog.getTextPanel().addPara("Built in " + hullModName)
+                                        .setHighlight(hullModName);
+                                addToRecent.add(button.data.id);
+
+                            }
                             addedAtLeastOne = true;
                         }
                     }
+
+                    // Add in reverse order
+                    for (int i = addToRecent.size() - 1; i >= 0 ; i--) {
+                        RecentBuildInTracker.addToRecentlyBuiltIn(addToRecent.get(i));
+                    }
+
                     if (addedAtLeastOne) {
                         Global.getSoundPlayer().playUISound("ui_acquired_hullmod", 1f, 1f);
                         SModUtils.displayXP(dialog, fleetMember);
@@ -129,37 +169,29 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
                 }
 
                 @Override
-                public void showAllPressed(CustomPanelAPI panel, TooltipMakerAPI tooltipMaker) {
+                public void showRecentPressed(CustomPanelAPI panel, TooltipMakerAPI tooltipMaker) {
                     List<HullModButtonData> newButtonData = new ArrayList<>();
-                    for (String id : Global.getSector().getPlayerFaction().getKnownHullMods()) {
+                    for (String id : RecentBuildInTracker.getRecentlyBuiltIn()) {
                         if (selectedVariant.hasHullMod(id)) {
                             continue;
                         }
                         HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
-                        if (hullMod.isHidden() || hullMod.isHiddenEverywhere()) {
-                            continue;
-                        }
-                        int cost = SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getDeploymentPointsCost());
+                        int cost = SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getUnmodifiedDeploymentPointsCost());
                         newButtonData.add(
-                            new HullModButtonData(
-                                hullMod.getId(), 
-                                hullMod.getDisplayName(), 
-                                hullMod.getSpriteName(), 
-                                cost + " XP",
-                                hullMod.getDescription(selectedVariant.getHullSize()),
-                                hullMod.getEffect(), 
-                                selectedVariant.getHullSize(), 
-                                cost)
-                            );
+                                new HullModButtonData(
+                                        hullMod.getId(),
+                                        hullMod.getDisplayName(),
+                                        hullMod.getSpriteName(),
+                                        cost + " XP",
+                                        hullMod.getDescription(selectedVariant.getHullSize()),
+                                        hullMod.getEffect(),
+                                        selectedVariant.getHullSize(),
+                                        cost,
+                                        false)
+                        );
                     }
-                    Collections.sort(newButtonData, new Comparator<HullModButtonData>() {
-                        @Override
-                        public int compare(HullModButtonData a, HullModButtonData b) {
-                            return a.name.compareTo(b.name);
-                        }
-                    });
-                    PanelCreatorData<List<HullModButton>> newButtons = 
-                        PanelCreator.addToHullModButtonList(panel, tooltipMaker, newButtonData, 45f, 10f, titleHeight, false);
+                    PanelCreatorData<List<HullModButton>> newButtons =
+                            PanelCreator.addToHullModButtonList(panel, tooltipMaker, newButtonData, 45f, 10f, titleHeight, false);
                     plugin.addNewItems(newButtons.created);
                 }
             }

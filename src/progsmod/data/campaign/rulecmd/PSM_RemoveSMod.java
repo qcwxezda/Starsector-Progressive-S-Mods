@@ -32,6 +32,7 @@ import util.SModUtils;
  *  the module of [fleetMember] whose variant is [selectedVariant].
  *  Remove the selected built-in hull mods. 
  *  Fire [trigger] upon confirmation. */
+@SuppressWarnings("unused")
 public class PSM_RemoveSMod extends BaseCommandPlugin {
 
     @Override
@@ -51,17 +52,18 @@ public class PSM_RemoveSMod extends BaseCommandPlugin {
             HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
             int amt = (int) (
                 SModUtils.Constants.XP_REFUND_FACTOR 
-                * SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getDeploymentPointsCost()));
+                * SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getUnmodifiedDeploymentPointsCost()));
             buttonData.add(
                 new HullModButtonData(
-                    hullMod.getId(), 
-                    hullMod.getDisplayName(), 
+                    hullMod.getId(),
+                    hullMod.getDisplayName(),
                     hullMod.getSpriteName(),
-                    String.format("Refunds %s XP", amt), 
+                    String.format("Refunds %s XP", amt),
                     hullMod.getDescription(selectedVariant.getHullSize()),
                     hullMod.getEffect(),
                     selectedVariant.getHullSize(),
-                    amt)
+                    amt,
+                    false)
                 );
         }
 

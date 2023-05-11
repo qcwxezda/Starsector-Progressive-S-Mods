@@ -1,4 +1,8 @@
 {
+    # Deployment cost increase per additional s-mod,
+    # as fraction of base DP cost
+    "deploymentCostPenalty": 0.08,
+
     # How many story points it costs to raise 
     # a ship's maximum number of built-in hull mods
     # the first time.
@@ -14,10 +18,10 @@
     # the first time.
     # This is modified by the ship's DP cost.
     "baseExtraSModXPCost": {
-        "frigate": 1000,
-        "destroyer": 2000,
-        "cruiser": 4000,
-        "capital": 8000
+        "frigate": 800,
+        "destroyer": 1600,
+        "cruiser": 3200,
+        "capital": 6400
     },
     
     # Determines how the story point cost grows as
@@ -28,7 +32,7 @@
     "extraSModSPCostGrowthFactor": 1,
     # XP cost is base * fac^n OR base + base*n*fac 
     "extraSModXPCostGrowthType": 1,
-    "extraSModXPCostGrowthFactor": 2,
+    "extraSModXPCostGrowthFactor": 2.5,
 
     # Whether or not to allow increasing max S-Mods
     # with story points
@@ -66,7 +70,7 @@
 
     # Ignore the "no_build_in" tag, allowing building in
     # normally prohibited hull mods (specifically Safety Overrides)
-    "ignoreNoBuildIn": true,
+    "ignoreNoBuildIn": false,
 
     "combat": {
         "giveXPToDisabledShips": false, # Whether player ships that are disabled in battle should still receive XP

@@ -12,7 +12,9 @@ import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.CampaignUIAPI.CoreUITradeMode;
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
+import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipHullSpecAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
@@ -26,6 +28,7 @@ import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Pair;
 
+import com.fs.starfarer.combat.P;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -76,6 +79,9 @@ public class SModUtils {
         public static float BASE_DP_DESTROYER;
         public static float BASE_DP_CRUISER;
         public static float BASE_DP_CAPITAL;
+        /** DP cost penalty for s-mods over the normal limit */
+        public static float DEPLOYMENT_COST_PENALTY;
+
         /** How much XP a ship gets refunded when you remove a built-in mod. 
           * Set to something less than 0 to disable removing built-in mods completely. */
         public static float XP_REFUND_FACTOR;
@@ -110,6 +116,7 @@ public class SModUtils {
         public static boolean ALLOW_INCREASE_SMOD_LIMIT;
         /** How often the combat tracker should update ship contribution. */
         public static float COMBAT_UPDATE_INTERVAL;
+
         /** Set to true to disable this mod's features */
         public static boolean DISABLE_MOD;
 
@@ -137,6 +144,7 @@ public class SModUtils {
             XP_COST_COEFF_DESTROYER = loadCoeffsFromJSON(costCoeff, "destroyer");
             XP_COST_COEFF_CRUISER = loadCoeffsFromJSON(costCoeff, "cruiser");
             XP_COST_COEFF_CAPITAL = loadCoeffsFromJSON(costCoeff, "capital");
+            DEPLOYMENT_COST_PENALTY = (float) json.getDouble( "deploymentCostPenalty");
             BASE_DP_FRIGATE = (float) json.getDouble("baseDPFrigate");
             BASE_DP_DESTROYER = (float) json.getDouble("baseDPDestroyer");
             BASE_DP_CRUISER = (float) json.getDouble("baseDPCruiser");
@@ -173,8 +181,10 @@ public class SModUtils {
 
     /** Contains XP and # of max perma mods over the normal limit. */
     public static class ShipData {
-        public float xp = 0;
+        public float xp = 0f;
+        public float xpSpentOnIncreasingLimit = 0f;
         public int permaModsOverLimit = 0;
+        public boolean initialSModsAccountedFor = false;
 
         public ShipData(float xp, int pmol) {
             this.xp = xp;
@@ -340,9 +350,7 @@ public class SModUtils {
 
     /** Removes [fmId] from the ship data table. */
     public static void deleteXPData(String fmId) {
-        if (SHIP_DATA_TABLE.containsKey(fmId)) {
-            SHIP_DATA_TABLE.remove(fmId);
-        }
+        SHIP_DATA_TABLE.remove(fmId);
     }
 
     /** Increases [fleetMember]'s limit of built in hull mods by 1.
@@ -351,11 +359,12 @@ public class SModUtils {
         String fmId = fleetMember.getId();
         ShipData data = SHIP_DATA_TABLE.get(fmId);
         int cost = getAugmentXPCost(fleetMember);
-        if (data == null && cost <= 0) {
+        if (data == null && cost <= 0f) {
             SHIP_DATA_TABLE.put(fmId, new ShipData(0, 1));
         }
-        else if (spendXP(fmId, cost)) {
+        else if (data != null && spendXP(fmId, cost)) {
             data.permaModsOverLimit++;
+            data.xpSpentOnIncreasingLimit += cost;
         }
     }
 
@@ -367,6 +376,11 @@ public class SModUtils {
     public static int getNumOverLimit(String fmId) {
         ShipData data = SHIP_DATA_TABLE.get(fmId);
         return data == null ? 0 : data.permaModsOverLimit;
+    }
+
+    public static float getXPSpentOnIncreasingLimit(String fmId) {
+        ShipData data = SHIP_DATA_TABLE.get(fmId);
+        return data == null ? 0f : data.xpSpentOnIncreasingLimit;
     }
 
     /** Gets the story point cost of increasing the number of built-in hullmods of [ship] by 1. */
@@ -396,7 +410,7 @@ public class SModUtils {
      *  when this option has already been used [nOverLimit] times. */
     public static int getAugmentXPCost(FleetMemberAPI fleetMember, int nOverLimit) {
         float baseCost;
-        float deploymentCost = fleetMember.getDeploymentPointsCost();
+        float deploymentCost = fleetMember.getUnmodifiedDeploymentPointsCost();
         switch (fleetMember.getVariant().getHullSize()) {
             case FRIGATE: baseCost = Constants.BASE_EXTRA_SMOD_XP_COST_FRIGATE * deploymentCost / Constants.BASE_DP_FRIGATE; break;
             case DESTROYER: baseCost = Constants.BASE_EXTRA_SMOD_XP_COST_DESTROYER * deploymentCost / Constants.BASE_DP_DESTROYER; break;
@@ -476,13 +490,37 @@ public class SModUtils {
         return ids; 
     }
 
+    /** For when a ship has an increased s-mod limit from another source.
+     *  Only do this once to avoid cheesing repeated assigning / unassigning of BotB. */
+    public static void initializeSModIncreaseLimit(FleetMemberAPI fm, int nSMods) {
+        int normalMax = getBaseSMods(fm);
+        int numOverLimit = Math.max(0, nSMods - normalMax);
+        String fmId = fm.getId();
+        ShipData data = SHIP_DATA_TABLE.get(fmId);
+        if (data == null) {
+            ShipData newData = new ShipData(0f, numOverLimit);
+            newData.initialSModsAccountedFor = true;
+            SHIP_DATA_TABLE.put(fmId, newData);
+        }
+        else if (!data.initialSModsAccountedFor) {
+            data.permaModsOverLimit = Math.max(data.permaModsOverLimit, numOverLimit);
+            data.initialSModsAccountedFor = true;
+        }
+    }
+
     /** Given a fleet member, return its S-Mod limit */
     public static int getMaxSMods(FleetMemberAPI fleetMember) {
-        return getNumOverLimit(fleetMember.getId()) + 
-                    (int) fleetMember.getStats()
-                                     .getDynamic()
-                                     .getMod(Stats.MAX_PERMANENT_HULLMODS_MOD)
-                                     .computeEffective(Global.getSettings().getInt("maxPermanentHullmods"));
+        return getNumOverLimit(fleetMember.getId()) + getBaseSMods(fleetMember);
+    }
+
+    public static int getBaseSMods(FleetMemberAPI fleetMember) {
+        return getBaseSMods(fleetMember.getStats());
+    }
+
+    public static int getBaseSMods(MutableShipStatsAPI stats) {
+        return (int) stats.getDynamic()
+                .getMod(Stats.MAX_PERMANENT_HULLMODS_MOD)
+                .computeEffective(Global.getSettings().getInt("maxPermanentHullmods"));
     }
 
     /** Polynomial coefficients are listed in [coeff] lowest order first. */

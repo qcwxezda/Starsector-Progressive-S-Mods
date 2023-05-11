@@ -148,9 +148,12 @@ public class PanelCreator {
                             for (int i = 0; i < 100 && (descParam = data.hullModEffect.getDescriptionParam(i, data.hullSize, null)) != null; i++) {
                                 highlights.add(descParam);
                             }
-                            tooltip.addPara(data.tooltipDescription.replaceAll("\\%", "%%"), 0f, Misc.getHighlightColor(), highlights.toArray(new String[0]));
+                            tooltip.addPara(data.tooltipDescription.replaceAll("%", "%%"), 0f, Misc.getHighlightColor(), highlights.toArray(new String[0]));
                         }
                         data.hullModEffect.addPostDescriptionSection(tooltip, data.hullSize, null, getTooltipWidth(tooltipParam), true);
+                        if (data.hullModEffect.hasSModEffectSection(data.hullSize, null, false)) {
+                            data.hullModEffect.addSModSection(tooltip, data.hullSize, null, getTooltipWidth(tooltipParam), true, true);
+                        }
                     }
 
                     @Override

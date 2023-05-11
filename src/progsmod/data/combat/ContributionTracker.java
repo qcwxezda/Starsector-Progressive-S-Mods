@@ -23,9 +23,9 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
     HullAndArmorCombiner hullAndArmor = new HullAndArmorCombiner();
     HullArmorShieldCombiner hullArmorShield = new HullArmorShieldCombiner();
 
-    private Set<String> playerShips = new HashSet<>();
-    private Set<String> enemyShips = new HashSet<>();
-    private static Map<String, String> shipToFleetMemberMap = new HashMap<>();
+    private final Set<String> playerShips = new HashSet<>();
+    private final Set<String> enemyShips = new HashSet<>();
+    private static final Map<String, String> shipToFleetMemberMap = new HashMap<>();
 
     public static Map<String, String> getShipToFleetMemberMap() {
         return shipToFleetMemberMap;
@@ -35,12 +35,12 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
     // dealt by each player ship. Stored in the order 
     //    [hull, armor, shields]
     // Resets each combat update interval
-    private Map<String, Map<String, float[]>> damageReceivedByEnemy = new HashMap<>();
+    private final Map<String, Map<String, float[]>> damageReceivedByEnemy = new HashMap<>();
     // For each enemy ship, the amount of each type of damage
     // dealt to each player ship. Stored in the order
     //    [hull, armor, shields]
     // Resets each combat update interval
-    private Map<String, Map<String, float[]>> damageDealtByEnemy = new HashMap<>();
+    private final Map<String, Map<String, float[]>> damageDealtByEnemy = new HashMap<>();
     
     // totalContribution[c][i][j] is the total contribution of type [c]
     // for enemy ship [i] gained by player ship [j] over all combat intervals.
@@ -53,8 +53,8 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
     //   not qualifying for ATTACK or DEFENSE contribution
     // SUPPORT contribution is only gained during intervals where the enemy ship in question
     // receives hull or armor damage.
-    public enum ContributionType {ATTACK, DEFENSE, SUPPORT};
-    private static Map<ContributionType, Map<String, Map<String, Float>>> totalContribution = new EnumMap<>(ContributionType.class);
+    public enum ContributionType {ATTACK, DEFENSE, SUPPORT}
+    private static final Map<ContributionType, Map<String, Map<String, Float>>> totalContribution = new EnumMap<>(ContributionType.class);
 
     public static Map<ContributionType, Map<String, Map<String, Float>>> getContributionTable() {
         return totalContribution;
@@ -65,7 +65,7 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
     private float lastUpdateTime = 0f;
 
     /** Maps wings and modules to their parent ship or station. */
-    private Map<String, ShipAPI> baseShipTable = new HashMap<>();
+    private final Map<String, ShipAPI> baseShipTable = new HashMap<>();
 
     @Override
     public void init(CombatEngineAPI engine) {
@@ -278,11 +278,9 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
                 if (shipId.equals(attackWinner) || shipId.equals(defenseWinner)) {
                     continue;
                 }
-                float damageDealt = 0f, damageTaken = 0f;
-                if (damageDealtByPlayer != null) {
-                    float[] rawDamageDealt = damageDealtByPlayer.get(shipId);
-                    damageDealt = rawDamageDealt == null ? 0f : hullArmorShield.combine(rawDamageDealt);
-                }
+                float damageDealt, damageTaken = 0f;
+                float[] rawDamageDealt = damageDealtByPlayer.get(shipId);
+                damageDealt = rawDamageDealt == null ? 0f : hullArmorShield.combine(rawDamageDealt);
                 if (damageReceivedByPlayer != null) {
                     float[] rawDamageTaken = damageReceivedByPlayer.get(shipId);
                     damageTaken = rawDamageTaken == null ? 0f : hullArmorShield.combine(rawDamageTaken);
@@ -356,9 +354,9 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
 
     /** Records damage taken and passes the data back to the main
      *  combat plugin. */
-    public class ProgSModDamageListener implements DamageListener {
+    public static class ProgSModDamageListener implements DamageListener {
 
-        private ContributionTracker handler;
+        private final ContributionTracker handler;
     
         public ProgSModDamageListener(ContributionTracker handler) {
             this.handler = handler;

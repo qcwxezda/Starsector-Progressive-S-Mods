@@ -12,8 +12,9 @@ public class HullModButtonData {
     public HullModEffect hullModEffect;
     public HullSize hullSize;
     public int cost;
+    public boolean isEnhanceOnly;
 
-    public HullModButtonData(String id, String name, String spriteName, String defaultDescription, String tooltipDescription, HullModEffect hullModEffect, HullSize hullSize, int cost) {
+    public HullModButtonData(String id, String name, String spriteName, String defaultDescription, String tooltipDescription, HullModEffect hullModEffect, HullSize hullSize, int cost, boolean isEnhanceOnly) {
         this.id = id;
         this.name = name;
         this.spriteName = spriteName;
@@ -22,5 +23,6 @@ public class HullModButtonData {
         this.hullModEffect = hullModEffect;
         this.hullSize = hullSize;
         this.cost = cost;
+        this.isEnhanceOnly = isEnhanceOnly;
     }
 }

@@ -26,6 +26,7 @@ import util.SModUtils;
  *  [option5] is the option to increase S-Mod limit.
  *  [option6] is the option to select a different ship. 
  *  [option7] is to go back to main menu. */
+@SuppressWarnings("unused")
 public class PSM_CreateOptionsList extends BaseCommandPlugin {
 
     private static final String BUILD_IN_TEXT = "Build up to %s hull mods into ";
@@ -57,8 +58,10 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
         String shipText = THIS_SHIP_TEXT;
         ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(selectedVariantKey);
         int nSMods = selectedVariant.getSMods().size();
+        SModUtils.initializeSModIncreaseLimit(fleetMember, nSMods);
+
         int nSModsLimit = SModUtils.getMaxSMods(fleetMember);
-        int nRemaining = nSModsLimit - nSMods;
+        int nRemaining = Math.max(0, nSModsLimit - nSMods);
 
         if (selectedVariant != fleetMember.getVariant()) {
             shipText = "module: " + selectedVariant.getHullSpec().getHullName();
@@ -66,6 +69,9 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
 
         // Add build in option
         dialog.getOptionPanel().addOption(String.format(BUILD_IN_TEXT + shipText, nRemaining), buildInOption);
+
+        // Add copy build in option
+
 
         // Add in the remove option if that was allowed
         if (CAN_REFUND_SMODS) {
@@ -121,16 +127,6 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
                 dialog.getTextPanel()
                     .addPara(String.format("Removing an existing built-in hull mod will refund %s%% of the XP spent.",refundPercent))
                     .setHighlight("" + refundPercent);
-            }
-            if (SModUtils.Constants.ALLOW_INCREASE_SMOD_LIMIT) {
-                int numOverLimit = SModUtils.getNumOverLimit(fleetMember.getId());
-                dialog.getTextPanel()
-                    .addPara(
-                        String.format("You have increased this ship's limit of built-in hull mods a total of %s time%s.",
-                            numOverLimit,
-                            numOverLimit == 1 ? "" : "s")
-                        )
-                    .setHighlight("" + numOverLimit);
             }
             SModUtils.displayXP(dialog, fleetMember);
             memoryMap.get(MemKeys.LOCAL).set(firstTimeOpenedKey, false, 0f);

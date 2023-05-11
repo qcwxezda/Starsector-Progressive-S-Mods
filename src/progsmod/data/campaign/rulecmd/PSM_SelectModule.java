@@ -25,6 +25,7 @@ import util.SModUtils;
  *  opens up the module selection screen for [fleetMember],
  *  [variant] is the currently selected variant.
  *  then fires [trigger] once an option is selected. */
+@SuppressWarnings("unused")
 public class PSM_SelectModule extends BaseCommandPlugin {
 
     private int currentVariantIndex;

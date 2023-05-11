@@ -19,6 +19,7 @@ import com.fs.starfarer.api.util.Misc.Token;
  * -- sets [first time opened] to true
  * -- fires [trigger] and changes $menuState to [menuId] 
  *    upon successful selection of a ship */
+@SuppressWarnings("unused")
 public class PSM_PickFleetMember extends BaseCommandPlugin {
 
     @Override

@@ -13,6 +13,7 @@ import com.fs.starfarer.api.util.Misc.Token;
 import util.SModUtils;
 
 /** ProgSModIncreaseLimit [fleetMember] -- increases [fleetMember]'s built-in hull mod limit by one */
+@SuppressWarnings("unused")
 public class PSM_IncreaseSModLimit extends BaseCommandPlugin {
 
     @Override

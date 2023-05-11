@@ -5,5 +5,5 @@ import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 
 public interface BuildInSModDelegate extends CustomDialogDelegate {
-    void showAllPressed(CustomPanelAPI panel, TooltipMakerAPI tooltipMaker);
+    void showRecentPressed(CustomPanelAPI panel, TooltipMakerAPI tooltipMaker);
 }

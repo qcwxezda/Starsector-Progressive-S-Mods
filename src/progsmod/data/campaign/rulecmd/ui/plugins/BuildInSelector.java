@@ -29,7 +29,8 @@ public class BuildInSelector extends Selector<HullModButton> {
     private LabelWithVariables<Integer> xpLabel;
     // 2 variables: # selected, max allowed
     private LabelWithVariables<Integer> countLabel;
-    private Button showAllButton;
+    private int firstIndexToBeCounted;
+    private Button showRecentButton;
     private FleetMemberAPI fleetMember;
     private ShipVariantAPI checkerVariant;
     private ShipVariantAPI originalVariant;
@@ -43,19 +44,21 @@ public class BuildInSelector extends Selector<HullModButton> {
             PanelCreatorData<List<HullModButton>> data, 
             LabelWithVariables<Integer> xpLabel, 
             LabelWithVariables<Integer> countLabel,
-            Button showAllButton, 
+            Button showRecentButton,
             FleetMemberAPI fleetMember,
-            ShipVariantAPI variant) {
+            ShipVariantAPI variant,
+            int firstIndexToBeCounted) {
         super.init(data.created);
         this.delegate = delegate;
         this.panel = data.panel;
         this.tooltipMaker = data.tooltipMaker;
         this.xpLabel = xpLabel;
         this.countLabel = countLabel;
-        this.showAllButton = showAllButton;
+        this.showRecentButton = showRecentButton;
         this.originalVariant = variant;
         checkerVariant = variant.clone();
         this.fleetMember = fleetMember;
+        this.firstIndexToBeCounted = firstIndexToBeCounted;
         updateItems();
     }
 
@@ -80,7 +83,7 @@ public class BuildInSelector extends Selector<HullModButton> {
                 disable(i, button.getDefaultDescription(), true);
             }
             // Already at limit
-            else if (count >= maxCount) {
+            else if (count >= maxCount && i >= firstIndexToBeCounted) {
                 disable(i, button.getDefaultDescription(), false);
             }
             // No reason to be disabled; enable it
@@ -120,22 +123,30 @@ public class BuildInSelector extends Selector<HullModButton> {
             // (# of loops is bounded by # of checked entries as well as
             // longest hull mod dependency chain)
             checkedEntriesChanged = false;
-            for (int i = 0; i < items.size(); i++) {
+            for (int i = firstIndexToBeCounted; i < items.size(); i++) {
                 HullModButton button = items.get(i);
                 HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(button.data.id);
                 boolean shouldDisable = false;
                 String disableText = null;
                 if (!hullMod.getEffect().isApplicableToShip(checkerShip)) {
-                    shouldDisable = true;
-                    disableText = SModUtils.shortenText(hullMod.getEffect().getUnapplicableReason(checkerShip), button.description);
+                    String reason = hullMod.getEffect().getUnapplicableReason(checkerShip);
+                    // Can build in any number of logistics hull mods
+                    // Don't use s-mods in the check ship as we want to be able to tell when incompatibilities arise
+                    // via forcible removing of non s-mods
+                    if (!reason.startsWith("Maximum of 2 non-built-in \"Logistics\"")) {
+                        disableText = SModUtils.shortenText(reason, button.description);
+                        shouldDisable = true;
+                    }
+
                 }
-                if (interactionTarget != null && interactionTarget.getMarket() != null) {
+                else if (interactionTarget != null && interactionTarget.getMarket() != null) {
                     CoreUITradeMode tradeMode = CoreUITradeMode.valueOf(interactionTarget.getMemory().getString("$tradeMode"));
                     if (!hullMod.getEffect().canBeAddedOrRemovedNow(checkerShip, interactionTarget.getMarket(), tradeMode)) {
+                        String reason = hullMod.getEffect().getCanNotBeInstalledNowReason(checkerShip, interactionTarget.getMarket(), tradeMode);
                         shouldDisable = true;
                         disableText = SModUtils.shortenText(
-                            hullMod.getEffect().getCanNotBeInstalledNowReason(checkerShip, interactionTarget.getMarket(), tradeMode),
-                            button.description);
+                                reason,
+                                button.description);
                     }
                 }
                 if (hullMod.hasTag("progsmod_no_build_in") && !SModUtils.Constants.IGNORE_NO_BUILD_IN) {
@@ -161,17 +172,19 @@ public class BuildInSelector extends Selector<HullModButton> {
     @Override
     public void advance(float amount) {
         // Check if the show all button has been pressed
-        if (showAllButton.isSelected()) {
-            showAllButton.deselect();
-            showAllButton.disable();
-            delegate.showAllPressed(panel, tooltipMaker);
+        if (showRecentButton.isSelected()) {
+            showRecentButton.deselect();
+            showRecentButton.disable();
+            delegate.showRecentPressed(panel, tooltipMaker);
         }
     }
 
     @Override
     protected void onSelected(int index) {
         xpLabel.changeVar(0, xpLabel.getVar(0) - items.get(index).data.cost);
-        countLabel.changeVar(0, countLabel.getVar(0) + 1);
+        if (index >= firstIndexToBeCounted) {
+            countLabel.changeVar(0, countLabel.getVar(0) + 1);
+        }
         String hullModId = items.get(index).data.id;
         checkerVariant.addMod(hullModId);
         if (testForDesync()) {
@@ -203,7 +216,9 @@ public class BuildInSelector extends Selector<HullModButton> {
     @Override
     protected void onDeselected(int index) {
         xpLabel.changeVar(0, xpLabel.getVar(0) + items.get(index).data.cost);
-        countLabel.changeVar(0, countLabel.getVar(0) - 1);
+        if (index >= firstIndexToBeCounted) {
+            countLabel.changeVar(0, countLabel.getVar(0) - 1);
+        }
         String hullModId = items.get(index).data.id;
         // Don't remove hull mods that were already on the ship
         if (!originalVariant.hasHullMod(hullModId)) {
@@ -216,7 +231,9 @@ public class BuildInSelector extends Selector<HullModButton> {
     protected void forceDeselect(int index) {
         super.forceDeselect(index);
         xpLabel.changeVar(0, xpLabel.getVar(0) + items.get(index).data.cost);
-        countLabel.changeVar(0, countLabel.getVar(0) - 1);
+        if (index >= firstIndexToBeCounted) {
+            countLabel.changeVar(0, countLabel.getVar(0) - 1);
+        }
         String hullModId = items.get(index).data.id;
         // Don't remove hull mods that were already on the ship
         if (!originalVariant.hasHullMod(hullModId)) {

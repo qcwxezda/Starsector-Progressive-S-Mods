@@ -22,7 +22,7 @@ import util.SModUtils;
  *  Uses default sound. Modified from SetStoryOption in the base game. */
 public class PSM_SetStoryOption extends SetStoryOption {
 
-    private class ProgSModStoryPointActionDelegate extends BaseOptionStoryPointActionDelegate {
+    private static class ProgSModStoryPointActionDelegate extends BaseOptionStoryPointActionDelegate {
 
         private final int reqShipXP;
         private final FleetMemberAPI fleetMember;
@@ -58,11 +58,20 @@ public class PSM_SetStoryOption extends SetStoryOption {
         protected void addActionCostSection(TooltipMakerAPI info) {
             super.addActionCostSection(info);
             int xp = (int) SModUtils.getXP(fleetMember.getId());
+            if (SModUtils.Constants.DEPLOYMENT_COST_PENALTY >= 0f) {
+                info.addPara(
+                        "Ships above their standard S-mod limit incur a stacking %s deployment cost increase for each additional S-mod.",
+                        10f,
+                        Misc.getNegativeHighlightColor(),
+                        Misc.getHighlightColor(),
+                        (int) (100f * SModUtils.Constants.DEPLOYMENT_COST_PENALTY) + "%");
+            }
             if (xp < reqShipXP) {
                 info.addPara("Ship has %s XP", 10f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor(), Misc.getFormat().format(xp));
             }
         }
     }
+
 
     @Override
     public boolean execute(String ruleId, final InteractionDialogAPI dialog, List<Token> params, Map<String, MemoryAPI> memoryMap) {
@@ -78,7 +87,7 @@ public class PSM_SetStoryOption extends SetStoryOption {
     }
 
     private boolean set(InteractionDialogAPI dialog, FleetMemberAPI fleetMember, int numPoints, int reqShipXP, String optionId, int bonusXPPercent) {
-            return set(dialog, new ProgSModStoryPointActionDelegate(dialog, fleetMember, optionId, reqShipXP, numPoints, bonusXPPercent));
+        return set(dialog, new ProgSModStoryPointActionDelegate(dialog, fleetMember, optionId, reqShipXP, numPoints, bonusXPPercent));
     }
 
     private ProgSModStoryPointActionDelegate delegate = null;

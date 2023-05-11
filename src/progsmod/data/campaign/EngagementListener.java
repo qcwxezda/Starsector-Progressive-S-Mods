@@ -73,7 +73,7 @@ public class EngagementListener extends BaseCampaignEventListener {
                         HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(modId);
                         reserveXP += SModUtils.Constants.RESERVE_XP_FRACTION * 
                                     SModUtils.Constants.XP_REFUND_FACTOR * 
-                                    SModUtils.getBuildInCost(hullMod, fm.getHullSpec().getHullSize(), fm.getDeploymentPointsCost());
+                                    SModUtils.getBuildInCost(hullMod, fm.getHullSpec().getHullSize(), fm.getUnmodifiedDeploymentPointsCost());
                     }
                     // If the ship has modules, add XP for any S-mods built into modules
                     List<String> moduleSlotIds = fm.getVariant().getModuleSlots();
@@ -84,15 +84,13 @@ public class EngagementListener extends BaseCampaignEventListener {
                                 HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(modId);
                                 reserveXP += SModUtils.Constants.RESERVE_XP_FRACTION * 
                                     SModUtils.Constants.XP_REFUND_FACTOR * 
-                                    SModUtils.getBuildInCost(hullMod, moduleVariant.getHullSize(), fm.getDeploymentPointsCost());
+                                    SModUtils.getBuildInCost(hullMod, moduleVariant.getHullSize(), fm.getUnmodifiedDeploymentPointsCost());
                             }
                         }
                     }
                 }
                 // Add XP for increasing S-mod limits
-                for (int i = 0; i < SModUtils.getNumOverLimit(fm.getId()); i++) {
-                    reserveXP += SModUtils.Constants.RESERVE_XP_FRACTION * SModUtils.getAugmentXPCost(fm, i);
-                }
+                reserveXP += SModUtils.getXPSpentOnIncreasingLimit(fm.getId());
                 if (reserveXP >= 1f) {
                     String hullId = fm.getHullSpec().getBaseHullId();
                     Float existingReserveXP = totalReserveXP.get(hullId);
