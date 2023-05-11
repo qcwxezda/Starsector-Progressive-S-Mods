@@ -38,7 +38,7 @@ public class XPTracker extends BaseHullMod {
         int sModsOverLimit = getSModsOverLimit(ship.getMutableStats());
         int dpMod = computeDPModifier(ship.getMutableStats(), sModsOverLimit);
         if (dpMod > 0) {
-            tooltip.addPara("Deployment point cost increased by %s due to the presence of additional S-Mods over the standard limit.",
+            tooltip.addPara("Deployment point cost increased by %s due to the presence of additional S-mods over the standard limit.",
                     10f,
                     Misc.getNegativeHighlightColor(),
                     Misc.getHighlightColor(),
