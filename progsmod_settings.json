@@ -32,7 +32,7 @@
     "extraSModSPCostGrowthFactor": 1,
     # XP cost is base * fac^n OR base + base*n*fac 
     "extraSModXPCostGrowthType": 1,
-    "extraSModXPCostGrowthFactor": 2.5,
+    "extraSModXPCostGrowthFactor": 2.25,
 
     # Whether or not to allow increasing max S-Mods
     # with story points
