@@ -80,7 +80,7 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
 
         // Add options to select ship modules
         List<ShipVariantAPI> modulesWithOP = SModUtils.getModuleVariantsWithOP(fleetMember.getVariant());
-        if (modulesWithOP != null && !modulesWithOP.isEmpty()) {
+        if (!modulesWithOP.isEmpty()) {
             dialog.getOptionPanel().addOption("Manage built-in hull mods for a different module", moduleOption);
         }
 

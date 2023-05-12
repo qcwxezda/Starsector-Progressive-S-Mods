@@ -40,7 +40,7 @@ public class PSM_SelectModule extends BaseCommandPlugin {
         ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(params.get(1).string);
         final List<ShipVariantAPI> modulesWithOP = SModUtils.getModuleVariantsWithOP(fleetMember.getVariant());
        
-        if (modulesWithOP == null) {
+        if (modulesWithOP.isEmpty()) {
             return false;
         }
 

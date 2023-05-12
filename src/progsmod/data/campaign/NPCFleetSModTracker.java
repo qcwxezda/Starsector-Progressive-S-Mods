@@ -3,6 +3,7 @@ package progsmod.data.campaign;
 import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.util.Misc;
+import util.SModUtils;
 
 /** Tracks every fleet that's generated and adds an XP tracker to any ships that are over the normal S-mod limit, in order
  *  to apply the same DP cost penalty that the player faces. */
@@ -24,9 +25,8 @@ public class NPCFleetSModTracker extends BaseCampaignEventListener  {
             return;
         }
         for (FleetMemberAPI fm : fleet.getBattle().getCombinedTwo().getMembersWithFightersCopy()) {
-            int baseSMods = Misc.getMaxPermanentMods(fm, fleet.getCommanderStats());
             if (!fm.isFighterWing() && fm.getVariant() != null) {
-                int numOverLimit = fm.getVariant().getSMods().size() - baseSMods;
+                int numOverLimit = SModUtils.getSModsOverLimitIncludeModules(fm.getVariant(), fm.getStats());
                 if (numOverLimit > 0 && !fm.getVariant().hasHullMod("progsmod_xptracker")) {
                     fm.getVariant().addPermaMod("progsmod_xptracker", false);
                 }

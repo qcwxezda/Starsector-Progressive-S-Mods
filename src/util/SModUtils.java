@@ -668,10 +668,10 @@ public class SModUtils {
 
     /** Returns a list of the module variants of a base variant that have positive OP. */
     public static List<ShipVariantAPI> getModuleVariantsWithOP(ShipVariantAPI base) {
-        if (base.getModuleSlots() == null) {
-            return null;
-        }
         List<ShipVariantAPI> withOP = new ArrayList<>();
+        if (base.getModuleSlots() == null) {
+            return withOP;
+        }
         for (int i = 0; i < base.getModuleSlots().size(); i++) {
             ShipVariantAPI moduleVariant = base.getModuleVariant(base.getModuleSlots().get(i));
             if (moduleVariant.getHullSpec().getOrdnancePoints(null) <= 0) {
@@ -680,6 +680,23 @@ public class SModUtils {
             withOP.add(moduleVariant);
         }
         return withOP;
+    }
+
+    public static int getSModsOverLimit(ShipVariantAPI variant, MutableShipStatsAPI stats) {
+        if (variant == null) return 0;
+        return Math.max(0, variant.getSMods().size() - SModUtils.getBaseSMods(stats));
+    }
+
+    /** Computes maximum number of S-mods over the limit out of the variant and all of its module variants */
+    public static int getSModsOverLimitIncludeModules(ShipVariantAPI variant, MutableShipStatsAPI stats) {
+        int sModsOverLimit = getSModsOverLimit(variant, stats);
+
+        List<ShipVariantAPI> modules = SModUtils.getModuleVariantsWithOP(variant);
+        for (ShipVariantAPI module : modules) {
+            sModsOverLimit = Math.max(sModsOverLimit, getSModsOverLimit(module, stats));
+        }
+
+        return sModsOverLimit;
     }
 
     public static String shortenText(String text, LabelAPI label) {

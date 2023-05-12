@@ -49,7 +49,9 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
                 listeners.addListener(new RefitTabListenerAndScript(), true);
             }
 
-            Global.getSector().addTransientListener(new NPCFleetSModTracker(false));
+            if (SModUtils.Constants.DEPLOYMENT_COST_PENALTY > 0f) {
+                Global.getSector().addTransientListener(new NPCFleetSModTracker(false));
+            }
             Global.getSector().addTransientListener(new EngagementListener(false));
             Global.getSector().addTransientScript(new RefitTabListenerAndScript());
         }
