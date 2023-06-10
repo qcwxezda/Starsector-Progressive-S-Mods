@@ -133,7 +133,7 @@ public class BuildInSelector extends Selector<HullModButton> {
                     // Can build in any number of logistics hull mods
                     // Don't use s-mods in the check ship as we want to be able to tell when incompatibilities arise
                     // via forcible removing of non s-mods
-                    if (!reason.startsWith("Maximum of 2 non-built-in \"Logistics\"")) {
+                    if (reason != null && !reason.startsWith("Maximum of 2 non-built-in \"Logistics\"")) {
                         disableText = SModUtils.shortenText(reason, button.description);
                         shouldDisable = true;
                     }
@@ -149,7 +149,7 @@ public class BuildInSelector extends Selector<HullModButton> {
                                 button.description);
                     }
                 }
-                if (hullMod.hasTag("progsmod_no_build_in") && !SModUtils.Constants.IGNORE_NO_BUILD_IN) {
+                if (hullMod.hasTag("no_build_in") && !SModUtils.Constants.IGNORE_NO_BUILD_IN) {
                     shouldDisable = true;
                     disableText = hullMod.getDisplayName() + " can't be built in";
                 }

@@ -1,4 +1,7 @@
 {
+    # Maximum size of recently-built-in list
+    "recentlyBuiltInListSize": 20,
+
     # Deployment cost increase per additional s-mod,
     # as fraction of base DP cost
     "deploymentCostPenalty": 0.08,

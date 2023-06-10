@@ -49,6 +49,7 @@ public class SModUtils {
     public static ReserveXPTable RESERVE_XP_TABLE = new ReserveXPTable();
 
     public static class Constants {
+        public static int MAX_RECENTLY_BUILT_IN_SIZE;
         /** How many story points it costs to unlock the first extra SMod slot. */
         public static int BASE_EXTRA_SMOD_SP_COST_FRIGATE;
         public static int BASE_EXTRA_SMOD_SP_COST_DESTROYER;
@@ -123,6 +124,7 @@ public class SModUtils {
         /** Load constants from a json file */
         private static void load(String filePath) throws IOException, JSONException {
             JSONObject json = Global.getSettings().loadJSON(filePath);
+            MAX_RECENTLY_BUILT_IN_SIZE = json.getInt("recentlyBuiltInListSize");
             JSONObject augmentSP = json.getJSONObject("baseExtraSModSPCost");
             BASE_EXTRA_SMOD_SP_COST_FRIGATE = augmentSP.getInt("frigate");
             BASE_EXTRA_SMOD_SP_COST_DESTROYER = augmentSP.getInt("destroyer");

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 public class RecentBuildInTracker {
-    public static final int recentlyBuiltInMaxSize = 10;
     public static final String DATA_KEY = "progsmod_RecentlyBuiltIn";
 
     public static void addToRecentlyBuiltIn(String id) {
@@ -22,7 +21,7 @@ public class RecentBuildInTracker {
         recentlyBuiltIn.remove(id);
         recentlyBuiltIn.addFirst(id);
 
-        if (recentlyBuiltIn.size() > recentlyBuiltInMaxSize) {
+        while (recentlyBuiltIn.size() > SModUtils.Constants.MAX_RECENTLY_BUILT_IN_SIZE) {
             recentlyBuiltIn.removeLast();
         }
     }
