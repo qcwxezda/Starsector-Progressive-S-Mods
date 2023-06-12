@@ -7,11 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.fs.starfarer.api.combat.BaseEveryFrameCombatPlugin;
-import com.fs.starfarer.api.combat.CombatEngineAPI;
-import com.fs.starfarer.api.combat.CombatEntityAPI;
-import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
-import com.fs.starfarer.api.combat.ShipAPI;
+import com.fs.starfarer.api.combat.*;
 import com.fs.starfarer.api.combat.listeners.ApplyDamageResultAPI;
 import com.fs.starfarer.api.combat.listeners.DamageListener;
 import com.fs.starfarer.api.input.InputEventAPI;
@@ -142,6 +138,12 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
         ShipAPI memo = baseShipTable.get(shipWingOrModule.getId());
         if (memo != null) {
             return memo;
+        }
+        // The "ship" in question is a drone
+        if (shipWingOrModule.getAIFlags().hasFlag(ShipwideAIFlags.AIFlags.DRONE_MOTHERSHIP)) {
+            ShipAPI base = getBaseShip((ShipAPI) shipWingOrModule.getAIFlags().getCustom(ShipwideAIFlags.AIFlags.DRONE_MOTHERSHIP));
+            baseShipTable.put(shipWingOrModule.getId(), base);
+            return base;
         }
         // Possible to have wings come from a module of a station
         // and maybe even have modules of modules? 

@@ -1,4 +1,1 @@
-- Made recent built-in list size a setting, default size 10 -> 20
-- Recent built-in list is now sorted alphabetically
-- Fix NPE on hull mods with null unapplicableReason
-- Fix no_build_in being disregarded regardless of setting
+- Fix: correctly award XP for damage dealt by drones (as long as DRONE_MOTHERSHIP is set properly)
