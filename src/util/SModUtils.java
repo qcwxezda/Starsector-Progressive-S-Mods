@@ -117,6 +117,8 @@ public class SModUtils {
         public static boolean ALLOW_INCREASE_SMOD_LIMIT;
         /** How often the combat tracker should update ship contribution. */
         public static float COMBAT_UPDATE_INTERVAL;
+        /** Set to true to allow building in mods with story points */
+        public static boolean ALLOW_STORY_POINT_BUILD_IN;
 
         /** Set to true to disable this mod's features */
         public static boolean DISABLE_MOD;
@@ -155,6 +157,7 @@ public class SModUtils {
             RESERVE_XP_FRACTION = (float) json.getDouble("reserveXPFraction");
             IGNORE_NO_BUILD_IN = json.getBoolean("ignoreNoBuildIn");
             ALLOW_INCREASE_SMOD_LIMIT = json.getBoolean("allowIncreaseSModLimit");
+            ALLOW_STORY_POINT_BUILD_IN = json.getBoolean("allowStoryPointBuildIn");
             DISABLE_MOD = json.getBoolean("disableMod");
             JSONObject combat = json.getJSONObject("combat");
             GIVE_XP_TO_DISABLED_SHIPS = combat.getBoolean("giveXPToDisabledShips");

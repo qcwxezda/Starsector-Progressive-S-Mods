@@ -111,6 +111,10 @@
         "xpFractionSupport": 0.33,
     },
 
+    # Set this to true allow bulding in hullmods with both
+    # story points and buying with XP.
+    "allowStoryPointBuildIn":false,
+    
     # Set this to true in order to disable this mod's features
     # and go back to building in S-Mods with story points.
     # S-mods that have been built in with XP are not removed.

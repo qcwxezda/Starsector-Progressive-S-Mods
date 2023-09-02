@@ -6,6 +6,8 @@ import com.fs.starfarer.api.campaign.CampaignUIAPI;
 import com.fs.starfarer.api.campaign.CoreUITabId;
 import com.fs.starfarer.api.campaign.listeners.CoreUITabListener;
 import progsmod.plugin.ProgSMod;
+import util.SModUtils;
+
 
 public class RefitTabListenerAndScript implements CoreUITabListener, EveryFrameScript {
     private static boolean insideRefitScreen = false;
@@ -14,7 +16,9 @@ public class RefitTabListenerAndScript implements CoreUITabListener, EveryFrameS
     public void reportAboutToOpenCoreTab(CoreUITabId id, Object param) {
         if (CoreUITabId.REFIT.equals(id) && !insideRefitScreen) {
             insideRefitScreen = true;
-            ProgSMod.disableStoryPointBuildIn();
+            if (!SModUtils.Constants.ALLOW_STORY_POINT_BUILD_IN) {
+                ProgSMod.disableStoryPointBuildIn();
+            }
         }
     }
 
