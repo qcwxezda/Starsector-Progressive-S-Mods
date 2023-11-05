@@ -5,6 +5,7 @@ import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
@@ -28,8 +29,7 @@ public class XPTracker extends BaseHullMod {
         ShipVariantAPI variant = stats.getVariant();
         if (SModUtils.Constants.DISABLE_MOD || SModUtils.Constants.DEPLOYMENT_COST_PENALTY <= 0f || variant == null) return;
 
-        int sModsOverLimit = SModUtils.getSModsOverLimitIncludeModules(variant, stats);
-
+        int sModsOverLimit = getNumPenalizedMods(stats.getFleetMember());
         if (sModsOverLimit > 0) {
             int dpMod = computeDPModifier(stats, sModsOverLimit);
             stats.getDynamic().getMod(Stats.DEPLOYMENT_POINTS_MOD).modifyFlat(id, dpMod);
@@ -39,7 +39,8 @@ public class XPTracker extends BaseHullMod {
     @Override
     public void addPostDescriptionSection(TooltipMakerAPI tooltip, HullSize hullSize, final ShipAPI ship, float width, boolean isForModSpec) {
         if (ship == null || ship.getMutableStats() == null || ship.getVariant() == null) return;
-        int sModsOverLimit = SModUtils.getSModsOverLimitIncludeModules(ship.getVariant(), ship.getMutableStats());
+
+        int sModsOverLimit = getNumPenalizedMods(ship.getFleetMember());
         int dpMod = computeDPModifier(ship.getMutableStats(), sModsOverLimit);
         if (dpMod > 0) {
             tooltip.addPara("Deployment point cost increased by %s due to the presence of additional S-mods over the standard limit.",
@@ -48,6 +49,12 @@ public class XPTracker extends BaseHullMod {
                     Misc.getHighlightColor(),
                     Integer.toString(dpMod));
         }
+    }
+
+    private int getNumPenalizedMods(FleetMemberAPI fm) {
+        return fm == null ? 0 : Math.min(
+                SModUtils.getNumOverLimit(fm.getId()),
+                Math.max(0, fm.getVariant().getSMods().size() - SModUtils.getBaseSMods(fm)));
     }
 
     private int computeDPModifier(MutableShipStatsAPI stats, int sModsOverLimit) {

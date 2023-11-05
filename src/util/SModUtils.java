@@ -684,12 +684,14 @@ public class SModUtils {
         return withOP;
     }
 
+    @Deprecated
     public static int getSModsOverLimit(ShipVariantAPI variant, MutableShipStatsAPI stats) {
         if (variant == null) return 0;
         return Math.max(0, variant.getSMods().size() - SModUtils.getBaseSMods(stats));
     }
 
     /** Computes maximum number of S-mods over the limit out of the variant and all of its module variants */
+    @Deprecated
     public static int getSModsOverLimitIncludeModules(ShipVariantAPI variant, MutableShipStatsAPI stats) {
         int sModsOverLimit = getSModsOverLimit(variant, stats);
 

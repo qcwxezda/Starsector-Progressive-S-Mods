@@ -5,7 +5,6 @@ import com.fs.starfarer.api.campaign.listeners.ListenerManagerAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 
 import progsmod.data.campaign.EngagementListener;
-import progsmod.data.campaign.NPCFleetSModTracker;
 import progsmod.data.campaign.RefitTabListenerAndScript;
 import util.SModUtils;
 
@@ -49,9 +48,6 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
                 listeners.addListener(new RefitTabListenerAndScript(), true);
             }
 
-            if (SModUtils.Constants.DEPLOYMENT_COST_PENALTY > 0f) {
-                Global.getSector().addTransientListener(new NPCFleetSModTracker(false));
-            }
             Global.getSector().addTransientListener(new EngagementListener(false));
             Global.getSector().addTransientScript(new RefitTabListenerAndScript());
         }

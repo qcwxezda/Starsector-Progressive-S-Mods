@@ -2,11 +2,11 @@ package progsmod.data.campaign;
 
 import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import com.fs.starfarer.api.util.Misc;
 import util.SModUtils;
 
 /** Tracks every fleet that's generated and adds an XP tracker to any ships that are over the normal S-mod limit, in order
  *  to apply the same DP cost penalty that the player faces. */
+@Deprecated
 public class NPCFleetSModTracker extends BaseCampaignEventListener  {
     public NPCFleetSModTracker(boolean permaRegister) {
         super(permaRegister);
