@@ -4,7 +4,7 @@
 
     # Deployment cost increase per additional s-mod,
     # as fraction of base DP cost
-    "deploymentCostPenalty": 0.08,
+    "deploymentCostPenalty": 0.06,
 
     # How many story points it costs to raise 
     # a ship's maximum number of built-in hull mods

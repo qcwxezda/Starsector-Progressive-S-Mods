@@ -494,6 +494,7 @@ public class SModUtils {
 
     /** For when a ship has an increased s-mod limit from another source.
      *  Only do this once to avoid cheesing repeated assigning / unassigning of BotB. */
+    @Deprecated
     public static void initializeSModIncreaseLimit(FleetMemberAPI fm, int nSMods) {
         int normalMax = getBaseSMods(fm);
         int numOverLimit = Math.max(0, nSMods - normalMax);
@@ -682,25 +683,6 @@ public class SModUtils {
             withOP.add(moduleVariant);
         }
         return withOP;
-    }
-
-    @Deprecated
-    public static int getSModsOverLimit(ShipVariantAPI variant, MutableShipStatsAPI stats) {
-        if (variant == null) return 0;
-        return Math.max(0, variant.getSMods().size() - SModUtils.getBaseSMods(stats));
-    }
-
-    /** Computes maximum number of S-mods over the limit out of the variant and all of its module variants */
-    @Deprecated
-    public static int getSModsOverLimitIncludeModules(ShipVariantAPI variant, MutableShipStatsAPI stats) {
-        int sModsOverLimit = getSModsOverLimit(variant, stats);
-
-        List<ShipVariantAPI> modules = SModUtils.getModuleVariantsWithOP(variant);
-        for (ShipVariantAPI module : modules) {
-            sModsOverLimit = Math.max(sModsOverLimit, getSModsOverLimit(module, stats));
-        }
-
-        return sModsOverLimit;
     }
 
     public static String shortenText(String text, LabelAPI label) {

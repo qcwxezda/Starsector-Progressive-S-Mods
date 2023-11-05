@@ -58,7 +58,7 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
         String shipText = THIS_SHIP_TEXT;
         ShipVariantAPI selectedVariant = (ShipVariantAPI) memoryMap.get(MemKeys.LOCAL).get(selectedVariantKey);
         int nSMods = selectedVariant.getSMods().size();
-        SModUtils.initializeSModIncreaseLimit(fleetMember, nSMods);
+        //SModUtils.initializeSModIncreaseLimit(fleetMember, nSMods);
 
         int nSModsLimit = SModUtils.getMaxSMods(fleetMember);
         int nRemaining = Math.max(0, nSModsLimit - nSMods);

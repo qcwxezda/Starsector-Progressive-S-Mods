@@ -52,9 +52,19 @@ public class XPTracker extends BaseHullMod {
     }
 
     private int getNumPenalizedMods(FleetMemberAPI fm) {
-        return fm == null ? 0 : Math.min(
-                SModUtils.getNumOverLimit(fm.getId()),
-                Math.max(0, fm.getVariant().getSMods().size() - SModUtils.getBaseSMods(fm)));
+        if (fm == null) return 0;
+
+        ShipVariantAPI variant = fm.getVariant();
+        if (variant == null) return 0;
+
+        int sModsOverLimit = Math.max(0, variant.getSMods().size() - SModUtils.getBaseSMods(fm));
+
+        List<ShipVariantAPI> modules = SModUtils.getModuleVariantsWithOP(variant);
+        for (ShipVariantAPI module : modules) {
+            sModsOverLimit = Math.max(sModsOverLimit, Math.max(0, module.getSMods().size() - SModUtils.getBaseSMods(fm)));
+        }
+
+        return Math.min(SModUtils.getNumOverLimit(fm.getId()), sModsOverLimit);
     }
 
     private int computeDPModifier(MutableShipStatsAPI stats, int sModsOverLimit) {

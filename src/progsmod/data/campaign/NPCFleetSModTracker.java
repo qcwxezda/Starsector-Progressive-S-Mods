@@ -24,13 +24,13 @@ public class NPCFleetSModTracker extends BaseCampaignEventListener  {
         if (fleet == null || fleet.getBattle() == null || fleet.getBattle().getCombinedTwo() == null) {
             return;
         }
-        for (FleetMemberAPI fm : fleet.getBattle().getCombinedTwo().getMembersWithFightersCopy()) {
-            if (!fm.isFighterWing() && fm.getVariant() != null) {
-                int numOverLimit = SModUtils.getSModsOverLimitIncludeModules(fm.getVariant(), fm.getStats());
-                if (numOverLimit > 0 && !fm.getVariant().hasHullMod("progsmod_xptracker")) {
-                    fm.getVariant().addPermaMod("progsmod_xptracker", false);
-                }
-            }
-        }
+//        for (FleetMemberAPI fm : fleet.getBattle().getCombinedTwo().getMembersWithFightersCopy()) {
+//            if (!fm.isFighterWing() && fm.getVariant() != null) {
+//                int numOverLimit = SModUtils.getSModsOverLimitIncludeModules(fm.getVariant(), fm.getStats());
+//                if (numOverLimit > 0 && !fm.getVariant().hasHullMod("progsmod_xptracker")) {
+//                    fm.getVariant().addPermaMod("progsmod_xptracker", false);
+//                }
+//            }
+//        }
     }
 }
