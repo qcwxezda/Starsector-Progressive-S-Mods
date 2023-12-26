@@ -188,6 +188,7 @@ public class PSM_BuildInHullModNew {
 
                     @Override
                     public void customDialogCancel() {
+                        SModUtils.forceUpdater = null;
                     }
 
                     @Override
@@ -237,10 +238,11 @@ public class PSM_BuildInHullModNew {
                         if (addedAtLeastOne) {
                             sound = "ui_acquired_hullmod";
                         }
-                        if (addedAtLeastOne || removedAtLeastOne) {
+                        if (addedAtLeastOne || removedAtLeastOne) {/**/
                             Global.getSoundPlayer().playUISound(sound, 1f, 1f);
                             SModUtils.displayXP(dialog, fleetMember);
                         }
+                        SModUtils.forceUpdater = null;
 
                         callback_[0].dismissCustomDialog(1);
                         dialog.showCustomDialog(SelectShip.getWidth(), SelectShip.getHeight(),
