@@ -17,14 +17,12 @@ import java.util.List;
 
 public class SelectShip implements CustomDialogDelegate {
     final public InteractionDialogAPI dialog;
-    final String titleString = "Select ship to modify";
+    final String titleString = "Select a ship";
     final float titleHeight = 30;
     final List<ShipButtonData> buttonData = new ArrayList<>();
     final FleetDataAPI fleet;
     final ShipSelector plugin;
     public float scrollPanelY;
-    CustomPanelAPI panel;
-    CustomPanelAPI basePanel;
 
     public SelectShip(InteractionDialogAPI dialog) {
         this(dialog, 0f);
