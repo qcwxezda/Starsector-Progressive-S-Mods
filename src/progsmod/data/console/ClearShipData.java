@@ -33,6 +33,9 @@ public class ClearShipData implements BaseCommand {
         }
         SModUtils.deleteXPData(fleetMember.getId());
         SModUtils.displayXP(currentDialog, fleetMember);
+        if (SModUtils.forceUpdater != null) {
+            SModUtils.forceUpdater.resetXP();
+        }
         return CommandResult.SUCCESS;
     }
 

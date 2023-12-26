@@ -114,5 +114,9 @@
     # Set this to true in order to disable this mod's features
     # and go back to building in S-Mods with story points.
     # S-mods that have been built in with XP are not removed.
-    "disableMod": false
+    "disableMod": false,
+
+    # Both the legacy UI and the new UI can be enabled at the same time.
+    "enableLegacyUI": true,  # Enables the legacy UI dialog option at stations
+    "enableNewUI": true,      # Enables the new UI dialog option at stations
 }

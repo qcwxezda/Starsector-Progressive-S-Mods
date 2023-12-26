@@ -10,7 +10,7 @@ import org.lazywizard.console.Console;
 
 import util.SModUtils;
 
-public class AddShipXP implements BaseCommand {
+public class AddReserveShipXP implements BaseCommand {
     @Override
     public CommandResult runCommand(String args, CommandContext context) {
         InteractionDialogAPI currentDialog = Global.getSector().getCampaignUI().getCurrentInteractionDialog();
@@ -36,10 +36,10 @@ public class AddShipXP implements BaseCommand {
             return CommandResult.BAD_SYNTAX;
         }
 
-        SModUtils.giveXP(fleetMember, amount);
+        SModUtils.addReserveXP(fleetMember.getHullSpec().getBaseHullId(), amount);
         SModUtils.displayXP(currentDialog, fleetMember);
         if (SModUtils.forceUpdater != null) {
-            SModUtils.forceUpdater.addXP(amount);
+            SModUtils.forceUpdater.addReserveXP(amount);
         }
         return CommandResult.SUCCESS;
     }

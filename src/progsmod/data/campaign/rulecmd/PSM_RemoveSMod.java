@@ -1,11 +1,5 @@
 package progsmod.data.campaign.rulecmd;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.awt.Color;
-
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CustomDialogDelegate;
 import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
@@ -20,13 +14,18 @@ import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
 import com.fs.starfarer.api.util.Misc.Token;
-
 import progsmod.data.campaign.rulecmd.ui.HullModButton;
 import progsmod.data.campaign.rulecmd.ui.LabelWithVariables;
 import progsmod.data.campaign.rulecmd.ui.PanelCreator;
 import progsmod.data.campaign.rulecmd.ui.plugins.RemoveSelector;
 import progsmod.data.campaign.rulecmd.util.HullModButtonData;
 import util.SModUtils;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /** ProgSModRemove [fleetMember] [selectedVariant] [trigger] -- shows the built-in hull mods for 
  *  the module of [fleetMember] whose variant is [selectedVariant].

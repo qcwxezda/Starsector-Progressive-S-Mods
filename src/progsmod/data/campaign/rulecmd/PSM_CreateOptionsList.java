@@ -97,7 +97,7 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
             dialog.getOptionPanel().addOption(
                     String.format("Increase this ship's built-in hull mod limit from %s to %s", nSModsLimit, nSModsLimit + 1), 
                 augmentOption);
-            int nextSPCost = SModUtils.getStoryPointCost(fleetMember);
+            int nextSPCost = SModUtils.getAugmentSPCost(fleetMember);
             int nextXPCost = SModUtils.getAugmentXPCost(fleetMember);
             List<Token> storyParams = new ArrayList<>();
             storyParams.add(params.get(0));

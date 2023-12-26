@@ -43,6 +43,7 @@ public class ButtonWithImage extends Button {
     /** If [reason] is null, will not change the description. */
     public void enable(String reason) {
         button.setEnabled(true);
+        button.setClickable(true);
         if (reason != null) {
             description.setText(reason);
             description.setHighlight(reason);

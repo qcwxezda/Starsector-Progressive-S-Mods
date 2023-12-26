@@ -1,9 +1,8 @@
 package progsmod.data.campaign.rulecmd.ui.plugins;
 
-import java.util.List;
+import progsmod.data.campaign.rulecmd.ui.*;
 
-import progsmod.data.campaign.rulecmd.ui.HullModButton;
-import progsmod.data.campaign.rulecmd.ui.LabelWithVariables;
+import java.util.*;
 
 public class RemoveSelector extends Selector<HullModButton> {
 
@@ -18,6 +17,8 @@ public class RemoveSelector extends Selector<HullModButton> {
         super.init(items);
         xpLabel = label;
     }
+
+    public void updateItems() {}
 
     @Override
     protected void onSelected(int index) {

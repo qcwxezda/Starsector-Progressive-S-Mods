@@ -1,42 +1,33 @@
 package util;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.fs.starfarer.api.*;
+import com.fs.starfarer.api.campaign.CampaignUIAPI.*;
+import com.fs.starfarer.api.campaign.*;
+import com.fs.starfarer.api.campaign.econ.*;
+import com.fs.starfarer.api.combat.*;
+import com.fs.starfarer.api.combat.ShipAPI.*;
+import com.fs.starfarer.api.fleet.*;
+import com.fs.starfarer.api.impl.campaign.ids.*;
+import com.fs.starfarer.api.loading.*;
+import com.fs.starfarer.api.ui.*;
+import com.fs.starfarer.api.util.*;
+import org.json.*;
+import progsmod.data.campaign.rulecmd.util.HullModButtonData;
+import progsmod.data.combat.ContributionTracker.*;
 
-import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.campaign.InteractionDialogAPI;
-import com.fs.starfarer.api.campaign.SectorEntityToken;
-import com.fs.starfarer.api.campaign.CampaignUIAPI.CoreUITradeMode;
-import com.fs.starfarer.api.campaign.econ.Industry;
-import com.fs.starfarer.api.campaign.econ.MarketAPI;
-import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
-import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
-import com.fs.starfarer.api.combat.MutableShipStatsAPI;
-import com.fs.starfarer.api.combat.ShipHullSpecAPI;
-import com.fs.starfarer.api.combat.ShipVariantAPI;
-import com.fs.starfarer.api.combat.ShipAPI.HullSize;
-import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import com.fs.starfarer.api.impl.campaign.ids.HullMods;
-import com.fs.starfarer.api.impl.campaign.ids.Industries;
-import com.fs.starfarer.api.impl.campaign.ids.Stats;
-import com.fs.starfarer.api.loading.HullModSpecAPI;
-import com.fs.starfarer.api.loading.VariantSource;
-import com.fs.starfarer.api.ui.LabelAPI;
-import com.fs.starfarer.api.util.Misc;
-import com.fs.starfarer.api.util.Pair;
-
-import com.fs.starfarer.combat.P;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import progsmod.data.combat.ContributionTracker.ContributionType;
-
-import org.json.JSONArray;
+import java.io.*;
+import java.util.*;
 
 public class SModUtils {
+
+    /** For syncing the XP labels when executing a console command */
+    public interface ForceUpdater {
+        void addXP(int xp);
+        void addReserveXP(int xp);
+        void resetXP();
+    }
+
+    public static ForceUpdater forceUpdater = null;
 
     public enum GrowthType {LINEAR, EXPONENTIAL};
 
@@ -121,6 +112,12 @@ public class SModUtils {
         /** Set to true to disable this mod's features */
         public static boolean DISABLE_MOD;
 
+        /** Enables the legacy UI dialog option. Both the legacy UI and the new UI can be enabled at the same time. */
+        public static boolean ENABLE_LEGACY_UI;
+
+        /** Enables the new UI dialog option. Both the legacy UI and the new UI can be enabled at the same time. */
+        public static boolean ENABLE_NEW_UI;
+
         /** Load constants from a json file */
         private static void load(String filePath) throws IOException, JSONException {
             JSONObject json = Global.getSettings().loadJSON(filePath);
@@ -156,6 +153,9 @@ public class SModUtils {
             IGNORE_NO_BUILD_IN = json.getBoolean("ignoreNoBuildIn");
             ALLOW_INCREASE_SMOD_LIMIT = json.getBoolean("allowIncreaseSModLimit");
             DISABLE_MOD = json.getBoolean("disableMod");
+            ENABLE_LEGACY_UI = json.getBoolean("enableLegacyUI");
+            ENABLE_NEW_UI = json.getBoolean("enableNewUI");
+
             JSONObject combat = json.getJSONObject("combat");
             GIVE_XP_TO_DISABLED_SHIPS = combat.getBoolean("giveXPToDisabledShips");
             ONLY_GIVE_XP_FOR_KILLS = combat.getBoolean("onlyGiveXPForKills");
@@ -281,6 +281,10 @@ public class SModUtils {
         return reserveXP == null ? 0f : reserveXP;
     }
 
+    public static float getReserveXP(FleetMemberAPI fm) {
+        return getReserveXP(fm.getHullSpec().getBaseHullId());
+    }
+
     /** Decreases RESERVE_XP_TABLE[hullId] by [amount]. Increases SHIP_DATA_TABLE[fm.getId()].xp by [amount].
      *  Returns whether the operation was successful. */
     public static boolean useReserveXP(String hullId, FleetMemberAPI fm, float amount) {
@@ -357,17 +361,19 @@ public class SModUtils {
 
     /** Increases [fleetMember]'s limit of built in hull mods by 1.
      *  Spends the required XP. */
-    public static void incrementSModLimit(FleetMemberAPI fleetMember) {
+    public static boolean incrementSModLimit(FleetMemberAPI fleetMember) {
         String fmId = fleetMember.getId();
         ShipData data = SHIP_DATA_TABLE.get(fmId);
         int cost = getAugmentXPCost(fleetMember);
         if (data == null && cost <= 0f) {
             SHIP_DATA_TABLE.put(fmId, new ShipData(0, 1));
-        }
-        else if (data != null && spendXP(fmId, cost)) {
+            return true;
+        } else if (data != null && spendXP(fmId, cost)) {
             data.permaModsOverLimit++;
             data.xpSpentOnIncreasingLimit += cost;
+            return true;
         }
+        return false;
     }
 
     public static float getXP(String fmId) {
@@ -386,7 +392,7 @@ public class SModUtils {
     }
 
     /** Gets the story point cost of increasing the number of built-in hullmods of [ship] by 1. */
-    public static int getStoryPointCost(FleetMemberAPI ship) {
+    public static int getAugmentSPCost(FleetMemberAPI ship) {
         int baseCost;
         switch (ship.getVariant().getHullSize()) {
             case FRIGATE: baseCost = Constants.BASE_EXTRA_SMOD_SP_COST_FRIGATE; break;
@@ -543,6 +549,11 @@ public class SModUtils {
         if (!reqSpaceport) return true;
         
         return isAtStationOrSpacePort(interactionTarget);
+    }
+
+    public static boolean canModifyHullMod(HullModButtonData buttonData) {
+        return SModUtils.canModifyHullMod(Global.getSettings().getHullModSpec(buttonData.id),
+                Global.getSector().getCampaignUI().getCurrentInteractionDialog().getInteractionTarget());
     }
 
     public static boolean isAtStationOrSpacePort(SectorEntityToken interactionTarget) {

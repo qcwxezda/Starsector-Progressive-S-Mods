@@ -31,6 +31,9 @@ public class AddShipXPAll implements BaseCommand {
         for (FleetMemberAPI fm : playerFleet.getFleetData().getMembersListCopy()) {
             SModUtils.giveXP(fm, amount);
         }
+        if (SModUtils.forceUpdater != null) {
+            SModUtils.forceUpdater.addXP(amount);
+        }
         return CommandResult.SUCCESS;
     }
 }
