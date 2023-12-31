@@ -68,6 +68,7 @@ public class HullModSelector extends Selector<HullModButton> {
                     xp = Math.min(minXP, -xp);
                     xpHelper.decreaseXPLabel(xp);
                 }
+                updateItems();
             }
 
             @Override
@@ -78,6 +79,7 @@ public class HullModSelector extends Selector<HullModButton> {
                     xp = Math.min(xpHelper.getReserveXP(), -xp);
                     xpHelper.reduceReserveXP(xp);
                 }
+                updateItems();
             }
 
             @Override
