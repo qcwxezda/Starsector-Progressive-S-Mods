@@ -529,7 +529,7 @@ public class SModUtils {
     public static int getBaseSMods(MutableShipStatsAPI stats) {
         return (int) stats.getDynamic()
                 .getMod(Stats.MAX_PERMANENT_HULLMODS_MOD)
-                .computeEffective(Global.getSettings().getInt("maxPermanentHullmods"));
+                .computeEffective(Misc.MAX_PERMA_MODS);
     }
 
     /** Polynomial coefficients are listed in [coeff] lowest order first. */
