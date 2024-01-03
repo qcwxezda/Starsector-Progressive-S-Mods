@@ -6,13 +6,15 @@
     # as fraction of base DP cost
     "deploymentCostPenalty": 0.06,
 
-    # How many story points it costs to raise 
-    # a ship's maximum number of built-in hull mods
-    # the first time.
+    # How many story points it costs to raise a ship's maximum number of built-in hull mods
+    # the first time. If the cost is not a whole number, it will be rounded up with the excess
+    # granted as bonus XP.
+    # E.g. a cost of 0.25 will cost 1 SP, but refund 0.75 SP over time by granting 75% bonus XP.
+    # In vanilla, building in a hull mod gives 75% / 50% / 25% / 0% bonus XP based on size
     "baseExtraSModSPCost": {
-        "frigate": 1,
+        "frigate": 0.5,
         "destroyer": 1,
-        "cruiser": 2,
+        "cruiser": 1.5,
         "capital": 2
     },
 

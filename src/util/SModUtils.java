@@ -42,10 +42,10 @@ public class SModUtils {
     public static class Constants {
         public static int MAX_RECENTLY_BUILT_IN_SIZE;
         /** How many story points it costs to unlock the first extra SMod slot. */
-        public static int BASE_EXTRA_SMOD_SP_COST_FRIGATE;
-        public static int BASE_EXTRA_SMOD_SP_COST_DESTROYER;
-        public static int BASE_EXTRA_SMOD_SP_COST_CRUISER;
-        public static int BASE_EXTRA_SMOD_SP_COST_CAPITAL;
+        public static float BASE_EXTRA_SMOD_SP_COST_FRIGATE;
+        public static float BASE_EXTRA_SMOD_SP_COST_DESTROYER;
+        public static float BASE_EXTRA_SMOD_SP_COST_CRUISER;
+        public static float BASE_EXTRA_SMOD_SP_COST_CAPITAL;
         /** How much XP it costs to unlock the first extra SMod slot. */
         public static float BASE_EXTRA_SMOD_XP_COST_FRIGATE;
         public static float BASE_EXTRA_SMOD_XP_COST_DESTROYER;
@@ -123,10 +123,10 @@ public class SModUtils {
             JSONObject json = Global.getSettings().loadJSON(filePath);
             MAX_RECENTLY_BUILT_IN_SIZE = json.getInt("recentlyBuiltInListSize");
             JSONObject augmentSP = json.getJSONObject("baseExtraSModSPCost");
-            BASE_EXTRA_SMOD_SP_COST_FRIGATE = augmentSP.getInt("frigate");
-            BASE_EXTRA_SMOD_SP_COST_DESTROYER = augmentSP.getInt("destroyer");
-            BASE_EXTRA_SMOD_SP_COST_CRUISER = augmentSP.getInt("cruiser");
-            BASE_EXTRA_SMOD_SP_COST_CAPITAL = augmentSP.getInt("capital");
+            BASE_EXTRA_SMOD_SP_COST_FRIGATE = (float) augmentSP.getDouble("frigate");
+            BASE_EXTRA_SMOD_SP_COST_DESTROYER = (float) augmentSP.getDouble("destroyer");
+            BASE_EXTRA_SMOD_SP_COST_CRUISER = (float) augmentSP.getDouble("cruiser");
+            BASE_EXTRA_SMOD_SP_COST_CAPITAL = (float) augmentSP.getDouble("capital");
             JSONObject augmentXP = json.getJSONObject("baseExtraSModXPCost");
             BASE_EXTRA_SMOD_XP_COST_FRIGATE = (float) augmentXP.getDouble("frigate");
             BASE_EXTRA_SMOD_XP_COST_DESTROYER = (float) augmentXP.getDouble("destroyer");
@@ -391,9 +391,19 @@ public class SModUtils {
         return data == null ? 0f : data.xpSpentOnIncreasingLimit;
     }
 
+    public static class AugmentSPCost {
+        public int spCost;
+        public float bonusXP;
+
+        @Override
+        public String toString() {
+            return bonusXP > 0 ? Float.toString(spCost + bonusXP - 1) : Integer.toString(spCost); // "1" and not "1.0"
+        }
+    }
+
     /** Gets the story point cost of increasing the number of built-in hullmods of [ship] by 1. */
-    public static int getAugmentSPCost(FleetMemberAPI ship) {
-        int baseCost;
+    public static AugmentSPCost getAugmentSPCost(FleetMemberAPI ship) {
+        float baseCost;
         switch (ship.getVariant().getHullSize()) {
             case FRIGATE: baseCost = Constants.BASE_EXTRA_SMOD_SP_COST_FRIGATE; break;
             case DESTROYER: baseCost = Constants.BASE_EXTRA_SMOD_SP_COST_DESTROYER; break;
@@ -404,9 +414,16 @@ public class SModUtils {
 
         int modsOverLimit = getNumOverLimit(ship.getId());
 
-        return Constants.EXTRA_SMOD_SP_COST_GROWTHTYPE == GrowthType.EXPONENTIAL ? 
-            (int) (baseCost * Math.pow(Constants.EXTRA_SMOD_SP_COST_GROWTHFACTOR, modsOverLimit)) : 
-            (int) (baseCost + modsOverLimit * Constants.EXTRA_SMOD_SP_COST_GROWTHFACTOR);
+        double spCost = Constants.EXTRA_SMOD_SP_COST_GROWTHTYPE == GrowthType.EXPONENTIAL ?
+            baseCost * Math.pow(Constants.EXTRA_SMOD_SP_COST_GROWTHFACTOR, modsOverLimit) :
+            baseCost + modsOverLimit * Constants.EXTRA_SMOD_SP_COST_GROWTHFACTOR;
+
+        // If augment would cost 0.75 SP, round up to 1 SP but grant 25% bonus XP to effectively refund 0.25 SP
+        // Vanilla does the same thing with S-mods; E.g. building a mod into a frigate gives 75% bonus XP
+        AugmentSPCost augmentSpCost = new AugmentSPCost();
+        augmentSpCost.spCost = (int) Math.ceil(spCost);
+        augmentSpCost.bonusXP = (float) (augmentSpCost.spCost - spCost);
+        return augmentSpCost;
     }
 
     /** Gets the XP cost of increasing the number of built-in hullmods of [ship] by 1. */

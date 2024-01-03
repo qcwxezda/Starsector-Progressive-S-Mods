@@ -51,7 +51,6 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
         String augmentOption = params.get(7).getString(memoryMap);
         String differentShipOption = params.get(8).getString(memoryMap);
         String goBackOption = params.get(9).getString(memoryMap);
-        float spRefundFraction = 0f;
 
         dialog.getOptionPanel().clearOptions();
 
@@ -97,13 +96,13 @@ public class PSM_CreateOptionsList extends BaseCommandPlugin {
             dialog.getOptionPanel().addOption(
                     String.format("Increase this ship's built-in hull mod limit from %s to %s", nSModsLimit, nSModsLimit + 1), 
                 augmentOption);
-            int nextSPCost = SModUtils.getAugmentSPCost(fleetMember);
+            SModUtils.AugmentSPCost augmentSPCost = SModUtils.getAugmentSPCost(fleetMember);
             int nextXPCost = SModUtils.getAugmentXPCost(fleetMember);
             List<Token> storyParams = new ArrayList<>();
             storyParams.add(params.get(0));
             storyParams.add(params.get(7));
-            storyParams.add(new Token("" + nextSPCost, TokenType.LITERAL));
-            storyParams.add(new Token("" + spRefundFraction, TokenType.LITERAL));
+            storyParams.add(new Token("" + augmentSPCost.spCost, TokenType.LITERAL));
+            storyParams.add(new Token("" + augmentSPCost.bonusXP*100, TokenType.LITERAL));
             storyParams.add(new Token("" + nextXPCost, TokenType.LITERAL));
             new PSM_SetStoryOption().execute(ruleId, dialog, storyParams, memoryMap);
         }
