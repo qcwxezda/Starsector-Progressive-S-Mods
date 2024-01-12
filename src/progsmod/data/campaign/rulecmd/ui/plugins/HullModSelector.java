@@ -43,6 +43,10 @@ public class HullModSelector extends Selector<HullModButton> {
 
     private SelectorContainer container;
 
+    public boolean needRemoveText = true;
+    public boolean needEnhanceText = true;
+    public boolean needBuildInText = true;
+
     public void init(ManageSMods delegate, PanelCreatorData<List<HullModButton>> data,
             Button showRecentButton, FleetMemberAPI fleetMember, ShipVariantAPI variant,
             SelectorContainer container) {

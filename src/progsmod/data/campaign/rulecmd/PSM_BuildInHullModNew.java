@@ -31,6 +31,7 @@ import java.util.*;
 
 
 public class PSM_BuildInHullModNew {
+    public static boolean shouldRecreateShipPanel = true;
 
     // returnBuiltIn = true -> returns list of built in S-mods
     // returnBuiltIn = false -> returns list of hullmods that can be built in (including ones that are
@@ -83,7 +84,7 @@ public class PSM_BuildInHullModNew {
             buttonData.add(
                     new HullModButtonData(
                             hullMod.getId(),
-                            hullMod.getDisplayName(),
+                            hullMod.getDisplayName() + (isEnhanceOnly ? "*" : ""),
                             hullMod.getSpriteName(),
                             description,
                             hullMod.getDescription(selectedVariant.getHullSize()),
@@ -125,6 +126,7 @@ public class PSM_BuildInHullModNew {
                         // Without calling the callback, it's not possible to create the ship list in
                         // customDialogConfirm (I think)
                         callback_[0] = callback;
+                        shouldRecreateShipPanel = true;
 
                         // Initialize the S-mod and XP counters at the top. These track the "pending"
                         // values that will be
@@ -189,6 +191,7 @@ public class PSM_BuildInHullModNew {
                     @Override
                     public void customDialogCancel() {
                         SModUtils.forceUpdater = null;
+                        recreateShipPanel();
                     }
 
                     @Override
@@ -242,11 +245,9 @@ public class PSM_BuildInHullModNew {
                             Global.getSoundPlayer().playUISound(sound, 1f, 1f);
                             SModUtils.displayXP(dialog, fleetMember);
                         }
-                        SModUtils.forceUpdater = null;
 
-                        callback_[0].dismissCustomDialog(1);
-                        dialog.showCustomDialog(SelectShip.getWidth(), SelectShip.getHeight(),
-                                new SelectShip(dialog, shipScrollPanelY));
+                        SModUtils.forceUpdater = null;
+                        recreateShipPanel();
                     }
 
                     @Override
@@ -306,7 +307,8 @@ public class PSM_BuildInHullModNew {
                             );
                         }
 
-                        if (listHullMods(fleetMember, selectedVariant, false).isEmpty()) {
+                        if (plugin.needBuildInText) {
+                            plugin.needBuildInText = false;
                             PanelCreator.addSelectHullModsText(tooltipMaker);
                         }
 
@@ -314,6 +316,16 @@ public class PSM_BuildInHullModNew {
                                 PanelCreator.addToHullModButtonList(panel, tooltipMaker, newButtonData, 45f,
                                         10f, 0, false);
                         plugin.addNewItems(newButtons.created);
+                    }
+
+                    private void recreateShipPanel() {
+                        // Don't recreate ship selection dialog if switching to module selection dialog
+                        if (shouldRecreateShipPanel) {
+                            shouldRecreateShipPanel = false;
+                            callback_[0].dismissCustomDialog(1);
+                            dialog.showCustomDialog(SelectShip.getWidth(), SelectShip.getHeight(),
+                                    new SelectShip(dialog, shipScrollPanelY));
+                        }
                     }
                 }
         );

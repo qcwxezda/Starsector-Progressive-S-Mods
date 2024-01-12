@@ -47,9 +47,9 @@ public class PanelCreator {
 
     // Create a panel containing the ship image, name, XP, S-mod limit and the button to increase the limit
     // Returns the panel, so the next panel can be positioned below it
-    public static CustomPanelAPI createShipInfoPanel(CustomPanelAPI panel, FleetMemberAPI ship,
-            ShipVariantAPI selectedVariant, CustomDialogDelegate.CustomDialogCallback callback,
-            float shipScrollPanelY) {
+    public static CustomPanelAPI createShipInfoPanel(CustomPanelAPI panel, final FleetMemberAPI ship,
+            final ShipVariantAPI selectedVariant, final CustomDialogDelegate.CustomDialogCallback callback,
+            final float shipScrollPanelY) {
         initVars(panel, 0);
         float shipSize = 80f;
         boolean shipHasModules = !SModUtils.getModuleVariantsWithOP(ship.getVariant()).isEmpty();
@@ -65,6 +65,7 @@ public class PanelCreator {
                 @Override
                 public void buttonPressed(Object buttonId) {
                     if (buttonId.equals(BUTTON_MANAGE_MODULE)) {
+                        PSM_BuildInHullModNew.shouldRecreateShipPanel = false;
                         callback.dismissCustomDialog(1);
                         InteractionDialogAPI dialog =
                                 Global.getSector().getCampaignUI().getCurrentInteractionDialog();
@@ -131,7 +132,7 @@ public class PanelCreator {
 
     public static void addSelectHullModsText(TooltipMakerAPI element) {
         element.setParaFontOrbitron();
-        element.addSpacer(10f);
+        element.addSpacer(7f);
         element.addPara("Select hull mods to build in", 3f);
     }
 
@@ -146,19 +147,24 @@ public class PanelCreator {
 
 
         List<HullModButton> buttons = new ArrayList<>();
-        HullModButtonData lastButtonData = null;
 
         for (HullModButtonData buttonData : hullModButtonData) {
-            if (lastButtonData == null && buttonData.isBuiltIn) {
-                element.setParaFontOrbitron();
+            element.setParaFontOrbitron();
+            if (plugin.needRemoveText && buttonData.isBuiltIn && !buttonData.isEnhanceOnly) {
+                plugin.needRemoveText = false;
                 element.addPara("Select built-in hull mods to remove", 3f);
             }
-            if ((lastButtonData == null || lastButtonData.isBuiltIn) && !buttonData.isBuiltIn) {
+            if (plugin.needEnhanceText && !buttonData.isBuiltIn && buttonData.isEnhanceOnly) {
+                plugin.needEnhanceText = false;
+                element.addSpacer(7f);
+                element.addPara("Select built-in hull mods to enhance (does not contribute to the S-mod limit)", 3f);
+            }
+            if (plugin.needBuildInText && !buttonData.isBuiltIn && !buttonData.isEnhanceOnly) {
+                plugin.needBuildInText = false;
                 addSelectHullModsText(element);
             }
             buttons.add(addHullModButtonToElement(hullmodPanel, element, buttonData, buttonHeight, padding, 0,
                     false));
-            lastButtonData = buttonData;
         }
 
         hullmodPanel.addUIElement(element).inTL(buttonListHorizontalPadding, 0f);

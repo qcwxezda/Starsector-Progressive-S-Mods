@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SelectShip implements CustomDialogDelegate {
+    public static CustomDialogDelegate.CustomDialogCallback callback;
     final public InteractionDialogAPI dialog;
     final String titleString = "Select a ship";
     final float titleHeight = 30;
@@ -53,12 +54,12 @@ public class SelectShip implements CustomDialogDelegate {
 
     @Override
     public void createCustomDialog(CustomPanelAPI panel, CustomDialogCallback callback) {
+        SelectShip.callback = callback;
         PanelCreator.createTitle(panel, titleString, titleHeight);
         PanelCreator.PanelCreatorData<List<ShipButton>> createdButtonsData =
                 PanelCreator.createShipButtonList(
                         panel, buttonData, 65f, 10f, titleHeight, false, scrollPanelY);
-        plugin.init(createdButtonsData, dialog, callback,
-                createdButtonsData.tooltipMaker.getExternalScroller());
+        plugin.init(createdButtonsData, dialog, createdButtonsData.tooltipMaker.getExternalScroller());
     }
 
     @Override
