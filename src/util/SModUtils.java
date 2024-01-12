@@ -339,6 +339,16 @@ public class SModUtils {
     /** Remove [xp] XP from [fmId]'s entry in the ship data table.
      *  Returns [true] if and only if the operation succeeded. */
     public static boolean spendXP(String fmId, float xp) {
+        ShipData data = SHIP_DATA_TABLE.get(fmId);
+        if (enoughXP(fmId, xp)) {
+            data.xp -= xp;
+            return true;
+        }
+        return false;
+    }
+
+    /** Returns [true] if [fmId]'s entry in the ship data table is >= [xp]. */
+    public static boolean enoughXP(String fmId, float xp) {
         if (Float.isNaN(xp)) {
             return false;
         }
@@ -349,9 +359,7 @@ public class SModUtils {
         if (xp <= 0f) {
             return true;
         }
-        if (data == null || data.xp < xp) return false;
-        data.xp -= xp;
-        return true;
+        return data != null && data.xp >= xp;
     }
 
     /** Removes [fmId] from the ship data table. */

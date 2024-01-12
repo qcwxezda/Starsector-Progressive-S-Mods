@@ -118,7 +118,10 @@ public class AugmentButtonPlugin implements CustomUIPanelPlugin, Updatable {
     }
 
     public boolean buttonEnabled() {
-        return enoughSP() && enoughXP();
+        // If augmenting can only be afforded with the XP from an S-mod removal, it is very messy to implement.
+        // Better to just disable the button as it's not useful anyway
+        boolean enoughXPWithoutSModRemoval = enoughXP() && SModUtils.enoughXP(ship.getId(), xpCost);
+        return enoughSP() && enoughXPWithoutSModRemoval;
     }
 
     private boolean enoughXP() {
