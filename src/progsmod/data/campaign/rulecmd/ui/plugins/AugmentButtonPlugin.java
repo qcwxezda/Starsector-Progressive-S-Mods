@@ -165,28 +165,43 @@ public class AugmentButtonPlugin implements CustomUIPanelPlugin, Updatable {
             // This looks strange but dialog.showCustomDialog does nothing otherwise
             SelectShip.callback.dismissCustomDialog(1);
             InteractionDialogAPI dialog = Global.getSector().getCampaignUI().getCurrentInteractionDialog();
-            dialog.showCustomDialog(500f, 100f, new BaseCustomDialogDelegate() {
+            float height = 50f;
+            if (SModUtils.Constants.DEPLOYMENT_COST_PENALTY > 0f) {
+                height += 30f;
+            }
+            // Should look like the vanilla story point confirmation dialog
+            dialog.showCustomDialog(500f, height, new BaseCustomDialogDelegate() {
                 @Override
                 public void createCustomDialog(CustomPanelAPI panel, CustomDialogCallback callback) {
                     TooltipMakerAPI element = panel.createUIElement(panel.getPosition().getWidth(),
                             panel.getPosition().getHeight(), false);
+                    // This is the font used by the vanilla dialog, will need to adjust panel size if it is used
+                    // element.setParaFont("graphics/fonts/insignia21LTaa.fnt");
 
-                    String numSP = Global.getSector().getPlayerStats().getStoryPoints() + "";
-                    element.addPara(String.format("You have %s story points.\n", numSP), 0f, Misc.getStoryBrightColor(),
-                            numSP);
-
-                    String[] highlights = {spCost.spCost + " SP", (int) (spCost.bonusXP * 100) + "% bonus player XP"};
+                    String[] highlights = {
+                            spCost.spCost + " story point" + (spCost.spCost > 1 ? "s" : ""),
+                            (int) (spCost.bonusXP * 100) + "%"};
                     String infoString = String.format(
-                            "Increasing this ship's S-mod limit from %s to %s will cost %s " + "and grant " + "%s.",
-                            SModUtils.getMaxSMods(ship), SModUtils.getMaxSMods(ship) + 1, highlights[0], highlights[1]);
+                            "Increasing this ship's S-mod limit from %s to %s requires %s and grants %s bonus player " +
+                            "experience.", SModUtils.getMaxSMods(ship), SModUtils.getMaxSMods(ship) + 1, highlights[0],
+                            highlights[1]);
                     element.addPara(infoString.replace("%", "%%"), 0f, Misc.getStoryBrightColor(), highlights);
 
                     if (SModUtils.Constants.DEPLOYMENT_COST_PENALTY > 0f) {
                         String penalty = (int) (SModUtils.Constants.DEPLOYMENT_COST_PENALTY * 100) + "%";
-                        element.addPara(String.format("It will also increase its base deployment cost by %s " +
+                        element.addPara(String.format("\nIt will also increase its base deployment cost by %s " +
                                                       "once the S-mod is installed.", penalty).replace("%", "%%"), 0f,
                                 Misc.getNegativeHighlightColor(), penalty);
                     }
+
+                    CustomPanelAPI spCountPanel = panel.createCustomPanel(panel.getPosition().getWidth(), 20f, null);
+                    TooltipMakerAPI spCountElement = spCountPanel.createUIElement(spCountPanel.getPosition().getWidth(),
+                            spCountPanel.getPosition().getHeight(), false);
+                    String numSP = Global.getSector().getPlayerStats().getStoryPoints() + "";
+                    spCountElement.addPara(String.format("\nStory points: %s", numSP), 0f, Misc.getGrayColor(),
+                            Misc.getStoryBrightColor(), numSP);
+                    spCountPanel.addUIElement(spCountElement);
+                    panel.addComponent(spCountPanel).inBL(0f, -30f);
 
                     panel.addUIElement(element);
                 }
