@@ -324,10 +324,11 @@ public class SModUtils {
         return createdEntry;
     }
 
-    /** Adds an XP tracking hull mod to the ship in question if it has positive XP and 
-     *  does not have the tracking hull mod already. */
+    /** Adds an XP tracking hull mod to the ship in question if it has positive XP or
+     *  an S-mod limit increase and does not have the tracking hull mod already. */
     public static void addTrackerHullMod(FleetMemberAPI fm) {
-        if (getXP(fm.getId()) > 0 && !fm.getVariant().hasHullMod("progsmod_xptracker")) {
+        boolean needMod = getXP(fm.getId()) > 0 || getNumOverLimit(fm.getId()) > 0;
+        if (needMod && !fm.getVariant().hasHullMod("progsmod_xptracker")) {
             if (fm.getVariant().isStockVariant()) {
                 fm.setVariant(fm.getVariant().clone(), false, false);
                 fm.getVariant().setSource(VariantSource.REFIT);
@@ -375,10 +376,14 @@ public class SModUtils {
         int cost = getAugmentXPCost(fleetMember);
         if (data == null && cost <= 0f) {
             SHIP_DATA_TABLE.put(fmId, new ShipData(0, 1));
+            // S-mod limit increase is applied by the XPTracker hull mod, so add it if needed
+            addTrackerHullMod(fleetMember);
+            fleetMember.updateStats();
             return true;
         } else if (data != null && spendXP(fmId, cost)) {
             data.permaModsOverLimit++;
             data.xpSpentOnIncreasingLimit += cost;
+            fleetMember.updateStats();  // Force update XPTracker hull mod to apply S-mod limit
             return true;
         }
         return false;
@@ -554,7 +559,9 @@ public class SModUtils {
     public static int getBaseSMods(MutableShipStatsAPI stats) {
         return (int) stats.getDynamic()
                 .getMod(Stats.MAX_PERMANENT_HULLMODS_MOD)
-                .computeEffective(Misc.MAX_PERMA_MODS);
+                .computeEffective(Misc.MAX_PERMA_MODS)
+               // XPTracker hull mod increases MAX_PERMANENT_HULLMODS_MOD, so subtract it
+                - getNumOverLimit(stats.getFleetMember().getId());
     }
 
     /** Polynomial coefficients are listed in [coeff] lowest order first. */

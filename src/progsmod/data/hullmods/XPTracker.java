@@ -1,10 +1,7 @@
 package progsmod.data.hullmods;
 
-import com.fs.starfarer.api.combat.BaseHullMod;
-import com.fs.starfarer.api.combat.MutableShipStatsAPI;
-import com.fs.starfarer.api.combat.ShipAPI;
+import com.fs.starfarer.api.combat.*;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
-import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
@@ -28,6 +25,15 @@ public class XPTracker extends BaseHullMod {
     public void applyEffectsBeforeShipCreation(HullSize hullSize, MutableShipStatsAPI stats, String id) {
         ShipVariantAPI variant = stats.getVariant();
         if (SModUtils.Constants.DISABLE_MOD || SModUtils.Constants.DEPLOYMENT_COST_PENALTY <= 0f || variant == null) return;
+
+        // Increase S-mod limit ship stat if it was raised with SModUtils.incrementSModLimit()
+        // Allows other mods like RAT to interact with S-mods
+        if (stats.getFleetMember() != null) {
+            int numOverLimit = SModUtils.getNumOverLimit(stats.getFleetMember().getId());
+            if (numOverLimit > 0) {
+                stats.getDynamic().getMod(Stats.MAX_PERMANENT_HULLMODS_MOD).modifyFlat(id, numOverLimit);
+            }
+        }
 
         int sModsOverLimit = getNumPenalizedMods(stats.getFleetMember());
         if (sModsOverLimit > 0) {
