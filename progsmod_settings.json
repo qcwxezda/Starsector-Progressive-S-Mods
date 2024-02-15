@@ -119,6 +119,6 @@
     "disableMod": false,
 
     # Both the legacy UI and the new UI can be enabled at the same time.
-    "enableLegacyUI": true,  # Enables the legacy UI dialog option at stations
+    "enableLegacyUI": false,  # Enables the legacy UI dialog option at stations
     "enableNewUI": true,      # Enables the new UI dialog option at stations
 }
