@@ -1,3 +1,4 @@
-- Change: DP penalty now only applies to player ships; now only applies to s-mod slots added via this mod's interface
-- Balancing: Reduce default DP penalty to 6% per additional S-Mod
-- Fix: correctly award XP for damage dealt by drones (as long as DRONE_MOTHERSHIP is set properly)
+Author: chdcl
+- Revamped build-in UI
+- Increasing s-mod limit now applies a modifier to Stats.MAX_PERMANENT_HULLMODS_MOD
+- Allow fractional SP costs when increasing s-mod limit, with the fractional remainder being refunded as bonus XP
