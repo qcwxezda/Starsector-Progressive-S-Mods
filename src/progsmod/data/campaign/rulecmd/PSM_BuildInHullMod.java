@@ -1,34 +1,25 @@
 package progsmod.data.campaign.rulecmd;
 
-import java.util.*;
-import java.awt.Color;
-
-import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
-import com.fs.starfarer.api.campaign.InteractionDialogAPI;
-import com.fs.starfarer.api.campaign.rules.MemKeys;
-import com.fs.starfarer.api.campaign.rules.MemoryAPI;
-import com.fs.starfarer.api.combat.HullModEffect;
-import com.fs.starfarer.api.combat.ShipVariantAPI;
-import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
-import com.fs.starfarer.api.impl.campaign.rulecmd.FireAll;
-import com.fs.starfarer.api.loading.HullModSpecAPI;
-import com.fs.starfarer.api.ui.Alignment;
-import com.fs.starfarer.api.ui.CustomPanelAPI;
-import com.fs.starfarer.api.ui.TooltipMakerAPI;
-import com.fs.starfarer.api.util.Misc.Token;
-
-import progsmod.data.campaign.rulecmd.delegates.BuildInSModDelegate;
+import com.fs.starfarer.api.*;
+import com.fs.starfarer.api.campaign.*;
+import com.fs.starfarer.api.campaign.rules.*;
+import com.fs.starfarer.api.combat.*;
+import com.fs.starfarer.api.fleet.*;
+import com.fs.starfarer.api.impl.campaign.rulecmd.*;
+import com.fs.starfarer.api.loading.*;
+import com.fs.starfarer.api.ui.*;
+import com.fs.starfarer.api.util.Misc.*;
+import progsmod.data.campaign.rulecmd.delegates.*;
 import progsmod.data.campaign.rulecmd.ui.Button;
-import progsmod.data.campaign.rulecmd.ui.HullModButton;
-import progsmod.data.campaign.rulecmd.ui.LabelWithVariables;
-import progsmod.data.campaign.rulecmd.ui.PanelCreator;
-import progsmod.data.campaign.rulecmd.ui.PanelCreator.PanelCreatorData;
-import progsmod.data.campaign.rulecmd.ui.plugins.BuildInSelector;
-import progsmod.data.campaign.rulecmd.util.HullModButtonData;
-import util.RecentBuildInTracker;
-import util.SModUtils;
+import progsmod.data.campaign.rulecmd.ui.*;
+import progsmod.data.campaign.rulecmd.ui.PanelCreator.*;
+import progsmod.data.campaign.rulecmd.ui.plugins.*;
+import progsmod.data.campaign.rulecmd.util.*;
+import util.*;
+
+import java.awt.*;
+import java.util.List;
+import java.util.*;
 
 /** ProgSModBuildIn [fleetMember] [selectedVariant] [trigger] -- shows the build-in interface for
  *  the module of [fleetMember] whose variant is [selectedVariant].
@@ -92,8 +83,8 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
         }
 
         final BuildInSelector plugin = new BuildInSelector();
-        dialog.showCustomDialog(500f, 500f,
-            new BuildInSModDelegate() {
+        dialog.showCustomDialog(ManageSMods.getWidth(), ManageSMods.getHeight(),
+            new ManageSMods() {
                 @Override
                 public void createCustomDialog(CustomPanelAPI panel, CustomDialogCallback callback) {
                     PanelCreator.createTitle(panel, titleString, titleHeight);
@@ -104,7 +95,7 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
                     LabelWithVariables<Integer> xpLabel =
                         PanelCreator.createLabelWithVariables(panel, "XP: %s", Color.WHITE, 30f, Alignment.RMID, (int) SModUtils.getXP(fleetMember.getId())).created;
                     Button showAllButton = PanelCreator.createButton(panel, "Show recent", 100f, 25f, 10f, panel.getPosition().getHeight() + 6f).created;
-                    plugin.init(this, createdButtonsData, xpLabel, countLabel, showAllButton, fleetMember, selectedVariant, firstIndexToBeCounted);
+                plugin.init(this, createdButtonsData, xpLabel, countLabel, showAllButton, fleetMember, selectedVariant, firstIndexToBeCounted, new PSM_BuildInHullModNew.SelectorContainer());
                 }
 
                 @Override
@@ -168,7 +159,6 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
                     return true;
                 }
 
-                @Override
                 public void showRecentPressed(CustomPanelAPI panel, TooltipMakerAPI tooltipMaker) {
                     List<HullModButtonData> newButtonData = new ArrayList<>();
                     List<String> recentlyBuiltIn = new ArrayList<>(RecentBuildInTracker.getRecentlyBuiltIn());

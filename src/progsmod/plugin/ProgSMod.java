@@ -3,7 +3,6 @@ package progsmod.plugin;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.listeners.ListenerManagerAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
-
 import progsmod.data.campaign.EngagementListener;
 import progsmod.data.campaign.RefitTabListenerAndScript;
 import util.SModUtils;
@@ -50,6 +49,9 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
 
             Global.getSector().addTransientListener(new EngagementListener(false));
             Global.getSector().addTransientScript(new RefitTabListenerAndScript());
+            Global.getSector().getMemory().set("$progsmodEnableLegacyUI", SModUtils.Constants.ENABLE_LEGACY_UI);
+            Global.getSector().getMemory().set("$progsmodEnableNewUI", SModUtils.Constants.ENABLE_NEW_UI);
+
         }
         else {
             Global.getSettings().getHullModSpec("progsmod_xptracker").setHiddenEverywhere(true);

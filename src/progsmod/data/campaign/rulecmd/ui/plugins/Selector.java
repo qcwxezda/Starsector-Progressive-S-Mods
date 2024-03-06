@@ -1,20 +1,17 @@
 package progsmod.data.campaign.rulecmd.ui.plugins;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
+import com.fs.starfarer.api.campaign.*;
+import com.fs.starfarer.api.input.*;
+import com.fs.starfarer.api.ui.*;
+import progsmod.data.campaign.rulecmd.ui.*;
 
-import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
-import com.fs.starfarer.api.input.InputEventAPI;
-import com.fs.starfarer.api.ui.PositionAPI;
-
-import progsmod.data.campaign.rulecmd.ui.Selectable;
+import java.util.*;
 
 /** Selection plugin for a list of buttons. Assumes that the buttons are
  *  stacked vertically -- in particular that no two buttons have the same y-coordinate --
  *  and that the item list corresponds to buttons starting with the highest y-coordinate and
  *  going downward. */
-public abstract class Selector<T extends Selectable> implements CustomUIPanelPlugin {
+public abstract class Selector<T extends Selectable> implements CustomUIPanelPlugin, Updatable {
     
     protected List<T> items = new ArrayList<>();
 
@@ -148,6 +145,8 @@ public abstract class Selector<T extends Selectable> implements CustomUIPanelPlu
         }
         return left;
     }
+
+    public void update() {}
 
     @Override
     public void advance(float amount) {}

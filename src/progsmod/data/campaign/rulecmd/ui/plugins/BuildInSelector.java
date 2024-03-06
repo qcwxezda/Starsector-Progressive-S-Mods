@@ -1,27 +1,21 @@
 package progsmod.data.campaign.rulecmd.ui.plugins;
 
-import java.util.BitSet;
-import java.util.List;
+import com.fs.starfarer.api.*;
+import com.fs.starfarer.api.campaign.CampaignUIAPI.*;
+import com.fs.starfarer.api.campaign.*;
+import com.fs.starfarer.api.combat.*;
+import com.fs.starfarer.api.fleet.*;
+import com.fs.starfarer.api.loading.*;
+import com.fs.starfarer.api.ui.*;
+import com.fs.starfarer.api.util.*;
+import progsmod.data.campaign.rulecmd.PSM_BuildInHullModNew.*;
+import progsmod.data.campaign.rulecmd.delegates.*;
+import progsmod.data.campaign.rulecmd.ui.*;
+import progsmod.data.campaign.rulecmd.ui.PanelCreator.*;
+import progsmod.data.campaign.rulecmd.util.*;
+import util.*;
 
-import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.campaign.InteractionDialogAPI;
-import com.fs.starfarer.api.campaign.SectorEntityToken;
-import com.fs.starfarer.api.campaign.CampaignUIAPI.CoreUITradeMode;
-import com.fs.starfarer.api.combat.ShipAPI;
-import com.fs.starfarer.api.combat.ShipVariantAPI;
-import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import com.fs.starfarer.api.loading.HullModSpecAPI;
-import com.fs.starfarer.api.ui.CustomPanelAPI;
-import com.fs.starfarer.api.ui.TooltipMakerAPI;
-import com.fs.starfarer.api.util.Misc;
-
-import progsmod.data.campaign.rulecmd.delegates.BuildInSModDelegate;
-import progsmod.data.campaign.rulecmd.ui.Button;
-import progsmod.data.campaign.rulecmd.ui.HullModButton;
-import progsmod.data.campaign.rulecmd.ui.LabelWithVariables;
-import progsmod.data.campaign.rulecmd.ui.PanelCreator.PanelCreatorData;
-import progsmod.data.campaign.rulecmd.util.TempShipMaker;
-import util.SModUtils;
+import java.util.*;
 
 public class BuildInSelector extends Selector<HullModButton> {
 
@@ -35,19 +29,22 @@ public class BuildInSelector extends Selector<HullModButton> {
     private ShipVariantAPI checkerVariant;
     private ShipVariantAPI originalVariant;
     
-    private BuildInSModDelegate delegate;
+    private ManageSMods delegate;
     private TooltipMakerAPI tooltipMaker;
     private CustomPanelAPI panel;
 
+    private SelectorContainer container;
+
     public void init(
-            BuildInSModDelegate delegate,
+            ManageSMods delegate,
             PanelCreatorData<List<HullModButton>> data, 
             LabelWithVariables<Integer> xpLabel, 
             LabelWithVariables<Integer> countLabel,
             Button showRecentButton,
             FleetMemberAPI fleetMember,
             ShipVariantAPI variant,
-            int firstIndexToBeCounted) {
+            int firstIndexToBeCounted,
+            SelectorContainer container) {
         super.init(data.created);
         this.delegate = delegate;
         this.panel = data.panel;
@@ -59,6 +56,8 @@ public class BuildInSelector extends Selector<HullModButton> {
         checkerVariant = variant.clone();
         this.fleetMember = fleetMember;
         this.firstIndexToBeCounted = firstIndexToBeCounted;
+        this.container = container;
+        container.register(this);
         updateItems();
     }
 
@@ -67,7 +66,11 @@ public class BuildInSelector extends Selector<HullModButton> {
         updateItems();
     }
 
-    private void updateItems() {
+    public void updateItems() {
+        container.updateAll();
+    }
+    @Override
+    public void update() {
         // Disable all of the unapplicable entries
         BitSet unapplicable = disableUnapplicable();
         int xp = xpLabel.getVar(0);
@@ -172,7 +175,7 @@ public class BuildInSelector extends Selector<HullModButton> {
     @Override
     public void advance(float amount) {
         // Check if the show all button has been pressed
-        if (showRecentButton.isSelected()) {
+        if (showRecentButton != null && showRecentButton.isSelected()) {
             showRecentButton.deselect();
             showRecentButton.disable();
             delegate.showRecentPressed(panel, tooltipMaker);

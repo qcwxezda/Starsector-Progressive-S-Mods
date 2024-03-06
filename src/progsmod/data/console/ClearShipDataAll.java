@@ -26,6 +26,9 @@ public class ClearShipDataAll implements BaseCommand {
             }
             SModUtils.deleteXPData(fm.getId());
         }
+        if (SModUtils.forceUpdater != null) {
+            SModUtils.forceUpdater.resetXP();
+        }
         return CommandResult.SUCCESS;
     }
 }
