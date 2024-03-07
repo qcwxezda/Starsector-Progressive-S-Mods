@@ -17,7 +17,6 @@ import progsmod.data.campaign.rulecmd.ui.Button;
 import progsmod.data.campaign.rulecmd.ui.HullModButton;
 import progsmod.data.campaign.rulecmd.ui.LabelWithVariables;
 import progsmod.data.campaign.rulecmd.ui.PanelCreator.PanelCreatorData;
-import progsmod.data.campaign.rulecmd.util.HullModButtonData;
 import progsmod.data.campaign.rulecmd.util.TempShipMaker;
 import progsmod.data.campaign.rulecmd.util.XPHelper;
 import progsmod.data.campaign.rulecmd.util.XPHelper.Affordable;
@@ -231,7 +230,7 @@ public class HullModSelector extends Selector<HullModButton> {
                         String reason = hullMod.getEffect().getCanNotBeInstalledNowReason(checkerShip,
                                 interactionTarget.getMarket(), tradeMode);
                         shouldDisable = true;
-                        if (!button.data.isBuiltIn) {
+                        if (reason != null && !button.data.isBuiltIn) {
                             // getCanNotBeInstalledNowReason() returns a weird message when trying to build in logistic
                             //  hullmods while not at a spaceport or station
                             reason = reason.replace("Can only be removed at", "Can only be built in at");

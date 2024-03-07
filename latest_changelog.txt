@@ -1,4 +1,1 @@
-Author: chdcl
-- Revamped build-in UI
-- Increasing s-mod limit now applies a modifier to Stats.MAX_PERMANENT_HULLMODS_MOD
-- Allow fractional SP costs when increasing s-mod limit, with the fractional remainder being refunded as bonus XP
+- Fix NPE if unapplicable reason is null

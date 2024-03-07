@@ -2,7 +2,7 @@
     "id": "progressiveSMods",
     "name": "Progressive S-Mods",
     "author": "qcwxezda, chdcl",
-    "version": {"major":0, "minor":11, "patch":0},
+    "version": {"major":0, "minor":11, "patch":1},
     "dependencies": [],
     "description": "Ships gain XP during combat that can be spent to build in hull mods. Disables building in hull mods using story points.",
 	"gameVersion":"0.97a-RC11",
