@@ -291,7 +291,6 @@ public class PanelCreator {
             }
 
         }, TooltipLocation.RIGHT);
-        panel.addUIElement(tooltipMaker).inTL(buttonListHorizontalPadding, distanceFromTop);
         return button;
     }
 

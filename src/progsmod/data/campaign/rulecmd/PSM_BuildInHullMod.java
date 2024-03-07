@@ -160,44 +160,51 @@ public class PSM_BuildInHullMod extends BaseCommandPlugin {
                 }
 
                 public void showRecentPressed(CustomPanelAPI panel, TooltipMakerAPI tooltipMaker) {
-                    List<HullModButtonData> newButtonData = new ArrayList<>();
-                    List<String> recentlyBuiltIn = new ArrayList<>(RecentBuildInTracker.getRecentlyBuiltIn());
-                    Collections.sort(recentlyBuiltIn, new Comparator<String>() {
-                        @Override
-                        public int compare(String s1, String s2) {
-                            HullModSpecAPI spec1 = Global.getSettings().getHullModSpec(s1);
-                            String name1 = spec1 == null ? "zzzunknown" : spec1.getDisplayName();
-                            HullModSpecAPI spec2 = Global.getSettings().getHullModSpec(s2);
-                            String name2 = spec2 == null ? "zzzunknown" : spec2.getDisplayName();
-                            return name1.compareTo(name2);
-                        }
-                    });
-
-                    for (String id : recentlyBuiltIn) {
-                        if (selectedVariant.hasHullMod(id)) {
-                            continue;
-                        }
-                        HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
-                        int cost = SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getUnmodifiedDeploymentPointsCost());
-                        newButtonData.add(
-                                new HullModButtonData(
-                                        hullMod.getId(),
-                                        hullMod.getDisplayName(),
-                                        hullMod.getSpriteName(),
-                                        cost + " XP",
-                                        hullMod.getDescription(selectedVariant.getHullSize()),
-                                        hullMod.getEffect(),
-                                        selectedVariant.getHullSize(),
-                                        cost,
-                                        false)
-                        );
-                    }
+                    List<HullModButtonData> newButtonData = generateNewButtonData(selectedVariant, fleetMember);
                     PanelCreatorData<List<HullModButton>> newButtons =
                             PanelCreator.addToHullModButtonList(panel, tooltipMaker, newButtonData, 45f, 10f, titleHeight, false);
+                    tooltipMaker.getExternalScroller().setYOffset(
+                            Math.max(0f, tooltipMaker.getHeightSoFar() - panel.getPosition().getHeight()));
                     plugin.addNewItems(newButtons.created);
                 }
             }
         );
         return true;
+    }
+
+    static List<HullModButtonData> generateNewButtonData(ShipVariantAPI selectedVariant, FleetMemberAPI fleetMember) {
+        List<HullModButtonData> newButtonData = new ArrayList<>();
+        List<String> recentlyBuiltIn = new ArrayList<>(RecentBuildInTracker.getRecentlyBuiltIn());
+        Collections.sort(recentlyBuiltIn, new Comparator<String>() {
+            @Override
+            public int compare(String s1, String s2) {
+                HullModSpecAPI spec1 = Global.getSettings().getHullModSpec(s1);
+                String name1 = spec1 == null ? "zzzunknown" : spec1.getDisplayName();
+                HullModSpecAPI spec2 = Global.getSettings().getHullModSpec(s2);
+                String name2 = spec2 == null ? "zzzunknown" : spec2.getDisplayName();
+                return name1.compareTo(name2);
+            }
+        });
+
+        for (String id : recentlyBuiltIn) {
+            if (selectedVariant.hasHullMod(id)) {
+                continue;
+            }
+            HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(id);
+            int cost = SModUtils.getBuildInCost(hullMod, selectedVariant.getHullSize(), fleetMember.getUnmodifiedDeploymentPointsCost());
+            newButtonData.add(
+                    new HullModButtonData(
+                            hullMod.getId(),
+                            hullMod.getDisplayName(),
+                            hullMod.getSpriteName(),
+                            cost + " XP",
+                            hullMod.getDescription(selectedVariant.getHullSize()),
+                            hullMod.getEffect(),
+                            selectedVariant.getHullSize(),
+                            cost,
+                            false)
+            );
+        }
+        return newButtonData;
     }
 }

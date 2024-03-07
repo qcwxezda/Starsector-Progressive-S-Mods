@@ -24,7 +24,7 @@ public class XPTracker extends BaseHullMod {
     @Override
     public void applyEffectsBeforeShipCreation(HullSize hullSize, MutableShipStatsAPI stats, String id) {
         ShipVariantAPI variant = stats.getVariant();
-        if (SModUtils.Constants.DISABLE_MOD || SModUtils.Constants.DEPLOYMENT_COST_PENALTY <= 0f || variant == null) return;
+        if (SModUtils.Constants.DISABLE_MOD || variant == null) return;
 
         // Increase S-mod limit ship stat if it was raised with SModUtils.incrementSModLimit()
         // Allows other mods like RAT to interact with S-mods
@@ -34,6 +34,8 @@ public class XPTracker extends BaseHullMod {
                 stats.getDynamic().getMod(Stats.MAX_PERMANENT_HULLMODS_MOD).modifyFlat(id, numOverLimit);
             }
         }
+
+        if (SModUtils.Constants.DEPLOYMENT_COST_PENALTY <= 0f) return;
 
         int sModsOverLimit = getNumPenalizedMods(stats.getFleetMember());
         if (sModsOverLimit > 0) {

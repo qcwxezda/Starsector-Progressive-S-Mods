@@ -211,7 +211,7 @@ public class HullModSelector extends Selector<HullModButton> {
                 HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(button.data.id);
                 boolean shouldDisable = false;
                 String disableText = null;
-                if (!hullMod.getEffect().isApplicableToShip(checkerShip)) {
+                if (!hullMod.getEffect().isApplicableToShip(checkerShip) && !button.data.isBuiltIn) {
                     String reason = hullMod.getEffect().getUnapplicableReason(checkerShip);
                     // Can build in any number of logistics hull mods
                     // Don't use s-mods in the check ship as we want to be able to tell when
