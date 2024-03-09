@@ -341,6 +341,10 @@ public class SModUtils {
      *  Returns [true] if and only if the operation succeeded. */
     public static boolean spendXP(String fmId, float xp) {
         ShipData data = SHIP_DATA_TABLE.get(fmId);
+        if (data == null) {
+            data = new ShipData(0f, 0);
+            SHIP_DATA_TABLE.put(fmId, data);
+        }
         if (enoughXP(fmId, xp)) {
             data.xp -= xp;
             return true;

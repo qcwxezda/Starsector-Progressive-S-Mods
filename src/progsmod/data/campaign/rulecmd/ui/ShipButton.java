@@ -1,6 +1,7 @@
 package progsmod.data.campaign.rulecmd.ui;
 
 import com.fs.starfarer.api.ui.CustomPanelAPI;
+import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import progsmod.data.campaign.rulecmd.util.ShipButtonData;
@@ -56,7 +57,9 @@ public class ShipButton extends Button {
         String shipName = data.fleetMember.getShipName() + " (" +
                           data.fleetMember.getHullSpec().getNameWithDesignationWithDashClass() + ")";
         textElement.setParaFontOrbitron();
-        textElement.addPara(shipName, Misc.getBasePlayerColor(), 5f);
+        LabelAPI text = textElement.addPara(shipName, Misc.getBasePlayerColor(), 5f);
+        text.setHighlightColor(Color.WHITE);
+        text.setHighlight(data.fleetMember.getHullSpec().getHullName());
 
         TooltipMakerAPI xpElement = customPanel.createUIElement(textWidth, xpHeight, false);
         String xpString = "XP: " + (int) SModUtils.getXP(data.fleetMember.getId());

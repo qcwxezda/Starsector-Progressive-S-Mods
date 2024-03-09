@@ -1,5 +1,1 @@
-- Added direct download and changelog to version file
-- Pressing "show recent" now scrolls to the bottom of the interface
-- Fixed inability to increase s-mod limit when DP penalty is 0
-- Fixed already built-in mods not being removable under certain circumstances
-- Fixed duplicate UI elements causing extreme slowdown
+- Hotfix for a crash related to missing ship data when installing 0-cost hull mods

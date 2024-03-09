@@ -9,6 +9,7 @@ import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
+import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipCreator;
 import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipLocation;
@@ -107,8 +108,10 @@ public class PanelCreator {
             shipName += " - " + selectedVariant.getHullSpec().getHullName();
         }
         infoTextElement.setParaOrbitronLarge();
-        infoTextElement.addPara(shipName,
-                Misc.getBasePlayerColor(), 0f);
+        LabelAPI text = infoTextElement.addPara(shipName,
+                                                Misc.getBasePlayerColor(), 0f);
+        text.setHighlightColor(Color.WHITE);
+        text.setHighlight(ship.getHullSpec().getHullName());
 
         // If ship has multiple modules, add a button to select a different one
         if (shipHasModules) {
