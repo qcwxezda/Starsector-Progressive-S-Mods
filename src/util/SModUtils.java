@@ -577,12 +577,22 @@ public class SModUtils {
     public static void addCondensedXPGainToDialog(InteractionDialogAPI dialog, float xp, int shipCount) {
         if (dialog == null || dialog.getTextPanel() == null) return;
         dialog.getTextPanel().setFontSmallInsignia();
-        dialog.getTextPanel().addPara(
-                "Gained a total of %s XP across %s ships.",
-                Misc.getTextColor(),
-                Misc.getHighlightColor(),
-                Misc.getFormat().format(xp),
-                "" + shipCount);
+        if (shipCount == 0) return;
+        else if (shipCount == 1) {
+            dialog.getTextPanel().addPara(
+                    "Gained a total of %s ship XP.",
+                    Misc.getTextColor(),
+                    Misc.getHighlightColor(),
+                    Misc.getFormat().format(xp));
+        }
+        else {
+            dialog.getTextPanel().addPara(
+                    "Gained a total of %s ship XP across %s ships.",
+                    Misc.getTextColor(),
+                    Misc.getHighlightColor(),
+                    Misc.getFormat().format(xp),
+                    "" + shipCount);
+        }
         dialog.getTextPanel().setFontInsignia();
     }
 
