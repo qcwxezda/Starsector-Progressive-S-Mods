@@ -29,7 +29,7 @@ public class SModUtils {
 
     public static ForceUpdater forceUpdater = null;
 
-    public enum GrowthType {LINEAR, EXPONENTIAL};
+    public enum GrowthType {LINEAR, EXPONENTIAL}
 
     /** Lookup key into the sector-persistent data that stores ship data */
     public static final String SHIP_DATA_KEY = "progsmod_ShipData";
@@ -118,6 +118,8 @@ public class SModUtils {
         /** Enables the new UI dialog option. Both the legacy UI and the new UI can be enabled at the same time. */
         public static boolean ENABLE_NEW_UI;
 
+        public static boolean CONDENSE_XP_GAIN_MESSAGES;
+
         /** Load constants from a json file */
         private static void load(String filePath) throws IOException, JSONException {
             JSONObject json = Global.getSettings().loadJSON(filePath);
@@ -139,10 +141,10 @@ public class SModUtils {
                 json.getInt("extraSModXPCostGrowthType") == 0 ? GrowthType.LINEAR : GrowthType.EXPONENTIAL;
             EXTRA_SMOD_XP_COST_GROWTHFACTOR = (float) json.getDouble("extraSModXPCostGrowthFactor");
             JSONObject costCoeff = json.getJSONObject("xpCostCoeff");
-            XP_COST_COEFF_FRIGATE = loadCoeffsFromJSON(costCoeff, "frigate");
-            XP_COST_COEFF_DESTROYER = loadCoeffsFromJSON(costCoeff, "destroyer");
-            XP_COST_COEFF_CRUISER = loadCoeffsFromJSON(costCoeff, "cruiser");
-            XP_COST_COEFF_CAPITAL = loadCoeffsFromJSON(costCoeff, "capital");
+            XP_COST_COEFF_FRIGATE = loadCoeffsFromJSON(costCoeff, "frigate", 1f);
+            XP_COST_COEFF_DESTROYER = loadCoeffsFromJSON(costCoeff, "destroyer", 1f);
+            XP_COST_COEFF_CRUISER = loadCoeffsFromJSON(costCoeff, "cruiser", 1f);
+            XP_COST_COEFF_CAPITAL = loadCoeffsFromJSON(costCoeff, "capital", 1f);
             DEPLOYMENT_COST_PENALTY = (float) json.getDouble( "deploymentCostPenalty");
             BASE_DP_FRIGATE = (float) json.getDouble("baseDPFrigate");
             BASE_DP_DESTROYER = (float) json.getDouble("baseDPDestroyer");
@@ -168,14 +170,15 @@ public class SModUtils {
             XP_FRACTION_ATTACK = (float) combat.getDouble("xpFractionAttack");
             XP_FRACTION_DEFENSE = (float) combat.getDouble("xpFractionDefense");
             XP_FRACTION_SUPPORT = (float) combat.getDouble("xpFractionSupport");
+            CONDENSE_XP_GAIN_MESSAGES = combat.getBoolean("condenseXPGainMessages");
         }
 
-        private static float[] loadCoeffsFromJSON(JSONObject json, String name) throws JSONException {
+        static float[] loadCoeffsFromJSON(JSONObject json, String name, float multiplier) throws JSONException {
             JSONArray jsonArray = json.getJSONArray(name);
             int length = jsonArray.length();
             float[] coeffs = new float[length];
             for (int i = 0; i < jsonArray.length(); i++) {
-                coeffs[i] = (float) jsonArray.getDouble(i);
+                coeffs[i] = (float) jsonArray.getDouble(i) * multiplier;
             }
             return coeffs;
         }
@@ -183,9 +186,9 @@ public class SModUtils {
 
     /** Contains XP and # of max perma mods over the normal limit. */
     public static class ShipData {
-        public float xp = 0f;
+        public float xp;
         public float xpSpentOnIncreasingLimit = 0f;
-        public int permaModsOverLimit = 0;
+        public int permaModsOverLimit;
         public boolean initialSModsAccountedFor = false;
 
         public ShipData(float xp, int pmol) {
@@ -198,31 +201,16 @@ public class SModUtils {
     public static class ShipDataTable extends HashMap<String, ShipData> {}
 
     /** Wrapper class that maps hull id to reserve XP */
-    public static class ReserveXPTable extends HashMap<String, Float> {} 
-
-    // /** Wrapper class for ShipAPI for use as hash keys. */
-    // public static class HashableShipAPI {
-    //     public ShipAPI ship;
-
-    //     public HashableShipAPI(ShipAPI ship) {
-    //         this.ship = ship;
-    //     }
-
-    //     @Override
-    //     public boolean equals(Object o) {
-    //         if (!(o instanceof HashableShipAPI)) return false;
-    //         return ship.getId().equals(((HashableShipAPI) o).ship.getId());
-    //     }
-
-    //     @Override
-    //     public int hashCode() {
-    //         return ship.getId().hashCode();
-    //     }
-    // }
+    public static class ReserveXPTable extends HashMap<String, Float> {}
         
     public static void loadConstants(String filePath) {
         try {
-            Constants.load(filePath);
+            if (Global.getSettings().getModManager().isModEnabled("lunalib")) {
+                LunaLibSettingsListener.init(filePath);
+            }
+            else {
+                Constants.load(filePath);
+            }
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
@@ -414,7 +402,7 @@ public class SModUtils {
 
         @Override
         public String toString() {
-            return bonusXP > 0 ? Float.toString(spCost + bonusXP - 1) : Integer.toString(spCost); // "1" and not "1.0"
+            return "" + spCost; // "1" and not "1.0"
         }
     }
 
@@ -468,7 +456,7 @@ public class SModUtils {
 
     /** Gets the XP cost of building in a certain hullmod */
     public static int getBuildInCost(HullModSpecAPI hullMod, HullSize size, float deploymentCost) {
-        float cost = 0f, mult = 1f;
+        float cost, mult;
         switch (size) {
             case FRIGATE: 
                 cost = computePolynomial(hullMod.getFrigateCost(), Constants.XP_COST_COEFF_FRIGATE);
@@ -491,43 +479,11 @@ public class SModUtils {
         return (int) Math.max(0f, cost * mult);
     }
 
-    // private enum FleetMemberType {DFM, FM, SHIP};
-
-    // public static <T> List<String> getFleetMemberIds(List<? extends T> fleetMembers) {
-    //     int n = fleetMembers.size();
-    //     List<String> ids = new ArrayList<>(n);
-    //     FleetMemberType type = null;
-    //     for (T fm : fleetMembers) {
-    //         if (type == null) {
-    //             if (fm instanceof FleetMemberAPI) {type = FleetMemberType.FM;}
-    //             else if (fm instanceof DeployedFleetMemberAPI) {type = FleetMemberType.DFM;}
-    //             else if (fm instanceof ShipAPI) {type = FleetMemberType.SHIP;}
-    //             else return ids;
-    //         }
-    //         switch (type) {
-    //             case FM: ids.add(((FleetMemberAPI) fm).getId()); break;
-    //             case DFM: ids.add(((DeployedFleetMemberAPI) fm).getMember().getId()); break;
-    //             case SHIP: ids.add(((ShipAPI) fm).getFleetMemberId()); break;
-    //             default: break;
-    //         }
-    //     }
-    //     return ids;
-    // }
-
     /** Given a list of fleetMembers, return a list of their ids */
     public static List<String> getFleetMemberIds(List<FleetMemberAPI> fleetMembers) {
         List<String> ids = new ArrayList<>(fleetMembers.size());
         for (FleetMemberAPI fm : fleetMembers) {
             ids.add(fm.getId());
-        }
-        return ids; 
-    }
-
-    /** Given a list of deployedFleetMembers, return a list of their ids */
-    public static List<String> getDeployedFleetMemberIds(List<DeployedFleetMemberAPI> deployedFleetMembers) {
-        List<String> ids = new ArrayList<>(deployedFleetMembers.size());
-        for (DeployedFleetMemberAPI fm : deployedFleetMembers) {
-            ids.add(fm.getMember().getId());
         }
         return ids; 
     }
@@ -617,24 +573,16 @@ public class SModUtils {
             .addPara(String.format("The %s has %s XP.", fleetMember.getShipName(), xpFmt))
             .setHighlight(fleetMember.getShipName(), xpFmt);
     }
-    
-    /** Creates the text "The [fleetMember] gained [xp] xp." 
-     *  Adds the specified text as a paragraph on [dialog]
-     *  Adds [additionalText] to the end of the XP gain text. */
-    public static void addXPGainToDialog(InteractionDialogAPI dialog, FleetMemberAPI fleetMember, int xp, String additionalText) {
-        if (dialog == null || dialog.getTextPanel() == null) {
-            return;
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append("The ");
-        String shipName = fleetMember.getShipName();
-        sb.append(shipName + ", ");
-        ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
-        String xpFmt = Misc.getFormat().format(xp);
-        sb.append(hullSpec.getHullNameWithDashClass() + " gained " + xpFmt + " XP");
+
+    public static void addCondensedXPGainToDialog(InteractionDialogAPI dialog, float xp, int shipCount) {
+        if (dialog == null || dialog.getTextPanel() == null) return;
         dialog.getTextPanel().setFontSmallInsignia();
-        LabelAPI para = dialog.getTextPanel().addPara(sb.toString() + " " + (additionalText == null ? "" : additionalText));
-        para.setHighlight(hullSpec.getHullName(), xpFmt);
+        dialog.getTextPanel().addPara(
+                "Gained a total of %s XP across %s ships.",
+                Misc.getTextColor(),
+                Misc.getHighlightColor(),
+                Misc.getFormat().format(xp),
+                "" + shipCount);
         dialog.getTextPanel().setFontInsignia();
     }
 
@@ -656,7 +604,7 @@ public class SModUtils {
         StringBuilder sb = new StringBuilder();
         sb.append("The ");
         String shipName = fleetMember.getShipName();
-        sb.append(shipName + ", ");
+        sb.append(shipName).append(", ");
         ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
         String totalXPFmt = Misc.getFormat().format(totalXP);
         sb.append(String.format("%s gained %s XP %s:", hullSpec.getHullNameWithDashClass(), totalXPFmt, additionalText));
@@ -668,13 +616,13 @@ public class SModUtils {
             String partFmt = Misc.getFormat().format(part);
             switch (partXP.getKey()) {
                 case ATTACK: 
-                    sb.append(partFmt + " XP gained from offensive actions");
+                    sb.append(partFmt).append(" XP gained from offensive actions");
                     break;
                 case DEFENSE: 
-                    sb.append(partFmt + " XP gained from defensive actions");
+                    sb.append(partFmt).append(" XP gained from defensive actions");
                     break;
                 case SUPPORT: 
-                    sb.append(partFmt + " XP gained from supportive actions");
+                    sb.append(partFmt).append(" XP gained from supportive actions");
                     break;
                 default: 
                     break;
@@ -689,24 +637,39 @@ public class SModUtils {
 
     /** Adds "All ships in fleet gained [xp] additional XP [additionalText]:" followed by the list of ships in
      *  [fleetMembers]. */
-    public static void addPostBattleXPGainToDialog(InteractionDialogAPI dialog, List<FleetMemberAPI> civilianShips, int xp, int civilianXP) {
+    public static void addPostBattleXPGainToDialog(InteractionDialogAPI dialog, List<FleetMemberAPI> civilianShips, int xp, int civilianXP, boolean isAutoResolve) {
         if (dialog == null || dialog.getTextPanel() == null) {
+            return;
+        }
+        if (Constants.CONDENSE_XP_GAIN_MESSAGES) {
+            int civilianSize = civilianShips.size();
+            int combatSize = Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy().size() - civilianSize;
+            int total = xp * combatSize + civilianXP * civilianSize;
+            dialog.getTextPanel().setFontSmallInsignia();
+            String xpFmt = Misc.getFormat().format(total);
+            dialog.getTextPanel().addPara(
+                    isAutoResolve ? "All ships in fleet gained a combined %s XP." : "All ships in fleet gained an additional combined %s XP.",
+                    Misc.getTextColor(),
+                    Misc.getHighlightColor(),
+                    xpFmt);
+            dialog.getTextPanel().setFontInsignia();
             return;
         }
         List<String> highlights = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         String xpFmt = Misc.getFormat().format(xp);
         String civilianXPFmt = Misc.getFormat().format(civilianXP);
-        sb.append("All combat ships in fleet gained " + xpFmt + " additional XP.");
-        highlights.add("" + xpFmt);
+        sb.append("All combat ships in fleet gained ").append(xpFmt).append(" additional XP.");
+        highlights.add(xpFmt);
         if (!civilianShips.isEmpty()) {
-            sb.append("\nThe following ships gained " + civilianXPFmt + " XP due to being civilian ships, or having no weapons or fighters equipped:" );
-            highlights.add("" + civilianXPFmt);
+            sb.append("\nThe following ships gained ").append(civilianXPFmt)
+              .append(" XP due to being civilian ships, or having no weapons or fighters equipped:");
+            highlights.add(civilianXPFmt);
             for (FleetMemberAPI fleetMember : civilianShips) {
                 sb.append("\n    - ");
                 String shipName = fleetMember.getShipName();
                 ShipHullSpecAPI hullSpec = fleetMember.getVariant().getHullSpec();
-                sb.append(shipName + ", " + hullSpec.getHullNameWithDashClass());
+                sb.append(shipName).append(", ").append(hullSpec.getHullNameWithDashClass());
                 highlights.add(hullSpec.getHullName());
             }
         }

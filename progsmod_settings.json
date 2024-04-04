@@ -111,6 +111,8 @@
         "xpFractionAttack": 0.34,
         "xpFractionDefense": 0.33,
         "xpFractionSupport": 0.33,
+
+        "condenseXPGainMessages":false
     },
 
     # Set this to true in order to disable this mod's features

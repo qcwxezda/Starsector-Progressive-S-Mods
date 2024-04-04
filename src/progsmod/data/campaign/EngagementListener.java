@@ -35,8 +35,6 @@ public class EngagementListener extends BaseCampaignEventListener {
     private Map<String, FleetMemberAPI> idToFleetMemberMap;
     /** Maps fleet member ids to their total XP gain, by contribution type */
     private Map<String, Map<ContributionType, Float>> xpGainMap;
-    /** Contribution map as populated in the combat plugin */
-    private Map<ContributionType, Map<String, Map<String, Float>>> totalContributionMap;
     /** Set of player ships that are eligible to gain XP */
     private Set<String> playerFilter;
     /** Set of enemy ships that are eligible to give XP */
@@ -77,7 +75,7 @@ public class EngagementListener extends BaseCampaignEventListener {
                     }
                     // If the ship has modules, add XP for any S-mods built into modules
                     List<String> moduleSlotIds = fm.getVariant().getModuleSlots();
-                    if (moduleSlotIds.size() > 0) {
+                    if (!moduleSlotIds.isEmpty()) {
                         for (String id : moduleSlotIds) {
                             ShipVariantAPI moduleVariant = fm.getVariant().getModuleVariant(id);
                             for (String modId : moduleVariant.getSMods()) {
@@ -122,7 +120,8 @@ public class EngagementListener extends BaseCampaignEventListener {
     public void reportPlayerEngagement(EngagementResultAPI result) {
         // Populate the required utility mappings
         shipToFleetMemberMap = ContributionTracker.getShipToFleetMemberMap();
-        totalContributionMap = ContributionTracker.getContributionTable();
+        Map<ContributionType, Map<String, Map<String, Float>>> totalContributionMap =
+                ContributionTracker.getContributionTable();
         idToFleetMemberMap = new HashMap<>();
         xpGainMap = new HashMap<>();
         playerFilter = new HashSet<>();
@@ -142,8 +141,8 @@ public class EngagementListener extends BaseCampaignEventListener {
         // List of ships that are eligible to gain XP
         playerFilter.addAll(SModUtils.getFleetMemberIds(playerFleet));
         if (!SModUtils.Constants.GIVE_XP_TO_DISABLED_SHIPS) {
-            playerFilter.removeAll(SModUtils.getFleetMemberIds(playerResult.getDestroyed()));
-            playerFilter.removeAll(SModUtils.getFleetMemberIds(playerResult.getDisabled()));
+            playerFilter.removeAll(new HashSet<>(SModUtils.getFleetMemberIds(playerResult.getDestroyed())));
+            playerFilter.removeAll(new HashSet<>(SModUtils.getFleetMemberIds(playerResult.getDisabled())));
         }
         // List of ships that can give XP when damaged
         enemyFilter.addAll(SModUtils.getFleetMemberIds(enemyResult.getDestroyed()));
@@ -181,7 +180,7 @@ public class EngagementListener extends BaseCampaignEventListener {
                 totalXPGain += xpGain;
             }
             // Show the XP gain in the dialog
-            if (idToFleetMemberMap.containsKey(id)) {
+            if (idToFleetMemberMap.containsKey(id) && !SModUtils.Constants.CONDENSE_XP_GAIN_MESSAGES) {
                 SModUtils.addTypedXPGainToDialog(
                     lastDialog, 
                     idToFleetMemberMap.get(id), 
@@ -190,6 +189,9 @@ public class EngagementListener extends BaseCampaignEventListener {
             }
         }
 
+        if (SModUtils.Constants.CONDENSE_XP_GAIN_MESSAGES) {
+            SModUtils.addCondensedXPGainToDialog(lastDialog, totalXPGain, xpGainMap.size());
+        }
 
         givePostBattleXP(playerFleet, totalXPGain, false);
     }
@@ -237,7 +239,7 @@ public class EngagementListener extends BaseCampaignEventListener {
                 lastDialog, 
                 civilianShips, 
                 (int) (totalXPGain * SModUtils.Constants.POST_BATTLE_XP_FRACTION * (isAutoResolve ? SModUtils.Constants.POST_BATTLE_AUTO_PURSUIT_MULTIPLIER : 1.0f)), 
-                (int) (totalXPGain * SModUtils.Constants.POST_BATTLE_XP_FRACTION * SModUtils.Constants.POST_BATTLE_CIVILIAN_MULTIPLIER));
+                (int) (totalXPGain * SModUtils.Constants.POST_BATTLE_XP_FRACTION * SModUtils.Constants.POST_BATTLE_CIVILIAN_MULTIPLIER), isAutoResolve);
         }
     }
 
@@ -305,52 +307,4 @@ public class EngagementListener extends BaseCampaignEventListener {
             default: return 0f;
         }
     }
-
-    // private void checkContribTable(Map<ContributionType, Map<String, Map<String, Float>>> totalContribution) {
-    //     Logger logger = Global.getLogger(getClass());
-    //     for (Map.Entry<ContributionType, Map<String, Map<String, Float>>> entry : totalContribution.entrySet()) {
-    //         for (Map.Entry<String, Map<String, Float>> entry2 : entry.getValue().entrySet()) {
-    //             String enemy = entry2.getKey();
-    //             if (!ProgSModCombatPlugin.baseShipTable.containsKey(enemy)) {
-    //                 logger.info("Unknown enemy (contrib)");
-    //             }
-    //             else if (ProgSModCombatPlugin.baseShipTable.get(enemy).getOwner() == 0) {
-    //                 logger.info("Player where enemy should be (contrib)");
-    //             }
-    //             for (Map.Entry<String, Float> entry3 : entry2.getValue().entrySet()) {
-    //                 String player = entry3.getKey();
-    //                 if (!ProgSModCombatPlugin.baseShipTable.containsKey(player)) {
-    //                     logger.info("Unknown player (contrib)");
-    //                 }
-    //                 else if (ProgSModCombatPlugin.baseShipTable.get(player).getOwner() == 1) {
-    //                     logger.info("Enemy where player should be (contrib)");
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
-    // private void checkContribTable2(Map<ContributionType, Map<String, Map<String, Float>>> totalContribution) {
-    //     Logger logger = Global.getLogger(getClass());
-    //     for (Map.Entry<ContributionType, Map<String, Map<String, Float>>> entry : totalContribution.entrySet()) {
-    //         for (Map.Entry<String, Map<String, Float>> entry2 : entry.getValue().entrySet()) {
-    //             String enemy = entry2.getKey();
-    //             if (!shipToFleetMemberMap.containsKey(enemy) || !idToFleetMemberMap.containsKey(shipToFleetMemberMap.get(enemy))) {
-    //                 logger.info("Unknown enemy (contrib2)");
-    //             }
-    //             else if (idToFleetMemberMap.get(shipToFleetMemberMap.get(enemy)).getOwner() == 0) {
-    //                 logger.info("Player where enemy should be (contrib2)");
-    //             }
-    //             for (Map.Entry<String, Float> entry3 : entry2.getValue().entrySet()) {
-    //                 String player = entry3.getKey();
-    //                 if (!shipToFleetMemberMap.containsKey(player) || !idToFleetMemberMap.containsKey(shipToFleetMemberMap.get(player))) {
-    //                     logger.info("Unknown player (contrib2)");
-    //                 }
-    //                 else if (idToFleetMemberMap.get(shipToFleetMemberMap.get(player)).getOwner() == 1) {
-    //                     logger.info("Enemy where player should be (contrib2)");
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 }
