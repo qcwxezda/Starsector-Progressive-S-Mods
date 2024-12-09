@@ -304,16 +304,21 @@ public class SModUtils {
         return createdEntry;
     }
 
-    /** Adds an XP tracking hull mod to the ship in question if it has positive XP or
-     *  an S-mod limit increase and does not have the tracking hull mod already. */
+    /** Adds an XP tracking hull mod to the ship in question */
     public static void addTrackerHullMod(FleetMemberAPI fm) {
-        boolean needMod = getXP(fm.getId()) > 0 || getNumOverLimit(fm.getId()) > 0;
-        if (needMod && !fm.getVariant().hasHullMod("progsmod_xptracker")) {
-            if (fm.getVariant().isStockVariant()) {
-                fm.setVariant(fm.getVariant().clone(), false, false);
+        if (!fm.getVariant().hasHullMod("progsmod_xptracker")) {
+            ShipVariantAPI variant = fm.getVariant();
+            if (variant.isStockVariant() || variant.isGoalVariant() || variant.isEmptyHullVariant()) {
+                fm.setVariant(variant.clone(), false, false);
                 fm.getVariant().setSource(VariantSource.REFIT);
             }
             fm.getVariant().addPermaMod("progsmod_xptracker", false);
+        }
+    }
+
+    public static void addTrackerHullMod(ShipVariantAPI variant) {
+        if (!variant.hasHullMod("progsmod_xptracker")) {
+            variant.addPermaMod("progsmod_xptracker", false);
         }
     }
 

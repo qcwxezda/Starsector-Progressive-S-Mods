@@ -20,6 +20,7 @@ import progsmod.data.campaign.rulecmd.ui.plugins.AugmentButtonPlugin;
 import progsmod.data.campaign.rulecmd.ui.plugins.BuildInSelector;
 import progsmod.data.campaign.rulecmd.util.HullModButtonData;
 import progsmod.data.campaign.rulecmd.util.ShipButtonData;
+import util.Action;
 import util.SModUtils;
 
 import java.awt.*;
@@ -128,8 +129,8 @@ public class PanelCreator {
     }
 
     public static CustomPanelAPI createAugmentPanel(CustomPanelAPI panel, FleetMemberAPI ship,
-                                                    PSM_BuildInHullMod.SelectorContainer container, CustomDialogDelegate.CustomDialogCallback callback) {
-        AugmentButtonPlugin augmentButtonPlugin = new AugmentButtonPlugin(panel, ship, container, callback);
+                                                    ShipVariantAPI selectedVariant, PSM_BuildInHullMod.SelectorContainer container, CustomDialogDelegate.CustomDialogCallback callback, Action doOnConfirm) {
+        AugmentButtonPlugin augmentButtonPlugin = new AugmentButtonPlugin(panel, ship, selectedVariant, container, callback, doOnConfirm);
         return augmentButtonPlugin.augmentPanel;
     }
 

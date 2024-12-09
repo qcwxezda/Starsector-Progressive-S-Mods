@@ -169,8 +169,8 @@ public class PSM_BuildInHullMod {
                         float augmentPanelHeight = 0f;
                         if (SModUtils.Constants.ALLOW_INCREASE_SMOD_LIMIT) {
                             float augmentPanelPad = 5f;
-                            CustomPanelAPI augmentPanel = PanelCreator.createAugmentPanel(panel, fleetMember,
-                                    container, originalCallback == null ? callback : originalCallback);
+                            CustomPanelAPI augmentPanel = PanelCreator.createAugmentPanel(panel, fleetMember, selectedVariant,
+                                    container, originalCallback == null ? callback : originalCallback, doOnConfirm);
                             augmentPanel.getPosition().belowMid(shipInfoPanel, augmentPanelPad);
                             lastPanel = augmentPanel;
                             augmentPanelHeight = augmentPanel.getPosition().getHeight() + augmentPanelPad;
@@ -251,6 +251,7 @@ public class PSM_BuildInHullMod {
                         if (addedAtLeastOne || removedAtLeastOne) {/**/
                             Global.getSoundPlayer().playUISound(sound, 1f, 1f);
                             SModUtils.displayXP(dialog, fleetMember);
+                            SModUtils.addTrackerHullMod(selectedVariant);
                         }
 
                         SModUtils.forceUpdater = null;

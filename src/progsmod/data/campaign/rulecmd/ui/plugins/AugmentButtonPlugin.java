@@ -5,12 +5,14 @@ import com.fs.starfarer.api.campaign.BaseCustomDialogDelegate;
 import com.fs.starfarer.api.campaign.CustomDialogDelegate;
 import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
+import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.input.InputEventAPI;
 import com.fs.starfarer.api.ui.*;
 import com.fs.starfarer.api.util.Misc;
 import progsmod.data.campaign.rulecmd.PSM_BuildInHullMod.SelectorContainer;
 import progsmod.data.campaign.rulecmd.util.XPHelper;
+import util.Action;
 import util.SModUtils;
 
 import java.util.List;
@@ -27,13 +29,17 @@ public class AugmentButtonPlugin implements CustomUIPanelPlugin, Updatable {
     private SelectorContainer container;
     private LabelAPI spInfoLabel;
     private CustomDialogDelegate.CustomDialogCallback callback;
+    private ShipVariantAPI selectedVariant;
+    private Action doOnConfirm;
 
-    public AugmentButtonPlugin(CustomPanelAPI parentPanel, FleetMemberAPI ship, SelectorContainer container, CustomDialogDelegate.CustomDialogCallback callback) {
+    public AugmentButtonPlugin(CustomPanelAPI parentPanel, FleetMemberAPI ship, ShipVariantAPI selectedVariant, SelectorContainer container, CustomDialogDelegate.CustomDialogCallback callback, Action doOnConfirm) {
         container.register(this);
         this.parentPanel = parentPanel;
         this.ship = ship;
         this.container = container;
         this.callback = callback;
+        this.selectedVariant = selectedVariant;
+        this.doOnConfirm = doOnConfirm;
         width = parentPanel.getPosition().getWidth();
         float textHeight = 20f;
         float buttonHeight = 30f;
@@ -155,8 +161,13 @@ public class AugmentButtonPlugin implements CustomUIPanelPlugin, Updatable {
             // Use reserve XP if required
             container.xpHelper.useReserveXPIfNeeded(ship);
             SModUtils.incrementSModLimit(ship);
+            SModUtils.addTrackerHullMod(selectedVariant);
             container.countLabel.changeVar(1, SModUtils.getMaxSMods(ship));
             container.updateAll();
+
+            if (doOnConfirm != null) {
+                doOnConfirm.perform();
+            }
         }
     }
 
