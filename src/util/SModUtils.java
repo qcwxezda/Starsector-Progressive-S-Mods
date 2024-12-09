@@ -112,12 +112,6 @@ public class SModUtils {
         /** Set to true to disable this mod's features */
         public static boolean DISABLE_MOD;
 
-        /** Enables the legacy UI dialog option. Both the legacy UI and the new UI can be enabled at the same time. */
-        public static boolean ENABLE_LEGACY_UI;
-
-        /** Enables the new UI dialog option. Both the legacy UI and the new UI can be enabled at the same time. */
-        public static boolean ENABLE_NEW_UI;
-
         public static boolean CONDENSE_XP_GAIN_MESSAGES;
 
         /** Load constants from a json file */
@@ -155,8 +149,6 @@ public class SModUtils {
             IGNORE_NO_BUILD_IN = json.getBoolean("ignoreNoBuildIn");
             ALLOW_INCREASE_SMOD_LIMIT = json.getBoolean("allowIncreaseSModLimit");
             DISABLE_MOD = json.getBoolean("disableMod");
-            ENABLE_LEGACY_UI = json.getBoolean("enableLegacyUI");
-            ENABLE_NEW_UI = json.getBoolean("enableNewUI");
 
             JSONObject combat = json.getJSONObject("combat");
             GIVE_XP_TO_DISABLED_SHIPS = combat.getBoolean("giveXPToDisabledShips");

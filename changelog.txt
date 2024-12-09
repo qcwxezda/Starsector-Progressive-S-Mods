@@ -1,0 +1,9 @@
+1.0.1
+----------
+- Disabled and removed the legacy UI.
+- Added LunaLib refit button to manage S-mods, if you have LunaLib. (Note: due to weirdness with stacking interfaces, clicking the
+  increase S-mod limit button will close the S-mod interface when accessed directly from refit screen).
+- No longer checks hullmod getUnapplicableReason for hullmods that are already installed on the variant.
+- Fixed reserve XP not working correctly with Lunalib.
+- Fixed increasing S-mod limit not working with the exact number of story points needed.
+- Reserve XP can now be used to increase S-mod limit.

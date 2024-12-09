@@ -2,14 +2,14 @@ package progsmod.data.campaign.rulecmd.ui.plugins;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BaseCustomDialogDelegate;
+import com.fs.starfarer.api.campaign.CustomDialogDelegate;
 import com.fs.starfarer.api.campaign.CustomUIPanelPlugin;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.input.InputEventAPI;
 import com.fs.starfarer.api.ui.*;
 import com.fs.starfarer.api.util.Misc;
-import progsmod.data.campaign.rulecmd.PSM_BuildInHullModNew.SelectorContainer;
-import progsmod.data.campaign.rulecmd.delegates.SelectShip;
+import progsmod.data.campaign.rulecmd.PSM_BuildInHullMod.SelectorContainer;
 import progsmod.data.campaign.rulecmd.util.XPHelper;
 import util.SModUtils;
 
@@ -26,12 +26,14 @@ public class AugmentButtonPlugin implements CustomUIPanelPlugin, Updatable {
     private CustomPanelAPI parentPanel;
     private SelectorContainer container;
     private LabelAPI spInfoLabel;
+    private CustomDialogDelegate.CustomDialogCallback callback;
 
-    public AugmentButtonPlugin(CustomPanelAPI parentPanel, FleetMemberAPI ship, SelectorContainer container) {
+    public AugmentButtonPlugin(CustomPanelAPI parentPanel, FleetMemberAPI ship, SelectorContainer container, CustomDialogDelegate.CustomDialogCallback callback) {
         container.register(this);
         this.parentPanel = parentPanel;
         this.ship = ship;
         this.container = container;
+        this.callback = callback;
         width = parentPanel.getPosition().getWidth();
         float textHeight = 20f;
         float buttonHeight = 30f;
@@ -120,7 +122,7 @@ public class AugmentButtonPlugin implements CustomUIPanelPlugin, Updatable {
     public boolean buttonEnabled() {
         // If augmenting can only be afforded with the XP from an S-mod removal, it is very messy to implement.
         // Better to just disable the button as it's not useful anyway
-        boolean enoughXPWithoutSModRemoval = enoughXP() && SModUtils.enoughXP(ship.getId(), xpCost);
+        boolean enoughXPWithoutSModRemoval = enoughXP() && SModUtils.enoughXP(ship.getId(), xpCost - SModUtils.getReserveXP(ship));
         return enoughSP() && enoughXPWithoutSModRemoval;
     }
 
@@ -129,7 +131,7 @@ public class AugmentButtonPlugin implements CustomUIPanelPlugin, Updatable {
     }
 
     private boolean enoughSP() {
-        return spCost.spCost < Global.getSector().getPlayerStats().getStoryPoints();
+        return spCost.spCost <= Global.getSector().getPlayerStats().getStoryPoints();
     }
 
     public void update() {
@@ -163,7 +165,7 @@ public class AugmentButtonPlugin implements CustomUIPanelPlugin, Updatable {
         if (buttonEnabled()) {
             // Dismissing an arbitrary callback allows for stacking custom dialogs
             // This looks strange but dialog.showCustomDialog does nothing otherwise
-            SelectShip.callback.dismissCustomDialog(1);
+            callback.dismissCustomDialog(1);
             InteractionDialogAPI dialog = Global.getSector().getCampaignUI().getCurrentInteractionDialog();
             float height = 50f;
             if (SModUtils.Constants.DEPLOYMENT_COST_PENALTY > 0f) {

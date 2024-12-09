@@ -6,8 +6,8 @@
     {
         "major":1,
         "minor":0,
-        "patch":0,
+        "patch":1,
     },
     "directDownloadURL": "https://github.com/qcwxezda/Starsector-Progressive-S-Mods/releases/latest/download/Progressive.S-Mods.zip",
-    "changelogURL":"https://raw.githubusercontent.com/qcwxezda/Starsector-Progressive-S-Mods/main/latest_changelog.txt"
+    "changelogURL":"https://raw.githubusercontent.com/qcwxezda/Starsector-Progressive-S-Mods/main/changelog.txt"
 }

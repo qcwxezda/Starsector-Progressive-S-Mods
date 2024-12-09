@@ -61,16 +61,15 @@ public class EngagementListener extends BaseCampaignEventListener {
             if (!fleet.isPlayerFleet()) {
                 continue;
             }
-            for (FleetMemberAPI fm : Misc.getSnapshotMembersLost(fleet)) {
+             for (FleetMemberAPI fm : Misc.getSnapshotMembersLost(fleet)) {
                 // For player losses, add any lost XP to a reserve XP pool for that
                 // hull type.
-                float reserveXP = SModUtils.Constants.RESERVE_XP_FRACTION * SModUtils.getXP(fm.getId());
+                float reserveXP = SModUtils.getXP(fm.getId());
                 // Add XP for S-mods, equivalent to the XP that would be obtained by refunding the mods
                 if (SModUtils.Constants.XP_REFUND_FACTOR > 0f) {
                     for (String modId : fm.getVariant().getSMods()) {
                         HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(modId);
-                        reserveXP += SModUtils.Constants.RESERVE_XP_FRACTION * 
-                                    SModUtils.Constants.XP_REFUND_FACTOR * 
+                        reserveXP += SModUtils.Constants.XP_REFUND_FACTOR *
                                     SModUtils.getBuildInCost(hullMod, fm.getHullSpec().getHullSize(), fm.getUnmodifiedDeploymentPointsCost());
                     }
                     // If the ship has modules, add XP for any S-mods built into modules
@@ -80,8 +79,7 @@ public class EngagementListener extends BaseCampaignEventListener {
                             ShipVariantAPI moduleVariant = fm.getVariant().getModuleVariant(id);
                             for (String modId : moduleVariant.getSMods()) {
                                 HullModSpecAPI hullMod = Global.getSettings().getHullModSpec(modId);
-                                reserveXP += SModUtils.Constants.RESERVE_XP_FRACTION * 
-                                    SModUtils.Constants.XP_REFUND_FACTOR * 
+                                reserveXP += SModUtils.Constants.XP_REFUND_FACTOR *
                                     SModUtils.getBuildInCost(hullMod, moduleVariant.getHullSize(), fm.getUnmodifiedDeploymentPointsCost());
                             }
                         }
@@ -89,6 +87,7 @@ public class EngagementListener extends BaseCampaignEventListener {
                 }
                 // Add XP for increasing S-mod limits
                 reserveXP += SModUtils.getXPSpentOnIncreasingLimit(fm.getId());
+                reserveXP *= SModUtils.Constants.RESERVE_XP_FRACTION;
                 if (reserveXP >= 1f) {
                     String hullId = fm.getHullSpec().getBaseHullId();
                     Float existingReserveXP = totalReserveXP.get(hullId);

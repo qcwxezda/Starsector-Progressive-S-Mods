@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SelectShip implements CustomDialogDelegate {
-    public static CustomDialogDelegate.CustomDialogCallback callback;
     final public InteractionDialogAPI dialog;
     final String titleString = "Select a ship";
     final float titleHeight = 30;
@@ -24,6 +23,8 @@ public class SelectShip implements CustomDialogDelegate {
     final FleetDataAPI fleet;
     final ShipSelector plugin;
     public float scrollPanelY;
+    public CustomDialogDelegate.CustomDialogCallback callback;
+
 
     public SelectShip(InteractionDialogAPI dialog) {
         this(dialog, 0f);
@@ -31,7 +32,7 @@ public class SelectShip implements CustomDialogDelegate {
 
     public SelectShip(InteractionDialogAPI dialog, float scrollPanelY) {
         this.dialog = dialog;
-        this.plugin = new ShipSelector();
+        this.plugin = new ShipSelector(this);
         this.fleet = Global.getSector().getPlayerFleet().getFleetData();
         this.scrollPanelY = scrollPanelY;
         final List<FleetMemberAPI> ships = fleet.getMembersInPriorityOrder();
@@ -54,7 +55,7 @@ public class SelectShip implements CustomDialogDelegate {
 
     @Override
     public void createCustomDialog(CustomPanelAPI panel, CustomDialogCallback callback) {
-        SelectShip.callback = callback;
+        this.callback = callback;
         PanelCreator.createTitle(panel, titleString, titleHeight);
         PanelCreator.PanelCreatorData<List<ShipButton>> createdButtonsData =
                 PanelCreator.createShipButtonList(

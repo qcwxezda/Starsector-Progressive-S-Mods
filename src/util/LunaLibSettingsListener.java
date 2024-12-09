@@ -46,6 +46,7 @@ public class LunaLibSettingsListener implements LunaSettingsListener {
             Constants.EXTRA_SMOD_XP_COST_GROWTHFACTOR = LunaSettings.getFloat(id, "psm_extraSModXPCostGrowthFactor");
             Constants.DEPLOYMENT_COST_PENALTY = LunaSettings.getFloat(id, "psm_deploymentCostPenalty");
             Constants.XP_REFUND_FACTOR = LunaSettings.getFloat(id, "psm_xpRefundFactor");
+            Constants.RESERVE_XP_FRACTION = LunaSettings.getFloat(id, "psm_reserveXPFraction");
             Constants.IGNORE_NO_BUILD_IN = LunaSettings.getBoolean(id, "psm_IgnoreNoBuildIn");
             Constants.ALLOW_INCREASE_SMOD_LIMIT = LunaSettings.getBoolean(id, "psm_allowIncreaseSModLimit");
             Constants.DISABLE_MOD = LunaSettings.getBoolean(id, "psm_disableMod");
@@ -75,8 +76,6 @@ public class LunaLibSettingsListener implements LunaSettingsListener {
             Constants.BASE_DP_DESTROYER = (float) json.getDouble("baseDPDestroyer");
             Constants.BASE_DP_CRUISER = (float) json.getDouble("baseDPCruiser");
             Constants.BASE_DP_CAPITAL = (float) json.getDouble("baseDPCapital");
-            Constants.ENABLE_LEGACY_UI = json.getBoolean("enableLegacyUI");
-            Constants.ENABLE_NEW_UI = json.getBoolean("enableNewUI");
         }
         catch (Exception e) {
             throw new RuntimeException(e);

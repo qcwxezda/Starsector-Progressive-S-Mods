@@ -4,7 +4,7 @@ import com.fs.starfarer.api.campaign.CustomDialogDelegate;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import progsmod.data.campaign.rulecmd.PSM_BuildInHullModNew;
+import progsmod.data.campaign.rulecmd.PSM_BuildInHullMod;
 import progsmod.data.campaign.rulecmd.ui.Button;
 import progsmod.data.campaign.rulecmd.ui.PanelCreator;
 
@@ -42,7 +42,7 @@ public class ModuleSelector extends Selector<Button> {
         }
         shouldRecreateHullmodPanel = false;
         callback.dismissCustomDialog(1);
-        PSM_BuildInHullModNew.createPanel(fleetMember, selectedVariant, dialog, scrollPanelY);
+        PSM_BuildInHullMod.createPanel(fleetMember, selectedVariant, dialog, scrollPanelY, callback, null);
     }
 
     @Override

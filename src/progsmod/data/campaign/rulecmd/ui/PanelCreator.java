@@ -14,10 +14,10 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipCreator;
 import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipLocation;
 import com.fs.starfarer.api.util.Misc;
-import progsmod.data.campaign.rulecmd.PSM_BuildInHullModNew;
-import progsmod.data.campaign.rulecmd.PSM_SelectModuleNew;
+import progsmod.data.campaign.rulecmd.PSM_BuildInHullMod;
+import progsmod.data.campaign.rulecmd.PSM_SelectModule;
 import progsmod.data.campaign.rulecmd.ui.plugins.AugmentButtonPlugin;
-import progsmod.data.campaign.rulecmd.ui.plugins.HullModSelector;
+import progsmod.data.campaign.rulecmd.ui.plugins.BuildInSelector;
 import progsmod.data.campaign.rulecmd.util.HullModButtonData;
 import progsmod.data.campaign.rulecmd.util.ShipButtonData;
 import util.SModUtils;
@@ -66,11 +66,11 @@ public class PanelCreator {
                 @Override
                 public void buttonPressed(Object buttonId) {
                     if (buttonId.equals(BUTTON_MANAGE_MODULE)) {
-                        PSM_BuildInHullModNew.shouldRecreateShipPanel = false;
+                        PSM_BuildInHullMod.shouldRecreateShipPanel = false;
                         callback.dismissCustomDialog(1);
                         InteractionDialogAPI dialog =
                                 Global.getSector().getCampaignUI().getCurrentInteractionDialog();
-                        PSM_SelectModuleNew.createPanel(ship, selectedVariant, dialog, shipScrollPanelY);
+                        PSM_SelectModule.createPanel(ship, selectedVariant, dialog, shipScrollPanelY);
                     }
                 }
             };
@@ -114,7 +114,7 @@ public class PanelCreator {
         text.setHighlight(ship.getHullSpec().getHullName());
 
         // If ship has multiple modules, add a button to select a different one
-        if (shipHasModules) {
+        if (shipHasModules && !PSM_BuildInHullMod.fromLunaButton) {
             float buttonYPad = 5f;
             float buttonHeight = 30f;
             infoTextElement.addButton("Manage a different module", BUTTON_MANAGE_MODULE, infoTextWidth,
@@ -128,8 +128,8 @@ public class PanelCreator {
     }
 
     public static CustomPanelAPI createAugmentPanel(CustomPanelAPI panel, FleetMemberAPI ship,
-            PSM_BuildInHullModNew.SelectorContainer container) {
-        AugmentButtonPlugin augmentButtonPlugin = new AugmentButtonPlugin(panel, ship, container);
+                                                    PSM_BuildInHullMod.SelectorContainer container, CustomDialogDelegate.CustomDialogCallback callback) {
+        AugmentButtonPlugin augmentButtonPlugin = new AugmentButtonPlugin(panel, ship, container, callback);
         return augmentButtonPlugin.augmentPanel;
     }
 
@@ -140,7 +140,7 @@ public class PanelCreator {
     }
 
     public static PanelCreatorData<List<HullModButton>> createHullModPanel(CustomPanelAPI panel, float height,
-            float width, List<HullModButtonData> hullModButtonData, HullModSelector plugin) {
+            float width, List<HullModButtonData> hullModButtonData, BuildInSelector plugin) {
         float padding = 10f;
         float buttonHeight = 45f;
         initVars(panel, 0);

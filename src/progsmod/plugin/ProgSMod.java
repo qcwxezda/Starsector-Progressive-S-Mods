@@ -4,6 +4,7 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.listeners.ListenerManagerAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import progsmod.data.campaign.EngagementListener;
+import progsmod.data.campaign.LunaSModButton;
 import progsmod.data.campaign.RefitTabListenerAndScript;
 import util.SModUtils;
 
@@ -13,6 +14,9 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
     @Override
     public void onApplicationLoad() {
         SModUtils.loadConstants("progsmod_settings.json");
+        if (Global.getSettings().getModManager().isModEnabled("lunalib")) {
+            LunaSModButton.addButton();
+        }
     }
 
     /** Disable only when necessary, i.e. in the refit screen, so that fleet inflaters that rely on s-mods being able
@@ -49,9 +53,6 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
 
             Global.getSector().addTransientListener(new EngagementListener(false));
             Global.getSector().addTransientScript(new RefitTabListenerAndScript());
-            Global.getSector().getMemory().set("$progsmodEnableLegacyUI", SModUtils.Constants.ENABLE_LEGACY_UI);
-            Global.getSector().getMemory().set("$progsmodEnableNewUI", SModUtils.Constants.ENABLE_NEW_UI);
-
         }
         else {
             Global.getSettings().getHullModSpec("progsmod_xptracker").setHiddenEverywhere(true);

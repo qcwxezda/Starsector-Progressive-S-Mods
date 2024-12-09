@@ -1,5 +1,0 @@
-- Updated the XP tracker hullmod icon using an asset provided by Serenitis in 2022
-- Added LunaLib support (note: not every setting is in LunaLib, those that aren't still read from the json)
-- Added setting to condense XP gain text
-- Changed Global.getCombatEngine() to CombatEngine.getInstance(), which creates the combat engine if it doesn't exist.
-  Should fix those rare strange cases where Global.getCombatEngine() is mysteriously null.
