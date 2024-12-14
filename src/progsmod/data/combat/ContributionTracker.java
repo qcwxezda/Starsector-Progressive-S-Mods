@@ -128,6 +128,14 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
         }
     }
 
+    private ShipAPI getBaseShip(ShipAPI shipWingOrModule, ShipAPI shipWingOrModulePrevious) {
+        // infinite recursion break
+        if (shipWingOrModule == shipWingOrModulePrevious) {
+            return shipWingOrModule;
+        }
+        return getBaseShip(shipWingOrModule);
+    }
+
     /** If the argument is a ship, returns that ship.
      *  If the argument is a wing, returns the wing's source ship.
      *  If the argument is a module, returns the module's base ship/station. */
@@ -141,7 +149,9 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
         }
         // The "ship" in question is a drone
         if (shipWingOrModule.getAIFlags().hasFlag(ShipwideAIFlags.AIFlags.DRONE_MOTHERSHIP)) {
-            ShipAPI base = getBaseShip((ShipAPI) shipWingOrModule.getAIFlags().getCustom(ShipwideAIFlags.AIFlags.DRONE_MOTHERSHIP));
+            ShipAPI base = getBaseShip(
+                    (ShipAPI) shipWingOrModule.getAIFlags().getCustom(ShipwideAIFlags.AIFlags.DRONE_MOTHERSHIP),
+                    shipWingOrModule);
             baseShipTable.put(shipWingOrModule.getId(), base);
             return base;
         }
@@ -159,7 +169,9 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
                 }
             }
             else {
-                base = getBaseShip(shipWingOrModule.getWing().getSourceShip());
+                base = getBaseShip(
+                        shipWingOrModule.getWing().getSourceShip(),
+                        shipWingOrModule);
             }
             baseShipTable.put(shipWingOrModule.getId(), base);
             return base; 
@@ -174,7 +186,9 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
                 }
             }
             else {
-                base = getBaseShip(shipWingOrModule.getParentStation());
+                base = getBaseShip(
+                        shipWingOrModule.getParentStation(),
+                        shipWingOrModule);
             }
             baseShipTable.put(shipWingOrModule.getId(), base);
             return base;
