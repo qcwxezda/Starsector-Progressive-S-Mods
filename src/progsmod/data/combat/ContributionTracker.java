@@ -132,6 +132,10 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
      *  If the argument is a wing, returns the wing's source ship.
      *  If the argument is a module, returns the module's base ship/station. */
     private ShipAPI getBaseShip(ShipAPI shipWingOrModule) {
+        return getBaseShip(shipWingOrModule, new HashSet<ShipAPI>());
+    }
+
+    private ShipAPI getBaseShip(ShipAPI shipWingOrModule, Set<ShipAPI> seen) {
         if (shipWingOrModule == null) {
             return null;
         }
@@ -139,19 +143,24 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
         if (memo != null) {
             return memo;
         }
+        if (seen.contains(shipWingOrModule)) {
+            baseShipTable.put(shipWingOrModule.getId(), shipWingOrModule);
+            return shipWingOrModule;
+        }
+        seen.add(shipWingOrModule);
         // The "ship" in question is a drone
         if (shipWingOrModule.getAIFlags().hasFlag(ShipwideAIFlags.AIFlags.DRONE_MOTHERSHIP)) {
-            ShipAPI base = getBaseShip((ShipAPI) shipWingOrModule.getAIFlags().getCustom(ShipwideAIFlags.AIFlags.DRONE_MOTHERSHIP));
+            ShipAPI base = getBaseShip((ShipAPI) shipWingOrModule.getAIFlags().getCustom(ShipwideAIFlags.AIFlags.DRONE_MOTHERSHIP), seen);
             baseShipTable.put(shipWingOrModule.getId(), base);
             return base;
         }
         // Possible to have wings come from a module of a station
-        // and maybe even have modules of modules? 
+        // and maybe even have modules of modules?
         // so function needs to be recursive
         if (shipWingOrModule.isFighter()) {
             ShipAPI base = null;
-            if (shipWingOrModule.getWing() == null || 
-                shipWingOrModule.getWing().getSourceShip() == null) {
+            if (shipWingOrModule.getWing() == null ||
+                    shipWingOrModule.getWing().getSourceShip() == null) {
                 // If the fighter has no source ship but has a fleet member,
                 // just return the fighter itself
                 if (shipWingOrModule.getFleetMember() != null) {
@@ -159,10 +168,10 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
                 }
             }
             else {
-                base = getBaseShip(shipWingOrModule.getWing().getSourceShip());
+                base = getBaseShip(shipWingOrModule.getWing().getSourceShip(), seen);
             }
             baseShipTable.put(shipWingOrModule.getId(), base);
-            return base; 
+            return base;
         }
         if (shipWingOrModule.isStationModule()) {
             ShipAPI base = null;
@@ -174,7 +183,7 @@ public class ContributionTracker extends BaseEveryFrameCombatPlugin {
                 }
             }
             else {
-                base = getBaseShip(shipWingOrModule.getParentStation());
+                base = getBaseShip(shipWingOrModule.getParentStation(), seen);
             }
             baseShipTable.put(shipWingOrModule.getId(), base);
             return base;

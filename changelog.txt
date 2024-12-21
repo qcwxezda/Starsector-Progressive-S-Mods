@@ -1,3 +1,7 @@
+1.0.3 (dev)
+----------
+- Handled possible (but which should never happen) cyclic base ship chain.
+
 1.0.2
 ----------
 - Hotfix for persistence issue when adding S-mods/increasing limit from LunaLib refit button on ships that didn't already have the XP tracker hullmod.
