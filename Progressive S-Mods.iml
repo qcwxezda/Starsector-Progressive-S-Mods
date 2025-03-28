@@ -10,17 +10,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="commons-compiler-jdk" level="project" />
     <orderEntry type="library" name="lw_Console" level="project" />
+    <orderEntry type="library" name="commons-compiler-jdk" level="project" />
     <orderEntry type="library" name="LunaLib" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/annotations-java5/24.0.0/annotations-java5-24.0.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="realityforge.jetbrains.annotations" level="project" />
   </component>
 </module>
