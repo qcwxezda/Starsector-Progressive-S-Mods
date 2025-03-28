@@ -215,8 +215,8 @@ public class BuildInSelector extends Selector<HullModButton> {
                     }
 
                 } else if (interactionTarget != null && interactionTarget.getMarket() != null) {
-                    CoreUITradeMode tradeMode = CoreUITradeMode.valueOf(
-                            interactionTarget.getMemory().getString("$tradeMode"));
+                    String tradeModeString = interactionTarget.getMemory().getString("$tradeMode");
+                    CoreUITradeMode tradeMode = tradeModeString == null ? CoreUITradeMode.NONE : CoreUITradeMode.valueOf(tradeModeString);
                     if (!originalVariant.hasHullMod(button.data.id) && !hullMod.getEffect().canBeAddedOrRemovedNow(checkerShip,
                             interactionTarget.getMarket(), tradeMode)) {
                         String reason = hullMod.getEffect().getCanNotBeInstalledNowReason(checkerShip,
