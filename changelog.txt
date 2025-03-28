@@ -1,4 +1,10 @@
-1.0.3 (dev)
+1.1.0
+---------
+- Handled "stations" with no tradeMode
+- Recompiled for Java 17
+- Updated game version to 0.98
+
+1.0.3
 ----------
 - Handled possible (but which should never happen) cyclic base ship chain.
 
