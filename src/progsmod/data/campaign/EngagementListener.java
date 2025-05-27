@@ -25,7 +25,7 @@ import com.fs.starfarer.api.util.Misc;
 
 import progsmod.data.combat.ContributionTracker;
 import progsmod.data.combat.ContributionTracker.ContributionType;
-import util.SModUtils;
+import progsmod.util.SModUtils;
 
 public class EngagementListener extends BaseCampaignEventListener {
 

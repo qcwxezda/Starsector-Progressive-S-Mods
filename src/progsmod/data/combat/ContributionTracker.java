@@ -13,7 +13,7 @@ import com.fs.starfarer.api.combat.listeners.DamageListener;
 import com.fs.starfarer.api.input.InputEventAPI;
 import com.fs.starfarer.api.mission.FleetSide;
 
-import util.SModUtils;
+import progsmod.util.SModUtils;
 public class ContributionTracker extends BaseEveryFrameCombatPlugin {
 
     HullAndArmorCombiner hullAndArmor = new HullAndArmorCombiner();

@@ -19,7 +19,7 @@ import progsmod.data.campaign.rulecmd.ui.LabelWithVariables;
 import progsmod.data.campaign.rulecmd.ui.PanelCreator;
 import progsmod.data.campaign.rulecmd.ui.plugins.RemoveSelector;
 import progsmod.data.campaign.rulecmd.util.HullModButtonData;
-import util.SModUtils;
+import progsmod.util.SModUtils;
 
 import java.awt.*;
 import java.util.ArrayList;

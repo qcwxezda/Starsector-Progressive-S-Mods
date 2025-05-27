@@ -1,4 +1,4 @@
-package util;
+package progsmod.util;
 
 import com.fs.starfarer.api.Global;
 

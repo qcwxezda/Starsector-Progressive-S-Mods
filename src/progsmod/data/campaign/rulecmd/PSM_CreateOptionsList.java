@@ -16,7 +16,7 @@ import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Misc.Token;
 import com.fs.starfarer.api.util.Misc.TokenType;
 
-import util.SModUtils;
+import progsmod.util.SModUtils;
 
 /** ProgSModFilterOptionsList [$fleetMember] [$selectedVariant] [$firstTimeOpened] [option1] [option2] [option3] [option4] [option5] [option6] [option7]
  *  [option1] is the option to build in hull mods 

@@ -22,10 +22,9 @@ import progsmod.data.campaign.rulecmd.ui.plugins.BuildInSelector;
 import progsmod.data.campaign.rulecmd.ui.plugins.Updatable;
 import progsmod.data.campaign.rulecmd.util.HullModButtonData;
 import progsmod.data.campaign.rulecmd.util.XPHelper;
-import progsmod.plugin.ProgSMod;
-import util.Action;
-import util.RecentBuildInTracker;
-import util.SModUtils;
+import progsmod.util.Action;
+import progsmod.util.RecentBuildInTracker;
+import progsmod.util.SModUtils;
 
 import java.awt.*;
 import java.util.List;
@@ -126,11 +125,6 @@ public class PSM_BuildInHullMod {
                 new ManageSMods() {
                     @Override
                     public void createCustomDialog(CustomPanelAPI panel, CustomDialogCallback callback) {
-
-                        if (fromLunaButton) {
-                            ProgSMod.enableStoryPointBuildIn();
-                        }
-
                         // Set the callback function, so customDialogConfirm can call it and create the
                         // ship list again
                         // Without calling the callback, it's not possible to create the ship list in
@@ -307,9 +301,6 @@ public class PSM_BuildInHullMod {
                             callback_[0].dismissCustomDialog(1);
                             dialog.showCustomDialog(SelectShip.getWidth(), SelectShip.getHeight(),
                                     new SelectShip(dialog, shipScrollPanelY));
-                        }
-                        if (fromLunaButton) {
-                            ProgSMod.disableStoryPointBuildIn();
                         }
                     }
                 }

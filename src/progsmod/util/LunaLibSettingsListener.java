@@ -1,4 +1,4 @@
-package util;
+package progsmod.util;
 
 import com.fs.starfarer.api.Global;
 import lunalib.lunaSettings.LunaSettings;
@@ -6,8 +6,8 @@ import lunalib.lunaSettings.LunaSettingsListener;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
-import static util.SModUtils.Constants;
-import static util.SModUtils.Constants.loadCoeffsFromJSON;
+import static progsmod.util.SModUtils.Constants;
+import static progsmod.util.SModUtils.Constants.loadCoeffsFromJSON;
 
 public class LunaLibSettingsListener implements LunaSettingsListener {
 

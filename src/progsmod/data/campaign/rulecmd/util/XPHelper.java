@@ -2,7 +2,7 @@ package progsmod.data.campaign.rulecmd.util;
 
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import progsmod.data.campaign.rulecmd.ui.LabelWithVariables;
-import util.SModUtils;
+import progsmod.util.SModUtils;
 
 /**
  * Helper class for the XP label, also uses reserve XP.

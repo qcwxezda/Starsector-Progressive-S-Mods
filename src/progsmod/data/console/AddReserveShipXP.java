@@ -8,7 +8,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import org.lazywizard.console.BaseCommand;
 import org.lazywizard.console.Console;
 
-import util.SModUtils;
+import progsmod.util.SModUtils;
 
 public class AddReserveShipXP implements BaseCommand {
     @Override

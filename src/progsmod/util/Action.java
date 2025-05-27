@@ -1,4 +1,4 @@
-package util;
+package progsmod.util;
 
 public interface Action {
     void perform();

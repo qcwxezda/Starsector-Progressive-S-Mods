@@ -9,7 +9,7 @@ import com.fs.starfarer.api.ui.CustomPanelAPI;
 import progsmod.data.campaign.rulecmd.delegates.SelectShip;
 import progsmod.data.campaign.rulecmd.ui.PanelCreator;
 import progsmod.data.campaign.rulecmd.ui.plugins.ModuleSelector;
-import util.SModUtils;
+import progsmod.util.SModUtils;
 
 import java.util.ArrayList;
 import java.util.List;

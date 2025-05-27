@@ -10,7 +10,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.util.Misc.Token;
 
-import util.SModUtils;
+import progsmod.util.SModUtils;
 
 /** ProgSModUseReserveXP [fleetMember] -- spends reserve XP to increase [fleetMember]'s XP
  *  by the amount specified in the selector whose id is the same as the "option" variable */

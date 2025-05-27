@@ -7,18 +7,27 @@ import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 
-import util.SModUtils;
+import progsmod.util.SModUtils;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class XPTracker extends BaseHullMod {
+    public static Map<String, Integer> numPenalizedMap = new LinkedHashMap<>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Integer> eldest) {
+            return size() > 1000;
+        }
+    };
+
     @Override
     public String getDescriptionParam(int index, HullSize hullSize, ShipAPI ship) {
-        switch (index) {
-            case 0: return ship.getName();
-            case 1: return Misc.getFormat().format((int) SModUtils.getXP(ship.getFleetMemberId()));
-            default: return null;
-        }
+        return switch (index) {
+            case 0 -> ship.getName();
+            case 1 -> Misc.getFormat().format((int) SModUtils.getXP(ship.getFleetMemberId()));
+            default -> null;
+        };
     }
 
     @Override
@@ -33,14 +42,31 @@ public class XPTracker extends BaseHullMod {
             if (numOverLimit > 0) {
                 stats.getDynamic().getMod(Stats.MAX_PERMANENT_HULLMODS_MOD).modifyFlat(id, numOverLimit);
             }
+
+            int numPenalized = numPenalizedMap.getOrDefault(stats.getFleetMember().getId(), 0);
+            if (numPenalized > 0) {
+                int dp = computeDPModifier(stats, numPenalized);
+                if (dp > 0) {
+                    stats.getDynamic().getMod(Stats.DEPLOYMENT_POINTS_MOD).modifyFlat(id, dp);
+                } else {
+                    stats.getDynamic().getMod(Stats.DEPLOYMENT_POINTS_MOD).unmodify(id);
+                }
+            }
         }
 
-        if (SModUtils.Constants.DEPLOYMENT_COST_PENALTY <= 0f) return;
+    }
 
-        int sModsOverLimit = getNumPenalizedMods(stats.getFleetMember());
-        if (sModsOverLimit > 0) {
-            int dpMod = computeDPModifier(stats, sModsOverLimit);
-            stats.getDynamic().getMod(Stats.DEPLOYMENT_POINTS_MOD).modifyFlat(id, dpMod);
+    // For better compatibility with Ship Mastery System, since that mod's applyEffectsBeforeShipCreation always happens last
+    @Override
+    public void applyEffectsAfterShipCreation(ShipAPI ship, String id) {
+        if (SModUtils.Constants.DEPLOYMENT_COST_PENALTY <= 0f) return;
+        if (ship.getMutableStats() == null) return;
+
+        int sModsOverLimit = getNumPenalizedMods(ship.getMutableStats().getFleetMember());
+        if (ship.getMutableStats().getFleetMember() != null && ship.getFleetMemberId() != null && sModsOverLimit > 0) {
+            numPenalizedMap.put(ship.getFleetMemberId(), sModsOverLimit);
+        } else {
+            numPenalizedMap.remove(ship.getFleetMemberId());
         }
     }
 

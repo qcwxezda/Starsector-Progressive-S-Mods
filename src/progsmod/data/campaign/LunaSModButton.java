@@ -11,8 +11,8 @@ import com.fs.starfarer.api.util.Misc;
 import lunalib.lunaRefit.BaseRefitButton;
 import lunalib.lunaRefit.LunaRefitManager;
 import progsmod.data.campaign.rulecmd.PSM_BuildInHullMod;
-import util.Action;
-import util.SModUtils;
+import progsmod.util.Action;
+import progsmod.util.SModUtils;
 
 public class LunaSModButton extends BaseRefitButton {
 

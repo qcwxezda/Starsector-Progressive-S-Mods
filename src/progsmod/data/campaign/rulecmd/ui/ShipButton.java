@@ -5,7 +5,7 @@ import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import progsmod.data.campaign.rulecmd.util.ShipButtonData;
-import util.SModUtils;
+import progsmod.util.SModUtils;
 
 import java.awt.*;
 import java.util.Collections;

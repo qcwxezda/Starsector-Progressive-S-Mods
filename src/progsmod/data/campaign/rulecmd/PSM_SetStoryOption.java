@@ -14,7 +14,7 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Misc.Token;
 
-import util.SModUtils;
+import progsmod.util.SModUtils;
 
 
 /** ProgSModSetStoryOption [fleetMember] [n] [r] [x] makes a story option costing n story points and x ship XP,

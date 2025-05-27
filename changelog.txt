@@ -1,5 +1,13 @@
+1.2.0
+----------
+WARNING: NOT SAVE COMPATIBLE WITH PREVIOUS VERSIONS
+
+- No longer does shenanigans with setting and unsetting every hullmod's NO_BUILD_IN.
+- Now deletes the "Build-in" button from the refit screen.
+- Moved util into the progsmod package.
+
 1.1.0
----------
+----------
 - Handled "stations" with no tradeMode
 - Recompiled for Java 17
 - Updated game version to 0.98

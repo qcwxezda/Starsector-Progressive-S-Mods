@@ -12,8 +12,8 @@ import com.fs.starfarer.api.ui.*;
 import com.fs.starfarer.api.util.Misc;
 import progsmod.data.campaign.rulecmd.PSM_BuildInHullMod.SelectorContainer;
 import progsmod.data.campaign.rulecmd.util.XPHelper;
-import util.Action;
-import util.SModUtils;
+import progsmod.util.Action;
+import progsmod.util.SModUtils;
 
 import java.util.List;
 

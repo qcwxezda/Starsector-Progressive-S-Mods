@@ -20,8 +20,8 @@ import progsmod.data.campaign.rulecmd.ui.plugins.AugmentButtonPlugin;
 import progsmod.data.campaign.rulecmd.ui.plugins.BuildInSelector;
 import progsmod.data.campaign.rulecmd.util.HullModButtonData;
 import progsmod.data.campaign.rulecmd.util.ShipButtonData;
-import util.Action;
-import util.SModUtils;
+import progsmod.util.Action;
+import progsmod.util.SModUtils;
 
 import java.awt.*;
 import java.util.ArrayList;

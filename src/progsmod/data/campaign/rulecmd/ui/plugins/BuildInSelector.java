@@ -13,7 +13,7 @@ import progsmod.data.campaign.rulecmd.delegates.*;
 import progsmod.data.campaign.rulecmd.ui.*;
 import progsmod.data.campaign.rulecmd.ui.PanelCreator.*;
 import progsmod.data.campaign.rulecmd.util.*;
-import util.*;
+import progsmod.util.*;
 
 import java.util.*;
 
