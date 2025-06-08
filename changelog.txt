@@ -1,3 +1,7 @@
+1.2.1 (dev)
+----------
+- No longer sets hullmod's hiddeneverwhere to false if mod isn't disabled.
+
 1.2.0
 ----------
 WARNING: NOT SAVE COMPATIBLE WITH PREVIOUS VERSIONS

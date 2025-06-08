@@ -49,7 +49,6 @@ public class ProgSMod extends com.fs.starfarer.api.BaseModPlugin {
     public void onGameLoad(boolean newGame) {
         if (!SModUtils.Constants.DISABLE_MOD) {
             SModUtils.loadData();
-            Global.getSettings().getHullModSpec("progsmod_xptracker").setHiddenEverywhere(false);
             Global.getSector().getMemory().set("$progsmodEnabled", true);
             Global.getSector().addTransientListener(new EngagementListener(false));
 
