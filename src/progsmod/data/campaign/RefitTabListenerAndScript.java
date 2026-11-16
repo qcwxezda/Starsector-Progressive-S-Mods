@@ -52,6 +52,22 @@ public class RefitTabListenerAndScript implements CoreUITabListener, EveryFrameS
                 perm.setOpacity(0f);
             }
         }
+
+        removeSModsButton(ReflectionUtils.getCoreUI());
+    }
+
+    void removeSModsButton(UIPanelAPI coreUI) {
+        try {
+            Object currentTab = ReflectionUtils.invokeMethodNoCatch(coreUI, "getCurrentTab");
+            Object refitPanel = ReflectionUtils.invokeMethodNoCatch(currentTab, "getRefitPanel");
+            Object designDisplay = ReflectionUtils.invokeMethodNoCatch(refitPanel, "getDesignDisplay");
+            Object smodsButton = ReflectionUtils.invokeMethodNoCatch(designDisplay, "getSmodsButton");
+
+            if (smodsButton != null) {
+                ((ButtonAPI) smodsButton).setOpacity(0f);
+            }
+        }
+        catch (Exception ignore) {}
     }
 
     /**

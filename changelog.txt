@@ -1,6 +1,8 @@
-1.2.1 (dev)
+1.2.1
 ----------
-- No longer sets hullmod's hiddeneverwhere to false if mod isn't disabled.
+- Version change to 0.98.5a-RC7.
+- Disabled vanilla "Change S-mods" feature.
+- No longer sets hullmod's hiddeneverywhere to false if mod isn't disabled.
 
 1.2.0
 ----------
